@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribulation — Comprehensive Difficulty Mod for Minecraft</title>
+    <meta name="description" content="Tribulation is a comprehensive difficulty overhaul mod for Minecraft 1.21.1 Fabric. Scaling mobs, death penalties, hardcore hearts, and more.">
+    <meta name="keywords" content="Minecraft, Fabric mod, difficulty mod, mob scaling, hardcore, 1.21.1">
+
+    <meta property="og:title" content="Tribulation — Minecraft Difficulty Overhaul">
+    <meta property="og:description" content="A comprehensive difficulty mod for Minecraft 1.21.1 Fabric. Three scaling axes, tier-gated abilities, death penalties, and opt-in hardcore mechanics.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tribulation.rfizzle.com">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tribulation — Minecraft Difficulty Overhaul">
+    <meta name="twitter:description" content="A comprehensive difficulty mod for Minecraft 1.21.1 Fabric.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0a0a0a',
+                        card: '#1a1a1a',
+                        elevated: '#222222',
+                        crimson: { DEFAULT: '#DC143C', dark: '#8B0000' },
+                        ember: { DEFAULT: '#FF6B35', bright: '#FF4500' },
+                        bone: '#e8e0d4',
+                        ash: '#a89f93',
+                        smoke: '#6b6359',
+                    },
+                    fontFamily: {
+                        mono: ['SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Liberation Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-base text-bone antialiased leading-relaxed">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 h-16 bg-base/92 backdrop-blur-xl border-b border-white/5 flex items-center px-6">
+        <div class="flex items-center justify-between w-full max-w-6xl mx-auto">
+            <a href="index.html" class="text-xl font-bold nav-brand-gradient">Tribulation</a>
+            <button id="nav-toggle" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+            </button>
+            <ul id="nav-links" class="hidden md:flex items-center gap-8 list-none">
+                <li><a href="features.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Features</a></li>
+                <li><a href="config.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Config</a></li>
+                <li><a href="commands.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Commands</a></li>
+                <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash text-sm font-medium hover:text-bone transition-colors">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Menu -->
+    <div id="mobile-menu" class="hidden md:hidden fixed top-16 inset-x-0 bg-base/95 backdrop-blur-xl border-b border-white/5 z-40">
+        <ul class="flex flex-col gap-4 p-6 list-none">
+            <li><a href="features.html" class="text-ash hover:text-bone transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-ash hover:text-bone transition-colors">Config</a></li>
+            <li><a href="commands.html" class="text-ash hover:text-bone transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash hover:text-bone transition-colors">GitHub</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <!-- Hero -->
+        <section class="relative overflow-hidden py-20 md:py-32 px-6 text-center hero-glow">
+            <h1 class="hero-title-gradient text-5xl md:text-7xl font-extrabold tracking-tight leading-none mb-4">Tribulation</h1>
+            <p class="text-lg md:text-xl text-ash mb-2">A comprehensive difficulty overhaul for Minecraft</p>
+            <p class="text-smoke max-w-xl mx-auto mb-8">
+                Mobs grow stronger as you play longer, venture further, and descend deeper.
+                Every hour survived raises the stakes with scaling stats, unlocked abilities, and brutal opt-in mechanics.
+            </p>
+            <a href="https://github.com/rfizzle/tribulation/releases" target="_blank" rel="noopener"
+               class="inline-block px-8 py-3 bg-gradient-to-br from-crimson-dark to-crimson text-bone font-semibold rounded-lg border border-crimson/40 hover:shadow-[0_8px_30px_rgba(220,20,60,0.4),0_0_15px_rgba(255,107,53,0.35)] hover:-translate-y-0.5 transition-all duration-200">
+                Download Latest Release
+            </a>
+        </section>
+
+        <!-- Feature Highlights -->
+        <section class="py-16 md:py-20">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-4">Core Systems</h2>
+                <p class="text-ash text-lg mb-10 max-w-2xl">Four interlocking mechanics that transform Minecraft's difficulty curve from flat to exponential.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 hover:shadow-[0_4px_20px_rgba(220,20,60,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span class="text-3xl mb-4 block">&#9876;</span>
+                        <h3 class="text-lg font-semibold mb-2">Mob Scaling</h3>
+                        <p class="text-ash text-sm leading-relaxed">21 mob types scale across health, damage, speed, armor, toughness, and follow range. Per-mob tuning with independent rate and cap for each stat.</p>
+                    </div>
+                    <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 hover:shadow-[0_4px_20px_rgba(220,20,60,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span class="text-3xl mb-4 block">&#9760;</span>
+                        <h3 class="text-lg font-semibold mb-2">Death Penalties</h3>
+                        <p class="text-ash text-sm leading-relaxed">Lose 2 difficulty levels on death as relief. Shatter Shards drop rarely from scaled mobs and reduce your level by 5 when consumed.</p>
+                    </div>
+                    <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 hover:shadow-[0_4px_20px_rgba(220,20,60,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span class="text-3xl mb-4 block">&#10084;</span>
+                        <h3 class="text-lg font-semibold mb-2">Hardcore Hearts</h3>
+                        <p class="text-ash text-sm leading-relaxed">Opt-in permanent max health loss on death. Restore lost hearts with Heart Fragment items crafted from Shatter Shards.</p>
+                    </div>
+                    <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 hover:shadow-[0_4px_20px_rgba(220,20,60,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span class="text-3xl mb-4 block">&#128123;</span>
+                        <h3 class="text-lg font-semibold mb-2">Soul Inventory</h3>
+                        <p class="text-ash text-sm leading-relaxed">Opt-in inventory destruction on death. Only items enchanted with Soulbound survive. Forces deliberate gear choices.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="py-16 md:py-20 bg-card">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-4">Three Scaling Axes</h2>
+                <p class="text-ash text-lg mb-10 max-w-2xl">Difficulty compounds from three independent sources. Each axis contributes a factor that multiplies mob attributes.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-base/50 border-l-[3px] border-l-crimson rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Time (Player Level)</h3>
+                        <p class="text-ash text-sm leading-relaxed">Every hour of playtime advances your level (0&ndash;250). Higher level means mobs near you gain more stats. This is the primary axis.</p>
+                    </div>
+                    <div class="bg-base/50 border-l-[3px] border-l-crimson rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Distance from Spawn</h3>
+                        <p class="text-ash text-sm leading-relaxed">Beyond 1000 blocks from world spawn, mobs gain bonus health, damage, armor, and toughness. Caps at +150% of base stats. Overworld only by default.</p>
+                    </div>
+                    <div class="bg-base/50 border-l-[3px] border-l-crimson rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Y-Level (Depth)</h3>
+                        <p class="text-ash text-sm leading-relaxed">Below Y=62 or above it, mobs gain additional stats. Deeper caves and tall mountains both increase threat. Caps at +50%.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Install -->
+        <section class="py-16 md:py-20">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-8">Quick Install</h2>
+                <ol class="space-y-0">
+                    <li class="flex items-start gap-4 py-4 border-b border-white/5">
+                        <span class="flex-shrink-0 w-8 h-8 bg-elevated border border-white/10 rounded-full flex items-center justify-center text-sm font-semibold text-crimson">1</span>
+                        <span class="text-ash">Install <strong class="text-bone">Fabric Loader 0.16.10+</strong> for Minecraft <strong class="text-bone">1.21.1</strong></span>
+                    </li>
+                    <li class="flex items-start gap-4 py-4 border-b border-white/5">
+                        <span class="flex-shrink-0 w-8 h-8 bg-elevated border border-white/10 rounded-full flex items-center justify-center text-sm font-semibold text-crimson">2</span>
+                        <span class="text-ash">Install <strong class="text-bone">Fabric API</strong> (required dependency)</span>
+                    </li>
+                    <li class="flex items-start gap-4 py-4 border-b border-white/5">
+                        <span class="flex-shrink-0 w-8 h-8 bg-elevated border border-white/10 rounded-full flex items-center justify-center text-sm font-semibold text-crimson">3</span>
+                        <span class="text-ash">Drop <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">tribulation-x.x.x.jar</code> into your <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">mods/</code> folder</span>
+                    </li>
+                    <li class="flex items-start gap-4 py-4 border-b border-white/5">
+                        <span class="flex-shrink-0 w-8 h-8 bg-elevated border border-white/10 rounded-full flex items-center justify-center text-sm font-semibold text-crimson">4</span>
+                        <span class="text-ash">Launch the game. Config generates at <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">config/tribulation.json</code> on first run</span>
+                    </li>
+                    <li class="flex items-start gap-4 py-4">
+                        <span class="flex-shrink-0 w-8 h-8 bg-elevated border border-white/10 rounded-full flex items-center justify-center text-sm font-semibold text-crimson">5</span>
+                        <span class="text-ash">Adjust settings via the config file or <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">/tribulation reload</code> in-game</span>
+                    </li>
+                </ol>
+                <p class="mt-6 text-smoke text-sm">
+                    Requires <strong class="text-ash">Java 21</strong>. Remove any other mob scaling mods before installing.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-10 px-6 text-center mt-16">
+        <ul class="flex justify-center gap-8 flex-wrap list-none mb-4">
+            <li><a href="features.html" class="text-smoke text-sm hover:text-ash transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-smoke text-sm hover:text-ash transition-colors">Configuration</a></li>
+            <li><a href="commands.html" class="text-smoke text-sm hover:text-ash transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-smoke text-sm hover:text-ash transition-colors">GitHub</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation/issues" target="_blank" rel="noopener" class="text-smoke text-sm hover:text-ash transition-colors">Issues</a></li>
+        </ul>
+        <p class="text-smoke text-xs">Tribulation &copy; 2025 rfizzle. Minecraft is a trademark of Mojang Studios.</p>
+    </footer>
+
+    <script>
+        (function() {
+            var toggle = document.getElementById('nav-toggle');
+            var menu = document.getElementById('mobile-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function() {
+                    var open = menu.classList.toggle('hidden');
+                    toggle.setAttribute('aria-expanded', !open);
+                });
+                menu.querySelectorAll('a').forEach(function(a) {
+                    a.addEventListener('click', function() {
+                        menu.classList.add('hidden');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

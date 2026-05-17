@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features — Tribulation</title>
+    <meta name="description" content="All features of the Tribulation difficulty mod: mob scaling, tier-gated abilities, zombie variants, boss scaling, death relief, shatter shards, hardcore hearts, soul inventory.">
+
+    <meta property="og:title" content="Features — Tribulation">
+    <meta property="og:description" content="Detailed breakdown of every Tribulation feature and mechanic.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tribulation.rfizzle.com/features.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0a0a0a',
+                        card: '#1a1a1a',
+                        elevated: '#222222',
+                        crimson: { DEFAULT: '#DC143C', dark: '#8B0000' },
+                        ember: { DEFAULT: '#FF6B35', bright: '#FF4500' },
+                        bone: '#e8e0d4',
+                        ash: '#a89f93',
+                        smoke: '#6b6359',
+                    },
+                    fontFamily: {
+                        mono: ['SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Liberation Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-base text-bone antialiased leading-relaxed">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 h-16 bg-base/92 backdrop-blur-xl border-b border-white/5 flex items-center px-6">
+        <div class="flex items-center justify-between w-full max-w-6xl mx-auto">
+            <a href="index.html" class="text-xl font-bold nav-brand-gradient">Tribulation</a>
+            <button id="nav-toggle" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+            </button>
+            <ul id="nav-links" class="hidden md:flex items-center gap-8 list-none">
+                <li><a href="features.html" class="text-crimson text-sm font-medium">Features</a></li>
+                <li><a href="config.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Config</a></li>
+                <li><a href="commands.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Commands</a></li>
+                <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash text-sm font-medium hover:text-bone transition-colors">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="hidden md:hidden fixed top-16 inset-x-0 bg-base/95 backdrop-blur-xl border-b border-white/5 z-40">
+        <ul class="flex flex-col gap-4 p-6 list-none">
+            <li><a href="features.html" class="text-crimson">Features</a></li>
+            <li><a href="config.html" class="text-ash hover:text-bone transition-colors">Config</a></li>
+            <li><a href="commands.html" class="text-ash hover:text-bone transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash hover:text-bone transition-colors">GitHub</a></li>
+        </ul>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-6">
+        <header class="py-10 border-b border-white/5 mb-10">
+            <h1 class="page-header-gradient text-3xl md:text-4xl font-bold tracking-tight">Features</h1>
+            <p class="text-ash mt-2 text-lg">Everything Tribulation does to make your world progressively more dangerous.</p>
+        </header>
+
+        <!-- Scaling Axes -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="scaling-axes">
+            <h2 class="text-2xl font-bold mb-4">Scaling Axes</h2>
+            <p class="text-ash mb-6 max-w-3xl">
+                Mob stats are boosted by three independent axes that combine multiplicatively per attribute. Each axis produces a factor that gets added to the mob's base stat via attribute modifiers.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Time (Player Level)</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        Your playtime accumulates ticks (default: 72,000 ticks = 1 hour per level). Max level is 250. Every mob spawned near you uses your level to compute a time factor per stat: <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">min(level * rate, cap)</code>.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Distance from Spawn</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        Beyond <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">startingDistance</code> (default: 1000 blocks), every 300 blocks adds 0.1 to the position bonus. Caps at 1.5. Only applies to health, damage, armor, and toughness.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Height (Y-Level)</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        Deviation from Y=62 by 30 blocks adds 0.1. Supports both positive and negative height scaling. Caps at 0.5.
+                    </p>
+                </div>
+            </div>
+            <p class="text-ash text-sm">
+                Distance and height are optionally excluded in non-Overworld dimensions. Time scaling applies everywhere.
+            </p>
+        </section>
+
+        <!-- Scaled Mob Types -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="scaled-mobs">
+            <h2 class="text-2xl font-bold mb-4">Scaled Mob Types</h2>
+            <p class="text-ash mb-6 max-w-3xl">
+                21 vanilla hostile mobs have individually tuned scaling rates and caps for six attributes. Each mob can be toggled on or off independently.
+            </p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Mob</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Health Rate/Cap</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Damage Rate/Cap</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Speed Rate/Cap</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Armor Rate/Cap</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Zombie</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.015 / 3.75</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.032 / 8.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.012 / 3.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.020 / 5.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Creeper</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.00</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Spider</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.00</td><td class="px-4 py-2.5 border-b border-white/5">0.012 / 3.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0020 / 0.50</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Cave Spider</td><td class="px-4 py-2.5 border-b border-white/5">0.006 / 1.50</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0020 / 0.50</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Endermite</td><td class="px-4 py-2.5 border-b border-white/5">0.005 / 1.25</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0024 / 0.60</td><td class="px-4 py-2.5 border-b border-white/5">0.0 / 0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Silverfish</td><td class="px-4 py-2.5 border-b border-white/5">0.005 / 1.25</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0010 / 0.25</td><td class="px-4 py-2.5 border-b border-white/5">0.0 / 0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Drowned</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Husk</td><td class="px-4 py-2.5 border-b border-white/5">0.011 / 2.75</td><td class="px-4 py-2.5 border-b border-white/5">0.015 / 3.75</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.032 / 8.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Stray</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.012 / 3.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.020 / 5.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Pillager</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Vindicator</td><td class="px-4 py-2.5 border-b border-white/5">0.012 / 3.00</td><td class="px-4 py-2.5 border-b border-white/5">0.020 / 5.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.032 / 8.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Witch</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.00</td><td class="px-4 py-2.5 border-b border-white/5">0.008 / 2.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0008 / 0.20</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Wither Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">0.012 / 3.00</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Guardian</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0010 / 0.25</td><td class="px-4 py-2.5 border-b border-white/5">0.020 / 5.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Hoglin</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.00</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Zoglin</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.015 / 3.75</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Ravager</td><td class="px-4 py-2.5 border-b border-white/5">0.016 / 4.00</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0008 / 0.20</td><td class="px-4 py-2.5 border-b border-white/5">0.032 / 8.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Piglin</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.014 / 3.50</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Zombified Piglin</td><td class="px-4 py-2.5 border-b border-white/5">0.010 / 2.50</td><td class="px-4 py-2.5 border-b border-white/5">0.015 / 3.75</td><td class="px-4 py-2.5 border-b border-white/5">0.0012 / 0.30</td><td class="px-4 py-2.5 border-b border-white/5">0.024 / 6.0</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5">Bogged</td><td class="px-4 py-2.5">0.010 / 2.50</td><td class="px-4 py-2.5">0.012 / 3.00</td><td class="px-4 py-2.5">0.0012 / 0.30</td><td class="px-4 py-2.5">0.020 / 5.0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-ash text-sm mt-4">
+                <em>Rate</em> = stat gain per player level. <em>Cap</em> = maximum total factor from the time axis alone. Follow range and toughness are also scaled per-mob (see config for full values).
+            </p>
+        </section>
+
+        <!-- Tier-Gated Abilities -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="tier-abilities">
+            <h2 class="text-2xl font-bold mb-4">Tier-Gated Abilities</h2>
+            <p class="text-ash mb-6 max-w-3xl">
+                At five tier thresholds, mobs unlock special behaviors beyond raw stat boosts. Each ability can be individually toggled.
+            </p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Tier</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Level</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Abilities Unlocked</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">Tier 1</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">50</td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Zombie reinforcements, Creeper shorter fuse, Hoglin knockback resistance</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">Tier 2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">100</td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Skeleton sword switch, Spider/Cave Spider web placing, Drowned trident upgrade, Piglin crossbow</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">Tier 3</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">150</td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Zombie door-breaking, Spider crop trampling, Wither Skeleton sprint, Zoglin fire resistance</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">Tier 4</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">200</td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Skeleton flame arrows, Husk Hunger II, Wither Skeleton fire aspect, Vindicator damage resistance</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-ember/15 border border-ember/30 text-ember">Tier 5</span></td>
+                            <td class="px-4 py-2.5">250</td>
+                            <td class="px-4 py-2.5">Zombie sprinting, Creeper charged chance (25%), Spider leap attack, Zombified Piglin aggro range</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Zombie Variants -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="zombie-variants">
+            <h2 class="text-2xl font-bold mb-4">Zombie Variants</h2>
+            <p class="text-ash mb-6">
+                Zombies have a chance to spawn as special variants with distinct visual and mechanical differences.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Big Zombie</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        10% chance. Scaled up 1.3x in size with +10 bonus health and +2 bonus damage, but 0.7x movement speed. A lumbering tank.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Speed Zombie</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        10% chance. 1.3x movement speed but -10 health. Fast and fragile &mdash; ambush predator behavior.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Boss Scaling -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="boss-scaling">
+            <h2 class="text-2xl font-bold mb-4">Boss Scaling</h2>
+            <p class="text-ash mb-6 max-w-3xl">
+                Boss mobs (Ender Dragon, Wither, Elder Guardian, and any entity in the <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">c:bosses</code> tag) use a separate, gentler scaling formula.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Formula</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        Time factor: <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">level * bossTimeFactor / maxLevel</code>. Distance uses <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">bossDistanceFactor</code>. Height scaling is skipped entirely for bosses.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Defaults</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        Max factor: 3.0x. Time rate: 0.3. Distance rate: 0.1. Combined factor capped at <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">bossMaxFactor</code>. Works in all dimensions.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Death Relief -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="death-relief">
+            <h2 class="text-2xl font-bold mb-4">Death Relief</h2>
+            <p class="text-ash mb-4 max-w-3xl">
+                When you die, your player level decreases by 2 (configurable). This provides a natural difficulty rubber-band: dying frequently keeps your level in check, while surviving pushes the ceiling higher.
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>Default reduction: 2 levels per death</li>
+                <li>Cooldown: 6,000 ticks (5 minutes) between reductions</li>
+                <li>Will not reduce below <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">minimumLevel</code> (default: 0)</li>
+                <li>Can be disabled entirely</li>
+            </ul>
+        </section>
+
+        <!-- Shatter Shards -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="shatter-shards">
+            <h2 class="text-2xl font-bold mb-4">Shatter Shards</h2>
+            <p class="text-ash mb-4">
+                Rare item drops from scaled mobs that let you intentionally lower your difficulty level.
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>Drop chance: 0.5% per scaled mob kill (configurable)</li>
+                <li>Only drop when player is at level 25+ (configurable)</li>
+                <li>Consuming a shard reduces your level by 5</li>
+                <li>Applies mild debuffs: Slowness II, Mining Fatigue II, Weakness II for 10 seconds</li>
+            </ul>
+        </section>
+
+        <!-- Hardcore Hearts -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="hardcore-hearts">
+            <h2 class="text-2xl font-bold mb-4">
+                Hardcore Hearts
+                <span class="inline-block ml-2 px-2 py-0.5 text-xs font-semibold rounded bg-ember/15 border border-ember/30 text-ember align-middle">Opt-in</span>
+            </h2>
+            <p class="text-ash mb-4 max-w-3xl">
+                Disabled by default. When enabled, each death permanently reduces your maximum health.
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>Lose 2 half-hearts per death (configurable: 1&ndash;20)</li>
+                <li>Minimum health floor: 2 half-hearts (1 heart)</li>
+                <li>Restore hearts using <strong class="text-bone">Heart Fragment</strong> items (+2 half-hearts each)</li>
+                <li>Crafted from 4 Shatter Shards + 1 Golden Apple</li>
+                <li>Admin command to restore/reset hearts</li>
+            </ul>
+        </section>
+
+        <!-- Soul Inventory -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="soul-inventory">
+            <h2 class="text-2xl font-bold mb-4">
+                Soul Inventory
+                <span class="inline-block ml-2 px-2 py-0.5 text-xs font-semibold rounded bg-ember/15 border border-ember/30 text-ember align-middle">Opt-in</span>
+            </h2>
+            <p class="text-ash mb-4 max-w-3xl">
+                Disabled by default. When enabled, your inventory is destroyed on death unless items carry the <strong class="text-bone">Soulbound</strong> enchantment.
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>Enchantment ID: <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">tribulation:soulbound</code></li>
+                <li>Configurable to use any external enchantment ID</li>
+                <li>Option to also destroy XP on death</li>
+                <li>Respects the vanilla <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">keepInventory</code> gamerule when configured</li>
+                <li>Forces meaningful gear decisions &mdash; you cannot protect everything</li>
+            </ul>
+        </section>
+
+        <!-- Modded Mob Support -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="modded-mobs">
+            <h2 class="text-2xl font-bold mb-4">Modded Mob Support</h2>
+            <p class="text-ash mb-4 max-w-3xl">
+                Tribulation automatically scales any modded mob that extends <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">Monster</code> (hostile mob base class).
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>Applies zombie-equivalent health and damage scaling only (no speed/armor changes)</li>
+                <li>Can exclude entire mod namespaces via <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">excludedNamespaces</code></li>
+                <li>Can be overridden with full-ID entries in the scaling map for fine-tuning</li>
+                <li>Toggled via <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">unlistedHostileMobs.enabled</code></li>
+            </ul>
+        </section>
+
+        <!-- Extra XP & Loot -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="xp-loot">
+            <h2 class="text-2xl font-bold mb-4">Extra XP &amp; Loot</h2>
+            <p class="text-ash mb-4">
+                Scaled mobs reward more experience to compensate for their increased difficulty.
+            </p>
+            <ul class="text-ash space-y-2 ml-6 list-disc">
+                <li>XP multiplied by the mob's scaling factor, up to 2.0x (configurable)</li>
+                <li>Optional extra loot drops (disabled by default): each killed mob has a chance to drop an additional copy of its loot table</li>
+            </ul>
+        </section>
+
+        <!-- Stat Caps -->
+        <section class="mb-12" id="stat-caps">
+            <h2 class="text-2xl font-bold mb-4">Global Stat Caps</h2>
+            <p class="text-ash mb-6 max-w-3xl">
+                Hard ceilings on the total factor applied to each attribute, preventing infinite scaling regardless of axis combination:
+            </p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Attribute</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default Cap</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Health</td><td class="px-4 py-2.5 border-b border-white/5">4.0x</td><td class="px-4 py-2.5 border-b border-white/5">Maximum health multiplier from all axes combined</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Damage</td><td class="px-4 py-2.5 border-b border-white/5">4.5x</td><td class="px-4 py-2.5 border-b border-white/5">Maximum damage multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Speed</td><td class="px-4 py-2.5 border-b border-white/5">0.5x</td><td class="px-4 py-2.5 border-b border-white/5">Maximum speed bonus (additive to base)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5">Armor</td><td class="px-4 py-2.5 border-b border-white/5">2.0x</td><td class="px-4 py-2.5 border-b border-white/5">Maximum armor value multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5">Follow Range</td><td class="px-4 py-2.5">1.5x</td><td class="px-4 py-2.5">Maximum detection range multiplier</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-10 px-6 text-center mt-16">
+        <ul class="flex justify-center gap-8 flex-wrap list-none mb-4">
+            <li><a href="index.html" class="text-smoke text-sm hover:text-ash transition-colors">Home</a></li>
+            <li><a href="features.html" class="text-smoke text-sm hover:text-ash transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-smoke text-sm hover:text-ash transition-colors">Configuration</a></li>
+            <li><a href="commands.html" class="text-smoke text-sm hover:text-ash transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-smoke text-sm hover:text-ash transition-colors">GitHub</a></li>
+        </ul>
+        <p class="text-smoke text-xs">Tribulation &copy; 2025 rfizzle. Minecraft is a trademark of Mojang Studios.</p>
+    </footer>
+
+    <script>
+        (function() {
+            var toggle = document.getElementById('nav-toggle');
+            var menu = document.getElementById('mobile-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function() {
+                    var open = menu.classList.toggle('hidden');
+                    toggle.setAttribute('aria-expanded', !open);
+                });
+                menu.querySelectorAll('a').forEach(function(a) {
+                    a.addEventListener('click', function() {
+                        menu.classList.add('hidden');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commands — Tribulation</title>
+    <meta name="description" content="Complete command reference for the Tribulation Minecraft mod. All subcommands, permissions, and usage examples.">
+
+    <meta property="og:title" content="Commands �� Tribulation">
+    <meta property="og:description" content="Full command reference for /tribulation with permissions and examples.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tribulation.rfizzle.com/commands.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0a0a0a',
+                        card: '#1a1a1a',
+                        elevated: '#222222',
+                        crimson: { DEFAULT: '#DC143C', dark: '#8B0000' },
+                        ember: { DEFAULT: '#FF6B35', bright: '#FF4500' },
+                        bone: '#e8e0d4',
+                        ash: '#a89f93',
+                        smoke: '#6b6359',
+                    },
+                    fontFamily: {
+                        mono: ['SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Liberation Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-base text-bone antialiased leading-relaxed">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 h-16 bg-base/92 backdrop-blur-xl border-b border-white/5 flex items-center px-6">
+        <div class="flex items-center justify-between w-full max-w-6xl mx-auto">
+            <a href="index.html" class="text-xl font-bold nav-brand-gradient">Tribulation</a>
+            <button id="nav-toggle" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+            </button>
+            <ul id="nav-links" class="hidden md:flex items-center gap-8 list-none">
+                <li><a href="features.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Features</a></li>
+                <li><a href="config.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Config</a></li>
+                <li><a href="commands.html" class="text-crimson text-sm font-medium">Commands</a></li>
+                <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash text-sm font-medium hover:text-bone transition-colors">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="hidden md:hidden fixed top-16 inset-x-0 bg-base/95 backdrop-blur-xl border-b border-white/5 z-40">
+        <ul class="flex flex-col gap-4 p-6 list-none">
+            <li><a href="features.html" class="text-ash hover:text-bone transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-ash hover:text-bone transition-colors">Config</a></li>
+            <li><a href="commands.html" class="text-crimson">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash hover:text-bone transition-colors">GitHub</a></li>
+        </ul>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-6">
+        <header class="py-10 border-b border-white/5 mb-10">
+            <h1 class="page-header-gradient text-3xl md:text-4xl font-bold tracking-tight">Commands</h1>
+            <p class="text-ash mt-2 text-lg">All commands use the <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">/tribulation</code> root. Permission level 0 = any player, level 2 = operator.</p>
+        </header>
+
+        <!-- Command Table -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="command-reference">
+            <h2 class="text-2xl font-bold mb-6">Command Reference</h2>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Command</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Perm</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation info</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-elevated border border-white/10 text-ash">0</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Show your own level, tier, and progress to next level</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation hearts</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-elevated border border-white/10 text-ash">0</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Show your own heart penalty (Hardcore Hearts)</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation level &lt;player&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">View another player's level and time to next</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation set &lt;player&gt; &lt;level&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Set a player's difficulty level (clamped to maxLevel)</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation reset &lt;player&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Reset a player to level 0</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation reload</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Hot-reload the config file without restarting</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation config</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Print a summary of the current configuration</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation debug &lt;player&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Show detailed scaling breakdown for a player's position</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation inspect</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Inspect the mob you're looking at (within 10 blocks)</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation hearts &lt;player&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">View another player's heart penalty</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation hearts &lt;player&gt; restore &lt;n&gt;</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Restore lost half-hearts for a player</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">/tribulation hearts &lt;player&gt; reset</code></td>
+                            <td class="px-4 py-2.5 border-b border-white/5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5 border-b border-white/5">Clear all heart penalties for a player</td>
+                        </tr>
+                        <tr class="hover:bg-card/50">
+                            <td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">/tribulation inventory &lt;player&gt;</code></td>
+                            <td class="px-4 py-2.5"><span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-crimson/15 border border-crimson/30 text-crimson">2</span></td>
+                            <td class="px-4 py-2.5">Count soulbound items in a player's inventory</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Usage Examples -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="examples">
+            <h2 class="text-2xl font-bold mb-6">Usage Examples</h2>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Check your own status</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation info</code></pre>
+            <p class="text-ash text-sm mb-2">Output:</p>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-8"><code class="font-mono text-sm text-bone">=== Tribulation: Steve ===
+Level: 87 / 250 (tier 1)
+Progress: 54000 / 72000 ticks (15m until next level)</code></pre>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Set a player's level</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation set Alex 100</code></pre>
+            <p class="text-ash text-sm mb-8">Sets Alex to level 100, immediately changing the difficulty of mobs near them. Useful for testing or catching up a player who joined late.</p>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Debug scaling at a location</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation debug Steve</code></pre>
+            <p class="text-ash text-sm mb-2">Output:</p>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-8"><code class="font-mono text-sm text-bone">=== Debug: Steve ===
+Position: (1523.4, 34.0, -892.1) in minecraft:overworld
+Player level: 87  Tier: 1
+Distance from spawn: 1765.2 blocks  →  factor +0.255
+Height offset: -28.0 blocks  →  factor +0.093
+Time factors (reference mob: zombie):
+  health       rate=0.0100 cap=2.50  →  time +0.870, +dist +0.255, +height +0.093
+  damage       rate=0.0150 cap=3.75  →  time +1.305, +dist +0.255, +height +0.093
+  speed        rate=0.0012 cap=0.30  →  time +0.104 (time only)
+  follow_range rate=0.0100 cap=1.00  →  time +0.870 (time only)
+  armor        rate=0.0320 cap=8.00  →  time +2.784, +dist +0.255, +height +0.093
+  toughness    rate=0.0240 cap=6.00  →  time +2.088, +dist +0.255, +height +0.093</code></pre>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Inspect a mob</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation inspect</code></pre>
+            <p class="text-ash text-sm mb-8">Look at a mob within 10 blocks and run the command. Shows its type, HP, scaling factor, variant status, and all applied Tribulation modifiers.</p>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Manage Hardcore Hearts</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation hearts
+/tribulation hearts Alex
+/tribulation hearts Alex restore 4
+/tribulation hearts Alex reset</code></pre>
+            <p class="text-ash text-sm mb-8">Check, view, restore, or fully reset a player's permanent heart penalty.</p>
+
+            <h3 class="text-lg font-semibold mt-8 mb-3">Hot-reload config</h3>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto mb-2"><code class="font-mono text-sm text-bone">/tribulation reload</code></pre>
+            <p class="text-ash text-sm">Reloads <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">config/tribulation.json</code> without restarting the server. All new mobs will use updated values. Existing mobs keep their current modifiers until they despawn.</p>
+        </section>
+
+        <!-- Permission Notes -->
+        <section class="mb-12" id="permissions">
+            <h2 class="text-2xl font-bold mb-6">Permission Notes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Level 0 (Any Player)</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        <code class="font-mono text-xs text-ember">info</code> and <code class="font-mono text-xs text-ember">hearts</code> (self) are available to all players. They can only view their own data.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Level 2 (Operator)</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        All other commands require op level 2. This includes viewing other players' data, modifying levels, reloading config, and debug/inspect tools.
+                    </p>
+                </div>
+                <div class="bg-card border border-white/5 rounded-xl p-6 hover:border-crimson/30 transition-colors">
+                    <h3 class="text-lg font-semibold mb-2">Permissions Mods</h3>
+                    <p class="text-ash text-sm leading-relaxed">
+                        If you use a permissions mod (e.g., LuckPerms), the permission nodes follow the pattern <code class="font-mono text-xs text-ember">tribulation.command.&lt;subcommand&gt;</code>.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-10 px-6 text-center mt-16">
+        <ul class="flex justify-center gap-8 flex-wrap list-none mb-4">
+            <li><a href="index.html" class="text-smoke text-sm hover:text-ash transition-colors">Home</a></li>
+            <li><a href="features.html" class="text-smoke text-sm hover:text-ash transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-smoke text-sm hover:text-ash transition-colors">Configuration</a></li>
+            <li><a href="commands.html" class="text-smoke text-sm hover:text-ash transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-smoke text-sm hover:text-ash transition-colors">GitHub</a></li>
+        </ul>
+        <p class="text-smoke text-xs">Tribulation &copy; 2025 rfizzle. Minecraft is a trademark of Mojang Studios.</p>
+    </footer>
+
+    <script>
+        (function() {
+            var toggle = document.getElementById('nav-toggle');
+            var menu = document.getElementById('mobile-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function() {
+                    var open = menu.classList.toggle('hidden');
+                    toggle.setAttribute('aria-expanded', !open);
+                });
+                menu.querySelectorAll('a').forEach(function(a) {
+                    a.addEventListener('click', function() {
+                        menu.classList.add('hidden');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

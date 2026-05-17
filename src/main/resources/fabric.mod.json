@@ -1,0 +1,41 @@
+{
+    "schemaVersion": 1,
+    "id": "tribulation",
+    "version": "${version}",
+    "name": "Tribulation",
+    "description": "A comprehensive difficulty overhaul for Minecraft. Formula-driven mob scaling across time, distance, and height axes with opt-in death penalties and hardcore mechanics.",
+    "authors": ["rfizzle"],
+    "contact": {},
+    "license": "MIT",
+    "icon": "assets/tribulation/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": ["com.rfizzle.tribulation.Tribulation"],
+        "fabric-gametest": [
+            "com.rfizzle.tribulation.gametest.MobScalingGameTest",
+            "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest"
+        ],
+        "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
+        "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],
+        "emi": ["com.rfizzle.tribulation.compat.emi.EmiShardPlugin"],
+        "rei_client": ["com.rfizzle.tribulation.compat.rei.ReiShardPlugin"],
+        "jei_mod_plugin": ["com.rfizzle.tribulation.compat.jei.JeiShardPlugin"]
+    },
+    "suggests": {
+        "modmenu": "*",
+        "jade": "*",
+        "wthit": "*",
+        "emi": "*",
+        "roughlyenoughitems": "*",
+        "jei": "*"
+    },
+    "mixins": [
+        "tribulation.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.10",
+        "minecraft": "~1.21.1",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}

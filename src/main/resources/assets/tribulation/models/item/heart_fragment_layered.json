@@ -1,0 +1,7 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "minecraft:item/golden_apple",
+        "layer1": "tribulation:item/heart_fragment_overlay"
+    }
+}

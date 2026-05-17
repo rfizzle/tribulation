@@ -1,0 +1,12 @@
+{
+    "tribulation:wthit": {
+        "entrypoints": {
+            "common": "com.rfizzle.tribulation.compat.wthit.WthitCommonPlugin",
+            "client": "com.rfizzle.tribulation.compat.wthit.WthitClientPlugin"
+        },
+        "side": "*",
+        "required": {
+            "wthit": "*"
+        }
+    }
+}

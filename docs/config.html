@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration — Tribulation</title>
+    <meta name="description" content="Complete configuration reference for the Tribulation difficulty mod. All config keys, defaults, and example JSON.">
+
+    <meta property="og:title" content="Configuration — Tribulation">
+    <meta property="og:description" content="Full config reference for tribulation.json with all sections, keys, and defaults.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tribulation.rfizzle.com/config.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#0a0a0a',
+                        card: '#1a1a1a',
+                        elevated: '#222222',
+                        crimson: { DEFAULT: '#DC143C', dark: '#8B0000' },
+                        ember: { DEFAULT: '#FF6B35', bright: '#FF4500' },
+                        bone: '#e8e0d4',
+                        ash: '#a89f93',
+                        smoke: '#6b6359',
+                    },
+                    fontFamily: {
+                        mono: ['SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', 'Liberation Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-base text-bone antialiased leading-relaxed">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 h-16 bg-base/92 backdrop-blur-xl border-b border-white/5 flex items-center px-6">
+        <div class="flex items-center justify-between w-full max-w-6xl mx-auto">
+            <a href="index.html" class="text-xl font-bold nav-brand-gradient">Tribulation</a>
+            <button id="nav-toggle" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+                <span class="block w-6 h-0.5 bg-bone rounded"></span>
+            </button>
+            <ul id="nav-links" class="hidden md:flex items-center gap-8 list-none">
+                <li><a href="features.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Features</a></li>
+                <li><a href="config.html" class="text-crimson text-sm font-medium">Config</a></li>
+                <li><a href="commands.html" class="text-ash text-sm font-medium hover:text-bone transition-colors">Commands</a></li>
+                <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash text-sm font-medium hover:text-bone transition-colors">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="hidden md:hidden fixed top-16 inset-x-0 bg-base/95 backdrop-blur-xl border-b border-white/5 z-40">
+        <ul class="flex flex-col gap-4 p-6 list-none">
+            <li><a href="features.html" class="text-ash hover:text-bone transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-crimson">Config</a></li>
+            <li><a href="commands.html" class="text-ash hover:text-bone transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-ash hover:text-bone transition-colors">GitHub</a></li>
+        </ul>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-6">
+        <header class="py-10 border-b border-white/5 mb-10">
+            <h1 class="page-header-gradient text-3xl md:text-4xl font-bold tracking-tight">Configuration Reference</h1>
+            <p class="text-ash mt-2 text-lg">All settings live in <code class="font-mono text-sm bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">config/tribulation.json</code>. Auto-generated on first launch with defaults.</p>
+        </header>
+
+        <!-- general -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="general">
+            <h2 class="text-2xl font-bold mb-4">general</h2>
+            <p class="text-ash mb-4">Core settings that control the overall scaling system.</p>
+            <div class="overflow-x-auto rounded-lg mb-4">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10 whitespace-nowrap">Key</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th>
+                            <th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxLevel</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">250</td><td class="px-4 py-2.5 border-b border-white/5">Maximum player difficulty level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">levelUpTicks</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">72000</td><td class="px-4 py-2.5 border-b border-white/5">Ticks of playtime per level (72000 = 1 hour)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">mobDetectionRange</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">32.0</td><td class="px-4 py-2.5 border-b border-white/5">Range (blocks) to find nearest player for scaling</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">excludedEntities</code></td><td class="px-4 py-2.5 border-b border-white/5">string[]</td><td class="px-4 py-2.5 border-b border-white/5">[]</td><td class="px-4 py-2.5 border-b border-white/5">Entity IDs exempt from all scaling</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">notifyLevelUp</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Show chat message on level up</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">notifyLevelUpShowTier</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Include tier info in level-up notification</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "general": {
+    "maxLevel": 250,
+    "levelUpTicks": 72000,
+    "mobDetectionRange": 32.0,
+    "excludedEntities": [],
+    "notifyLevelUp": true,
+    "notifyLevelUpShowTier": true
+  }
+}</code></pre>
+        </section>
+
+        <!-- timeScaling -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="time-scaling">
+            <h2 class="text-2xl font-bold mb-4">timeScaling</h2>
+            <p class="text-ash mb-4">Toggle for the time/level scaling axis.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Whether player level affects mob stats</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- distanceScaling -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="distance-scaling">
+            <h2 class="text-2xl font-bold mb-4">distanceScaling</h2>
+            <p class="text-ash mb-4">Controls how horizontal distance from world spawn boosts mob stats.</p>
+            <div class="overflow-x-auto rounded-lg mb-4">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable distance scaling axis</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">startingDistance</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">1000</td><td class="px-4 py-2.5 border-b border-white/5">Blocks from spawn before scaling begins</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">increasingDistance</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">300</td><td class="px-4 py-2.5 border-b border-white/5">Blocks per additional factor step</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">distanceFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.1</td><td class="px-4 py-2.5 border-b border-white/5">Factor added per step</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxDistanceFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">1.5</td><td class="px-4 py-2.5 border-b border-white/5">Maximum distance factor</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">excludeInOtherDimensions</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Only apply in the Overworld</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "distanceScaling": {
+    "enabled": true,
+    "startingDistance": 1000,
+    "increasingDistance": 300,
+    "distanceFactor": 0.1,
+    "maxDistanceFactor": 1.5,
+    "excludeInOtherDimensions": true
+  }
+}</code></pre>
+        </section>
+
+        <!-- heightScaling -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="height-scaling">
+            <h2 class="text-2xl font-bold mb-4">heightScaling</h2>
+            <p class="text-ash mb-4">Controls how Y-level deviation from sea level boosts mob stats.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable height scaling axis</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">startingHeight</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">62</td><td class="px-4 py-2.5 border-b border-white/5">Y-level baseline (sea level)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">heightDistance</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">30</td><td class="px-4 py-2.5 border-b border-white/5">Blocks of Y deviation per step</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">heightFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.1</td><td class="px-4 py-2.5 border-b border-white/5">Factor added per step</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxHeightFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.5</td><td class="px-4 py-2.5 border-b border-white/5">Maximum height factor</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">positiveHeightScaling</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Scale mobs above baseline</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">negativeHeightScaling</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Scale mobs below baseline</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">excludeInOtherDimensions</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Only apply in the Overworld</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- statCaps -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="stat-caps">
+            <h2 class="text-2xl font-bold mb-4">statCaps</h2>
+            <p class="text-ash mb-4">Hard ceilings on the total scaling factor for each attribute (all axes combined).</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxFactorHealth</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">4.0</td><td class="px-4 py-2.5 border-b border-white/5">Max health multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxFactorDamage</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">4.5</td><td class="px-4 py-2.5 border-b border-white/5">Max damage multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxFactorSpeed</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.5</td><td class="px-4 py-2.5 border-b border-white/5">Max speed bonus</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxFactorProtection</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">2.0</td><td class="px-4 py-2.5 border-b border-white/5">Max armor multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">maxFactorFollowRange</code></td><td class="px-4 py-2.5">double</td><td class="px-4 py-2.5">1.5</td><td class="px-4 py-2.5">Max follow range multiplier</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- deathRelief -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="death-relief">
+            <h2 class="text-2xl font-bold mb-4">deathRelief</h2>
+            <p class="text-ash mb-4">Level reduction on death acts as a natural difficulty rubber-band.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable death level reduction</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">amount</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">2</td><td class="px-4 py-2.5 border-b border-white/5">Levels lost per death</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">cooldownTicks</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">6000</td><td class="px-4 py-2.5 border-b border-white/5">Ticks between reductions</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">minimumLevel</code></td><td class="px-4 py-2.5">int</td><td class="px-4 py-2.5">0</td><td class="px-4 py-2.5">Level floor (will not reduce below this)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- shards -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="shards">
+            <h2 class="text-2xl font-bold mb-4">shards</h2>
+            <p class="text-ash mb-4">Shatter Shard drop and use configuration.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable shard drops</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">dropStartLevel</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">25</td><td class="px-4 py-2.5 border-b border-white/5">Minimum player level for shards to drop</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">shardPower</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">5</td><td class="px-4 py-2.5 border-b border-white/5">Levels reduced when consuming a shard</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">dropChance</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.005</td><td class="px-4 py-2.5 border-b border-white/5">Drop probability per kill (0.0&ndash;1.0)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">sideEffects</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Apply debuffs on shard use</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- hardcoreHearts -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="hardcore-hearts">
+            <h2 class="text-2xl font-bold mb-4">hardcoreHearts</h2>
+            <p class="text-ash mb-4">Permanent max-health reduction on death. Disabled by default.</p>
+            <div class="overflow-x-auto rounded-lg mb-4">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">false</td><td class="px-4 py-2.5 border-b border-white/5">Enable hardcore hearts system</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">heartsLostPerDeath</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">2</td><td class="px-4 py-2.5 border-b border-white/5">Half-hearts lost per death (1&ndash;20)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">minimumHearts</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">2</td><td class="px-4 py-2.5 border-b border-white/5">Minimum half-hearts (floor)</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">heartsRestoredPerFragment</code></td><td class="px-4 py-2.5">int</td><td class="px-4 py-2.5">2</td><td class="px-4 py-2.5">Half-hearts restored per Heart Fragment</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "hardcoreHearts": {
+    "enabled": false,
+    "heartsLostPerDeath": 2,
+    "minimumHearts": 2,
+    "heartsRestoredPerFragment": 2
+  }
+}</code></pre>
+        </section>
+
+        <!-- soulInventory -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="soul-inventory">
+            <h2 class="text-2xl font-bold mb-4">soulInventory</h2>
+            <p class="text-ash mb-4">Inventory destruction on death. Disabled by default.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">false</td><td class="px-4 py-2.5 border-b border-white/5">Enable soul inventory system</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">soulboundEnchantment</code></td><td class="px-4 py-2.5 border-b border-white/5">string</td><td class="px-4 py-2.5 border-b border-white/5">"tribulation:soulbound"</td><td class="px-4 py-2.5 border-b border-white/5">Enchantment ID that protects items</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">destroyXp</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">false</td><td class="px-4 py-2.5 border-b border-white/5">Also destroy XP on death</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">respectKeepInventory</code></td><td class="px-4 py-2.5">boolean</td><td class="px-4 py-2.5">true</td><td class="px-4 py-2.5">Skip destruction if keepInventory is on</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- scaling (per-mob) -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="scaling">
+            <h2 class="text-2xl font-bold mb-4">scaling</h2>
+            <p class="text-ash mb-4">Per-mob scaling rates and caps. Keyed by mob path (e.g., "zombie") or full ID (e.g., "mymod:custom_mob").</p>
+            <div class="overflow-x-auto rounded-lg mb-4">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default (Zombie)</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">healthRate</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.010</td><td class="px-4 py-2.5 border-b border-white/5">Health factor gained per level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">healthCap</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">2.50</td><td class="px-4 py-2.5 border-b border-white/5">Max time-axis health factor</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">damageRate</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.015</td><td class="px-4 py-2.5 border-b border-white/5">Damage factor per level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">damageCap</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">3.75</td><td class="px-4 py-2.5 border-b border-white/5">Max time-axis damage factor</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">speedRate</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.0012</td><td class="px-4 py-2.5 border-b border-white/5">Speed factor per level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">speedCap</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.30</td><td class="px-4 py-2.5 border-b border-white/5">Max time-axis speed factor</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">armorRate</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.032</td><td class="px-4 py-2.5 border-b border-white/5">Armor factor per level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">armorCap</code></td><td class="px-4 py-2.5">double</td><td class="px-4 py-2.5">8.0</td><td class="px-4 py-2.5">Max armor factor</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "scaling": {
+    "zombie": {
+      "healthRate": 0.010, "healthCap": 2.50,
+      "damageRate": 0.015, "damageCap": 3.75,
+      "speedRate": 0.0012, "speedCap": 0.30,
+      "armorRate": 0.032, "armorCap": 8.0
+    }
+  }
+}</code></pre>
+        </section>
+
+        <!-- unlistedHostileMobs -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="unlisted-hostile-mobs">
+            <h2 class="text-2xl font-bold mb-4">unlistedHostileMobs</h2>
+            <p class="text-ash mb-4">Fallback scaling for modded mobs extending Monster not in the scaling map.</p>
+            <div class="overflow-x-auto rounded-lg mb-4">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Apply fallback scaling</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">excludedNamespaces</code></td><td class="px-4 py-2.5 border-b border-white/5">string[]</td><td class="px-4 py-2.5 border-b border-white/5">[]</td><td class="px-4 py-2.5 border-b border-white/5">Mod namespaces to exclude</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">scaling</code></td><td class="px-4 py-2.5">MobScaling</td><td class="px-4 py-2.5">(zombie health+damage)</td><td class="px-4 py-2.5">Scaling values for unlisted mobs</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "unlistedHostileMobs": {
+    "enabled": true,
+    "excludedNamespaces": ["bosses_of_mass_destruction"],
+    "scaling": {
+      "healthRate": 0.010, "healthCap": 2.50,
+      "damageRate": 0.015, "damageCap": 3.75,
+      "speedRate": 0.0, "speedCap": 0.0
+    }
+  }
+}</code></pre>
+        </section>
+
+        <!-- specialZombies -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="special-zombies">
+            <h2 class="text-2xl font-bold mb-4">specialZombies</h2>
+            <p class="text-ash mb-4">Zombie variant spawn configuration.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">enabled</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable zombie variants</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">bigZombieChance</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">10</td><td class="px-4 py-2.5 border-b border-white/5">Percent chance for big variant</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">bigZombieSize</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">1.3</td><td class="px-4 py-2.5 border-b border-white/5">Scale multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">speedZombieChance</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">10</td><td class="px-4 py-2.5 border-b border-white/5">Percent chance for speed variant</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">speedZombieSpeedFactor</code></td><td class="px-4 py-2.5">double</td><td class="px-4 py-2.5">1.3</td><td class="px-4 py-2.5">Speed multiplier for speed zombies</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- bosses -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="bosses">
+            <h2 class="text-2xl font-bold mb-4">bosses</h2>
+            <p class="text-ash mb-4">Boss mob scaling uses a separate, gentler formula.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">affectBosses</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable boss scaling</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">bossMaxFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">3.0</td><td class="px-4 py-2.5 border-b border-white/5">Maximum total factor for bosses</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">bossDistanceFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.1</td><td class="px-4 py-2.5 border-b border-white/5">Distance scaling rate for bosses</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">bossTimeFactor</code></td><td class="px-4 py-2.5">double</td><td class="px-4 py-2.5">0.3</td><td class="px-4 py-2.5">Time scaling rate for bosses</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- xpAndLoot -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="xp-and-loot">
+            <h2 class="text-2xl font-bold mb-4">xpAndLoot</h2>
+            <p class="text-ash mb-4">Rewards for killing scaled mobs.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">extraXp</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">true</td><td class="px-4 py-2.5 border-b border-white/5">Enable XP bonus scaling</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">maxXpFactor</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">2.0</td><td class="px-4 py-2.5 border-b border-white/5">Maximum XP multiplier</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">dropMoreLoot</code></td><td class="px-4 py-2.5 border-b border-white/5">boolean</td><td class="px-4 py-2.5 border-b border-white/5">false</td><td class="px-4 py-2.5 border-b border-white/5">Enable extra loot drops</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">moreLootChance</code></td><td class="px-4 py-2.5 border-b border-white/5">double</td><td class="px-4 py-2.5 border-b border-white/5">0.02</td><td class="px-4 py-2.5 border-b border-white/5">Base extra loot chance per level</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">maxLootChance</code></td><td class="px-4 py-2.5">double</td><td class="px-4 py-2.5">0.7</td><td class="px-4 py-2.5">Maximum extra loot probability</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- tiers -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="tiers">
+            <h2 class="text-2xl font-bold mb-4">tiers</h2>
+            <p class="text-ash mb-4">Level thresholds for ability tiers.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Type</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Default</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Description</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">tier1</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">50</td><td class="px-4 py-2.5 border-b border-white/5">Level for Tier 1 abilities</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">tier2</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">100</td><td class="px-4 py-2.5 border-b border-white/5">Level for Tier 2</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">tier3</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">150</td><td class="px-4 py-2.5 border-b border-white/5">Level for Tier 3</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">tier4</code></td><td class="px-4 py-2.5 border-b border-white/5">int</td><td class="px-4 py-2.5 border-b border-white/5">200</td><td class="px-4 py-2.5 border-b border-white/5">Level for Tier 4</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">tier5</code></td><td class="px-4 py-2.5">int</td><td class="px-4 py-2.5">250</td><td class="px-4 py-2.5">Level for Tier 5</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- mobToggles -->
+        <section class="mb-12 pb-12 border-b border-white/5" id="mob-toggles">
+            <h2 class="text-2xl font-bold mb-4">mobToggles</h2>
+            <p class="text-ash mb-4">Per-mob on/off switches. Set to <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">false</code> to completely disable scaling for a specific mob type.</p>
+            <pre class="bg-[#1a1215] border border-[#2a1a1e] rounded-lg px-6 py-4 overflow-x-auto"><code class="font-mono text-sm text-bone">{
+  "mobToggles": {
+    "zombie": true,
+    "skeleton": true,
+    "creeper": true,
+    "spider": true,
+    "cave_spider": true,
+    "endermite": true,
+    "silverfish": true,
+    "drowned": true,
+    "husk": true,
+    "stray": true,
+    "pillager": true,
+    "vindicator": true,
+    "witch": true,
+    "wither_skeleton": true,
+    "guardian": true,
+    "hoglin": true,
+    "zoglin": true,
+    "ravager": true,
+    "piglin": true,
+    "zombified_piglin": true,
+    "bogged": true
+  }
+}</code></pre>
+        </section>
+
+        <!-- abilities -->
+        <section class="mb-12" id="abilities">
+            <h2 class="text-2xl font-bold mb-4">abilities</h2>
+            <p class="text-ash mb-4">Toggle individual tier-gated abilities on or off. All default to <code class="font-mono text-xs bg-[#1a1215] border border-[#2a1a1e] px-1.5 py-0.5 rounded text-ember">true</code>.</p>
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-elevated">
+                        <tr><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Key</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Mob</th><th class="text-left px-4 py-3 font-semibold text-bone border-b-2 border-white/10">Behavior</th></tr>
+                    </thead>
+                    <tbody class="text-ash">
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">zombieReinforcements</code></td><td class="px-4 py-2.5 border-b border-white/5">Zombie</td><td class="px-4 py-2.5 border-b border-white/5">Call nearby zombies when hit</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">zombieDoorBreaking</code></td><td class="px-4 py-2.5 border-b border-white/5">Zombie</td><td class="px-4 py-2.5 border-b border-white/5">Break wooden doors</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">zombieSprinting</code></td><td class="px-4 py-2.5 border-b border-white/5">Zombie</td><td class="px-4 py-2.5 border-b border-white/5">Sprint toward targets</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">creeperShorterFuse</code></td><td class="px-4 py-2.5 border-b border-white/5">Creeper</td><td class="px-4 py-2.5 border-b border-white/5">Reduced detonation delay</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">creeperCharged</code></td><td class="px-4 py-2.5 border-b border-white/5">Creeper</td><td class="px-4 py-2.5 border-b border-white/5">Spawn already charged</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">skeletonSwordSwitch</code></td><td class="px-4 py-2.5 border-b border-white/5">Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">Switch to melee at close range</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">skeletonFlameArrows</code></td><td class="px-4 py-2.5 border-b border-white/5">Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">Fire flaming arrows</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">spiderWebPlacing</code></td><td class="px-4 py-2.5 border-b border-white/5">Spider</td><td class="px-4 py-2.5 border-b border-white/5">Place cobwebs near targets</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">spiderCropTrample</code></td><td class="px-4 py-2.5 border-b border-white/5">Spider</td><td class="px-4 py-2.5 border-b border-white/5">Destroy crops while chasing</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">spiderLeapAttack</code></td><td class="px-4 py-2.5 border-b border-white/5">Spider</td><td class="px-4 py-2.5 border-b border-white/5">Leap attack at range</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">huskHunger</code></td><td class="px-4 py-2.5 border-b border-white/5">Husk</td><td class="px-4 py-2.5 border-b border-white/5">Apply hunger effect on hit</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">witherSkeletonSprint</code></td><td class="px-4 py-2.5 border-b border-white/5">Wither Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">Sprint toward targets</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">witherSkeletonFireAspect</code></td><td class="px-4 py-2.5 border-b border-white/5">Wither Skeleton</td><td class="px-4 py-2.5 border-b border-white/5">Set targets on fire</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">drownedTrident</code></td><td class="px-4 py-2.5 border-b border-white/5">Drowned</td><td class="px-4 py-2.5 border-b border-white/5">Always carry and throw trident</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">hoglinKnockbackResist</code></td><td class="px-4 py-2.5 border-b border-white/5">Hoglin</td><td class="px-4 py-2.5 border-b border-white/5">Resist knockback</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">zoglinFireResist</code></td><td class="px-4 py-2.5 border-b border-white/5">Zoglin</td><td class="px-4 py-2.5 border-b border-white/5">Resist fire damage</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">vindicatorResistance</code></td><td class="px-4 py-2.5 border-b border-white/5">Vindicator</td><td class="px-4 py-2.5 border-b border-white/5">Damage resistance effect</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5 border-b border-white/5"><code class="font-mono text-xs text-ember">zombifiedPiglinAggro</code></td><td class="px-4 py-2.5 border-b border-white/5">Zombified Piglin</td><td class="px-4 py-2.5 border-b border-white/5">Always hostile</td></tr>
+                        <tr class="hover:bg-card/50"><td class="px-4 py-2.5"><code class="font-mono text-xs text-ember">piglinCrossbow</code></td><td class="px-4 py-2.5">Piglin</td><td class="px-4 py-2.5">Enhanced crossbow behavior</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-10 px-6 text-center mt-16">
+        <ul class="flex justify-center gap-8 flex-wrap list-none mb-4">
+            <li><a href="index.html" class="text-smoke text-sm hover:text-ash transition-colors">Home</a></li>
+            <li><a href="features.html" class="text-smoke text-sm hover:text-ash transition-colors">Features</a></li>
+            <li><a href="config.html" class="text-smoke text-sm hover:text-ash transition-colors">Configuration</a></li>
+            <li><a href="commands.html" class="text-smoke text-sm hover:text-ash transition-colors">Commands</a></li>
+            <li><a href="https://github.com/rfizzle/tribulation" target="_blank" rel="noopener" class="text-smoke text-sm hover:text-ash transition-colors">GitHub</a></li>
+        </ul>
+        <p class="text-smoke text-xs">Tribulation &copy; 2025 rfizzle. Minecraft is a trademark of Mojang Studios.</p>
+    </footer>
+
+    <script>
+        (function() {
+            var toggle = document.getElementById('nav-toggle');
+            var menu = document.getElementById('mobile-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function() {
+                    var open = menu.classList.toggle('hidden');
+                    toggle.setAttribute('aria-expanded', !open);
+                });
+                menu.querySelectorAll('a').forEach(function(a) {
+                    a.addEventListener('click', function() {
+                        menu.classList.add('hidden');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

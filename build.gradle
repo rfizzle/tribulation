@@ -10,16 +10,16 @@ tasks.register('printVersion') {
 }
 
 // Derives a SemVer-compliant version from `mod_version` plus the git state:
-//   - exact tag match (e.g. HEAD == tribulation-v0.2.0) → "0.2.0"
-//   - exact tag, dirty tree                                  → "0.2.0+dirty"
-//   - N commits past the last matching tag                   → "0.2.0+N.gSHA[.dirty]"
-//   - no matching tag yet                                    → "0.2.0+gSHA[.dirty]"
-//   - git unavailable or describe fails                      → "0.2.0"
+//   - exact tag match (e.g. HEAD == v0.2.0) → "0.2.0"
+//   - exact tag, dirty tree                      → "0.2.0+dirty"
+//   - N commits past the last matching tag       → "0.2.0+N.gSHA[.dirty]"
+//   - no matching tag yet                        → "0.2.0+gSHA[.dirty]"
+//   - git unavailable or describe fails          → "0.2.0"
 // The base ("0.2.0") comes from gradle.properties and is bumped via
-// scripts/companion-release.sh. Tag pattern is `<archives_base_name>-v*`.
+// scripts/release.sh. Tag pattern is `v*`.
 def computeModVersion() {
     def base = project.mod_version
-    def tagPrefix = "${project.archives_base_name}-v"
+    def tagPrefix = "v"
     def described = runGitDescribe(tagPrefix)
     if (described == null || described.isEmpty()) {
         return base

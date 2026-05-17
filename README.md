@@ -1,6 +1,8 @@
-# Tribulation
+<p align="center">
+  <img src="logo.png" alt="Tribulation" width="400">
+</p>
 
-**A comprehensive difficulty overhaul for Minecraft 1.21.1 Fabric.**
+<p align="center"><strong>A comprehensive difficulty overhaul for Minecraft 1.21.1 Fabric.</strong></p>
 
 Tribulation transforms Minecraft's flat difficulty curve into an escalating gauntlet. Mobs grow stronger as you play longer, venture further from spawn, and delve deeper underground. Beyond raw stat scaling, the mod layers in tier-gated mob abilities, opt-in permanent death penalties, and inventory risk mechanics — all configurable, all formula-driven, zero external dependencies.
 

@@ -81,7 +81,7 @@ git -C "$PROJECT_ROOT" add gradle.properties
 git -C "$PROJECT_ROOT" commit -m "chore: bump version to $NEW_VERSION"
 
 # --- Git tag ---
-TAG="tribulation-v$NEW_VERSION"
+TAG="v$NEW_VERSION"
 echo "Creating tag: $TAG"
 git -C "$PROJECT_ROOT" tag "$TAG"
 

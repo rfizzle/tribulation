@@ -25,6 +25,7 @@ public class ModMenuIntegration implements ModMenuApi {
             ConfigEntryBuilder entry = builder.entryBuilder();
 
             addGeneral(builder, entry, current);
+            addHud(builder, entry, current);
             addScalingSources(builder, entry, current);
             addStatCaps(builder, entry, current);
             addTiers(builder, entry, current);
@@ -79,6 +80,37 @@ public class ModMenuIntegration implements ModMenuApi {
                         config.general.notifyLevelUpShowTier)
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.general.notifyLevelUpShowTier = v)
+                .build());
+    }
+
+    private static void addHud(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.hud"));
+        TribulationConfig.Hud hud = config.hud;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.hud.enabled"),
+                        hud.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> hud.enabled = v)
+                .build());
+        cat.addEntry(entry.startSelector(
+                        Component.translatable("config.tribulation.hud.anchor"),
+                        TribulationConfig.AnchorPosition.values(),
+                        hud.anchor)
+                .setDefaultValue(TribulationConfig.AnchorPosition.TOP_LEFT)
+                .setSaveConsumer(v -> hud.anchor = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.hud.offset_x"),
+                        hud.offsetX)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> hud.offsetX = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.hud.offset_y"),
+                        hud.offsetY)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> hud.offsetY = v)
                 .build());
     }
 

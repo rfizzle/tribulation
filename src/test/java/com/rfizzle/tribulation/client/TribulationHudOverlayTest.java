@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class TribulationHudOverlayTest {
 
+    private static final int SAMPLE_ELEMENT_WIDTH = 30;
+    private static final int SAMPLE_ELEMENT_HEIGHT = 15;
+
     private static TribulationConfig.Hud hudWith(AnchorPosition anchor, int offsetX, int offsetY) {
         TribulationConfig.Hud hud = new TribulationConfig.Hud();
         hud.anchor = anchor;
@@ -20,57 +23,70 @@ class TribulationHudOverlayTest {
         return hud;
     }
 
+    // ---- Position tests ----
+
     @Test
     void computeX_topLeft_returnsOffsetX() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 4, 4);
-        assertEquals(4, TribulationHudOverlay.computeX(hud, 800));
+        assertEquals(4, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
     }
 
     @Test
-    void computeX_topRight_returnsScreenWidthMinusShieldMinusOffset() {
+    void computeX_topRight_anchorsFromRight() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_RIGHT, 4, 4);
-        // SHIELD_SIZE = 16, so 800 - 16 - 4 = 780
-        assertEquals(780, TribulationHudOverlay.computeX(hud, 800));
+        // 800 - 30 - 4 = 766
+        assertEquals(766, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
     }
 
     @Test
     void computeX_bottomLeft_returnsOffsetX() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_LEFT, 10, 10);
-        assertEquals(10, TribulationHudOverlay.computeX(hud, 1920));
+        assertEquals(10, TribulationHudOverlay.computeX(hud, 1920, SAMPLE_ELEMENT_WIDTH));
     }
 
     @Test
-    void computeX_bottomRight_returnsScreenWidthMinusShieldMinusOffset() {
+    void computeX_bottomRight_anchorsFromRight() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_RIGHT, 8, 8);
-        // 1920 - 16 - 8 = 1896
-        assertEquals(1896, TribulationHudOverlay.computeX(hud, 1920));
+        // 1920 - 30 - 8 = 1882
+        assertEquals(1882, TribulationHudOverlay.computeX(hud, 1920, SAMPLE_ELEMENT_WIDTH));
     }
 
     @Test
     void computeY_topLeft_returnsOffsetY() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 4, 4);
-        assertEquals(4, TribulationHudOverlay.computeY(hud, 600));
+        assertEquals(4, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
     }
 
     @Test
     void computeY_topRight_returnsOffsetY() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_RIGHT, 4, 8);
-        assertEquals(8, TribulationHudOverlay.computeY(hud, 600));
+        assertEquals(8, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
     }
 
     @Test
-    void computeY_bottomLeft_returnsScreenHeightMinusShieldMinusOffset() {
+    void computeY_bottomLeft_anchorsFromBottom() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_LEFT, 4, 4);
-        // 600 - 16 - 4 = 580
-        assertEquals(580, TribulationHudOverlay.computeY(hud, 600));
+        // 600 - 15 - 4 = 581
+        assertEquals(581, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
     }
 
     @Test
-    void computeY_bottomRight_returnsScreenHeightMinusShieldMinusOffset() {
+    void computeY_bottomRight_anchorsFromBottom() {
         TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_RIGHT, 4, 10);
-        // 1080 - 16 - 10 = 1054
-        assertEquals(1054, TribulationHudOverlay.computeY(hud, 1080));
+        // 1080 - 15 - 10 = 1055
+        assertEquals(1055, TribulationHudOverlay.computeY(hud, 1080, SAMPLE_ELEMENT_HEIGHT));
     }
+
+    @Test
+    void computeX_zeroOffset_touchesEdge() {
+        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 0, 0);
+        assertEquals(0, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
+
+        TribulationConfig.Hud hudR = hudWith(AnchorPosition.TOP_RIGHT, 0, 0);
+        assertEquals(800 - SAMPLE_ELEMENT_WIDTH, TribulationHudOverlay.computeX(hudR, 800, SAMPLE_ELEMENT_WIDTH));
+    }
+
+    // ---- Color tests ----
 
     @ParameterizedTest
     @CsvSource({
@@ -142,8 +158,6 @@ class TribulationHudOverlayTest {
         long recentTimestamp = System.currentTimeMillis() - 100;
         int color = TribulationHudOverlay.getTextColor(0, recentTimestamp);
         int tierColor = TribulationHudOverlay.getTierColor(0);
-        // During animation, color should differ from the resting tier color
-        // (unless the gold and tier color happen to be identical, which they're not for tier 0)
         assertNotEquals(tierColor, color);
     }
 

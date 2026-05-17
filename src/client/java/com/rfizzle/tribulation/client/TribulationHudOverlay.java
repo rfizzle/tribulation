@@ -13,7 +13,10 @@ public final class TribulationHudOverlay implements HudRenderCallback {
     private static final ResourceLocation SHIELD_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "textures/gui/tribulation_shield.png");
 
-    private static final int SHIELD_SIZE = 16;
+    static final int ICON_SIZE = 9;
+    private static final int PADDING = 3;
+    private static final int ICON_TEXT_GAP = 2;
+    private static final int BG_COLOR = 0x80000000;
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
 
@@ -40,35 +43,43 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);
+        String text = String.valueOf(level);
+        int textWidth = mc.font.width(text);
+        int textHeight = mc.font.lineHeight;
+
+        int contentWidth = ICON_SIZE + ICON_TEXT_GAP + textWidth;
+        int contentHeight = Math.max(ICON_SIZE, textHeight);
+        int totalWidth = contentWidth + PADDING * 2;
+        int totalHeight = contentHeight + PADDING * 2;
 
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
 
-        int x = computeX(config.hud, screenWidth);
-        int y = computeY(config.hud, screenHeight);
+        int bgX = computeX(config.hud, screenWidth, totalWidth);
+        int bgY = computeY(config.hud, screenHeight, totalHeight);
 
-        graphics.blit(SHIELD_TEXTURE, x, y, 0, 0, SHIELD_SIZE, SHIELD_SIZE, SHIELD_SIZE, SHIELD_SIZE);
+        graphics.fill(bgX, bgY, bgX + totalWidth, bgY + totalHeight, BG_COLOR);
 
-        String text = String.valueOf(level);
-        int textWidth = mc.font.width(text);
-        int textX = x + (SHIELD_SIZE - textWidth) / 2;
-        int textY = y + (SHIELD_SIZE - mc.font.lineHeight) / 2 + 1;
+        int iconX = bgX + PADDING;
+        int iconY = bgY + PADDING + (contentHeight - ICON_SIZE) / 2;
+        graphics.blit(SHIELD_TEXTURE, iconX, iconY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
+        int textX = iconX + ICON_SIZE + ICON_TEXT_GAP;
+        int textY = bgY + PADDING + (contentHeight - textHeight) / 2 + 1;
         int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
-
         graphics.drawString(mc.font, text, textX, textY, color, true);
     }
 
-    static int computeX(TribulationConfig.Hud hud, int screenWidth) {
+    static int computeX(TribulationConfig.Hud hud, int screenWidth, int elementWidth) {
         return switch (hud.anchor) {
-            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - SHIELD_SIZE - hud.offsetX;
+            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - elementWidth - hud.offsetX;
             default -> hud.offsetX;
         };
     }
 
-    static int computeY(TribulationConfig.Hud hud, int screenHeight) {
+    static int computeY(TribulationConfig.Hud hud, int screenHeight, int elementHeight) {
         return switch (hud.anchor) {
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - SHIELD_SIZE - hud.offsetY;
+            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - elementHeight - hud.offsetY;
             default -> hud.offsetY;
         };
     }

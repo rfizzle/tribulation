@@ -7,18 +7,18 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
-    private static final ResourceLocation SHIELD_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "textures/gui/tribulation_shield.png");
-
-    static final int ICON_SIZE = 9;
-    private static final int PADDING = 3;
-    private static final int ICON_TEXT_GAP = 2;
+    static final String SHIELD_CHAR = "⛨";
+    private static final int PADDING_X = 4;
+    private static final int PADDING_Y = 3;
     private static final int BG_COLOR = 0x80000000;
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
+    private static final int ICON_COLOR = 0xFFFFFFFF;
 
     private static final int[] TIER_COLORS = {
             0xFFFFFFFF, // Tier 0: White
@@ -43,14 +43,17 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);
-        String text = String.valueOf(level);
-        int textWidth = mc.font.width(text);
-        int textHeight = mc.font.lineHeight;
+        int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
 
-        int contentWidth = ICON_SIZE + ICON_TEXT_GAP + textWidth;
-        int contentHeight = Math.max(ICON_SIZE, textHeight);
-        int totalWidth = contentWidth + PADDING * 2;
-        int totalHeight = contentHeight + PADDING * 2;
+        int tierColor = color & 0x00FFFFFF;
+        MutableComponent text = Component.literal(SHIELD_CHAR + " ")
+                .withStyle(Style.EMPTY.withColor(ICON_COLOR & 0x00FFFFFF))
+                .append(Component.literal(String.valueOf(level))
+                        .withStyle(Style.EMPTY.withColor(tierColor)));
+
+        int textWidth = mc.font.width(text);
+        int totalWidth = textWidth + PADDING_X * 2;
+        int totalHeight = mc.font.lineHeight + PADDING_Y * 2;
 
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
@@ -59,15 +62,7 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         int bgY = computeY(config.hud, screenHeight, totalHeight);
 
         graphics.fill(bgX, bgY, bgX + totalWidth, bgY + totalHeight, BG_COLOR);
-
-        int iconX = bgX + PADDING;
-        int iconY = bgY + PADDING + (contentHeight - ICON_SIZE) / 2;
-        graphics.blit(SHIELD_TEXTURE, iconX, iconY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
-
-        int textX = iconX + ICON_SIZE + ICON_TEXT_GAP;
-        int textY = bgY + PADDING + (contentHeight - textHeight) / 2 + 1;
-        int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
-        graphics.drawString(mc.font, text, textX, textY, color, true);
+        graphics.drawString(mc.font, text, bgX + PADDING_X, bgY + PADDING_Y, 0xFFFFFFFF, true);
     }
 
     static int computeX(TribulationConfig.Hud hud, int screenWidth, int elementWidth) {

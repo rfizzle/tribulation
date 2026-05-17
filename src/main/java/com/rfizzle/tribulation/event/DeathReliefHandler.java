@@ -3,6 +3,7 @@ package com.rfizzle.tribulation.event;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.network.TribulationNetworking;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -53,6 +54,7 @@ public final class DeathReliefHandler {
                 return;
             }
             int after = state.getLevel(player.getUUID());
+            TribulationNetworking.syncLevel(player, after);
             if (before != after) {
                 Tribulation.LOGGER.debug(
                         "Death relief: {} reduced from level {} to {}",

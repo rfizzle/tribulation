@@ -10,10 +10,12 @@ import com.rfizzle.tribulation.event.ShardDropHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
 import com.rfizzle.tribulation.event.XpLootHandler;
 import com.rfizzle.tribulation.item.TribulationItems;
+import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.scaling.TierManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,6 +34,7 @@ public class Tribulation implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("Tribulation initializing");
         config = TribulationConfig.load();
+        TribulationNetworking.register();
         TribulationItems.register();
         registerTickHandler();
         MobScalingHandler.register();
@@ -42,6 +45,7 @@ public class Tribulation implements ModInitializer {
         XpLootHandler.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 TribulationCommand.register(dispatcher));
+        registerJoinSync();
     }
 
     public static TribulationConfig getConfig() {
@@ -50,6 +54,15 @@ public class Tribulation implements ModInitializer {
 
     public static void reloadConfig() {
         config = TribulationConfig.load();
+    }
+
+    private static void registerJoinSync() {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            ServerPlayer player = handler.getPlayer();
+            PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+            int level = state.getLevel(player.getUUID());
+            TribulationNetworking.syncLevel(player, level);
+        });
     }
 
     private static void registerTickHandler() {
@@ -71,10 +84,13 @@ public class Tribulation implements ModInitializer {
                 int oldLevel = state.getLevel(player.getUUID());
                 int oldTier = TierManager.getTier(oldLevel, cfg.tiers);
                 int levelsGained = state.incrementTick(player.getUUID(), TICK_INTERVAL, levelUpTicks, maxLevel);
-                if (levelsGained > 0 && cfg.general.notifyLevelUp) {
+                if (levelsGained > 0) {
                     int newLevel = state.getLevel(player.getUUID());
-                    int newTier = TierManager.getTier(newLevel, cfg.tiers);
-                    sendLevelUpMessage(player, newLevel, oldTier, newTier, maxLevel, cfg.general.notifyLevelUpShowTier);
+                    TribulationNetworking.syncLevel(player, newLevel);
+                    if (cfg.general.notifyLevelUp) {
+                        int newTier = TierManager.getTier(newLevel, cfg.tiers);
+                        sendLevelUpMessage(player, newLevel, oldTier, newTier, maxLevel, cfg.general.notifyLevelUpShowTier);
+                    }
                 }
             }
         });

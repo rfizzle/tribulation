@@ -10,6 +10,12 @@
 
     "config.tribulation.title": "Tribulation Configuration",
 
+    "config.tribulation.category.hud": "HUD",
+    "config.tribulation.hud.enabled": "Show HUD Overlay",
+    "config.tribulation.hud.anchor": "Anchor Position",
+    "config.tribulation.hud.offset_x": "X Offset (pixels)",
+    "config.tribulation.hud.offset_y": "Y Offset (pixels)",
+
     "config.tribulation.category.general": "General",
     "config.tribulation.general.max_level": "Max Level",
     "config.tribulation.general.level_up_ticks": "Level Up Ticks",

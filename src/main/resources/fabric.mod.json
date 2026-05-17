@@ -11,6 +11,7 @@
     "environment": "*",
     "entrypoints": {
         "main": ["com.rfizzle.tribulation.Tribulation"],
+        "client": ["com.rfizzle.tribulation.client.TribulationClient"],
         "fabric-gametest": [
             "com.rfizzle.tribulation.gametest.MobScalingGameTest",
             "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest"

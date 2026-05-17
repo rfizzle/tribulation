@@ -3,6 +3,7 @@ package com.rfizzle.tribulation.item;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.network.TribulationNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,6 +81,8 @@ public class ShatterShardItem extends Item {
 
             level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
                     SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+
+            TribulationNetworking.syncLevel(serverPlayer, after);
 
             if (before != after) {
                 serverPlayer.displayClientMessage(

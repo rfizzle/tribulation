@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Tribulation" width="400">
+  <img src="logo.png" alt="Tribulation" width="800">
 </p>
 
 <p align="center"><strong>A comprehensive difficulty overhaul for Minecraft 1.21.1 Fabric.</strong></p>

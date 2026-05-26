@@ -97,11 +97,7 @@ public final class MobScalingDataCollector {
     private static boolean hasModifier(Mob mob, ResourceLocation id) {
         for (Map.Entry<String, Holder<Attribute>> entry : ScalingEngine.attributeHolders().entrySet()) {
             AttributeInstance inst = mob.getAttribute(entry.getValue());
-            if (inst != null) {
-                for (AttributeModifier mod : inst.getModifiers()) {
-                    if (id.equals(mod.id())) return true;
-                }
-            }
+            if (inst != null && inst.getModifier(id) != null) return true;
         }
         return false;
     }

@@ -2,8 +2,11 @@
 package com.rfizzle.tribulation.data;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -646,6 +649,25 @@ class PlayerDifficultyStateTest {
         assertEquals(42, loaded.getLevel(uuid));
         assertEquals(8, loaded.getHeartsLost(uuid));
         assertEquals(1000, loaded.getTickCounter(uuid));
+    }
+
+    @Test
+    void save_serializesPlayersInInsertionOrder() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        List<UUID> expectedOrder = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            UUID uuid = UUID.randomUUID();
+            expectedOrder.add(uuid);
+            state.getPlayerData(uuid).level = i;
+        }
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        ListTag list = tag.getList("Players", 10); // 10 is TAG_COMPOUND
+
+        assertEquals(expectedOrder.size(), list.size());
+        for (int i = 0; i < expectedOrder.size(); i++) {
+            assertEquals(expectedOrder.get(i), list.getCompound(i).getUUID("UUID"));
+        }
     }
 
     @Test

@@ -61,14 +61,17 @@ public final class ScalingEngine {
      * {@link ScalingEngine} without bootstrapping Minecraft's attribute registry.
      */
     private static final class Holders {
-        static final Map<String, Holder<Attribute>> MAP = Map.of(
-                ATTR_HEALTH, Attributes.MAX_HEALTH,
-                ATTR_DAMAGE, Attributes.ATTACK_DAMAGE,
-                ATTR_SPEED, Attributes.MOVEMENT_SPEED,
-                ATTR_FOLLOW_RANGE, Attributes.FOLLOW_RANGE,
-                ATTR_ARMOR, Attributes.ARMOR,
-                ATTR_TOUGHNESS, Attributes.ARMOR_TOUGHNESS
-        );
+        static final Map<String, Holder<Attribute>> MAP;
+        static {
+            Map<String, Holder<Attribute>> m = new LinkedHashMap<>();
+            m.put(ATTR_HEALTH, Attributes.MAX_HEALTH);
+            m.put(ATTR_DAMAGE, Attributes.ATTACK_DAMAGE);
+            m.put(ATTR_SPEED, Attributes.MOVEMENT_SPEED);
+            m.put(ATTR_FOLLOW_RANGE, Attributes.FOLLOW_RANGE);
+            m.put(ATTR_ARMOR, Attributes.ARMOR);
+            m.put(ATTR_TOUGHNESS, Attributes.ARMOR_TOUGHNESS);
+            MAP = Collections.unmodifiableMap(m);
+        }
     }
 
     private ScalingEngine() {}
@@ -436,6 +439,6 @@ public final class ScalingEngine {
 
     /** Map view of attribute key → Holder for external consumers (commands, etc.). */
     public static Map<String, Holder<Attribute>> attributeHolders() {
-        return Collections.unmodifiableMap(new LinkedHashMap<>(Holders.MAP));
+        return Holders.MAP;
     }
 }

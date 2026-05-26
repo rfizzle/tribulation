@@ -1,0 +1,30 @@
+{
+    "parent": "minecraft:recipes/root",
+    "criteria": {
+        "has_shatter_shard": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    { "items": ["tribulation:shatter_shard"] }
+                ]
+            }
+        },
+        "has_the_recipe": {
+            "trigger": "minecraft:recipe_unlocked",
+            "conditions": {
+                "recipe": "tribulation:heart_fragment"
+            }
+        }
+    },
+    "requirements": [
+        [
+            "has_shatter_shard",
+            "has_the_recipe"
+        ]
+    ],
+    "rewards": {
+        "recipes": [
+            "tribulation:heart_fragment"
+        ]
+    }
+}

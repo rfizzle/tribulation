@@ -11,7 +11,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -33,7 +33,7 @@ public class PlayerDifficultyState extends SavedData {
             null
     );
 
-    private final Map<UUID, PlayerData> data = new HashMap<>();
+    private final Map<UUID, PlayerData> data = new LinkedHashMap<>();
 
     public PlayerDifficultyState() {}
 

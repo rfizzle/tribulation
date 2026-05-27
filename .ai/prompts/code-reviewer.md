@@ -25,7 +25,7 @@ Skip pure style / formatting nits unless they violate `AGENTS.md` conventions
 Produce the review in Markdown using this structure verbatim:
 
 ```markdown
-## Code Review — <PR title>
+## Code Review — <short HEAD commit hash>
 
 | Category | Score | Notes |
 |---|---|---|

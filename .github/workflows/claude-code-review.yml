@@ -43,6 +43,8 @@ jobs:
           $(cat .ai/review-criteria.yml)
 
           ---
+          HEAD commit: ${{ github.event.pull_request.head.sha }}
+
           PR title: ${PR_TITLE}
 
           PR description:

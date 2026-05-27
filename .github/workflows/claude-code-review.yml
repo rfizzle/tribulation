@@ -85,10 +85,12 @@ jobs:
               --dangerously-skip-permissions \
               < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
 
-            if [ -z "$RESULT" ]; then
-              echo "Claude produced no output. Stderr:"
-              cat /tmp/review-stderr.txt 2>/dev/null || true
-            fi
+            echo "--- RESULT start ---"
+            echo "$RESULT" | head -50
+            echo "--- RESULT end ---"
+            echo "--- STDERR start ---"
+            cat /tmp/review-stderr.txt 2>/dev/null || true
+            echo "--- STDERR end ---"
 
             COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
 
@@ -101,8 +103,6 @@ jobs:
             echo "Attempt ${ATTEMPT} did not produce valid output"
             if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
               echo "::warning::All ${MAX_ATTEMPTS} review attempts failed to produce valid output"
-              echo "Last stderr:"
-              cat /tmp/review-stderr.txt 2>/dev/null || true
               exit 0
             fi
           done

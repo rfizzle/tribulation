@@ -71,7 +71,6 @@ jobs:
               --output-format json \
               --max-turns 6 \
               --max-budget-usd 2.00 \
-              --dangerously-skip-permissions \
               < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
 
             COMMENT="$(echo "$RESULT" | jq -r '.result // empty' 2>/dev/null)" || true

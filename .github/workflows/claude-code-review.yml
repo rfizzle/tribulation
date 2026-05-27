@@ -54,17 +54,6 @@ jobs:
 
       - name: Run review
         run: |
-          SCHEMA='{
-            "type": "object",
-            "properties": {
-              "comment": {
-                "type": "string",
-                "description": "The full review comment in Markdown. Must start with ## Code Review and include the scoring table and details sections."
-              }
-            },
-            "required": ["comment"]
-          }'
-
           ATTEMPT=0
           MAX_ATTEMPTS=3
 
@@ -74,20 +63,12 @@ jobs:
 
             RESULT="$(~/.local/bin/claude -p \
               --output-format json \
-              --json-schema "$SCHEMA" \
               --max-turns 6 \
               --max-budget-usd 2.00 \
               --dangerously-skip-permissions \
               < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
 
-            echo "--- RESULT start ---"
-            echo "$RESULT" | head -50
-            echo "--- RESULT end ---"
-            echo "--- STDERR start ---"
-            cat /tmp/review-stderr.txt 2>/dev/null || true
-            echo "--- STDERR end ---"
-
-            COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
+            COMMENT="$(echo "$RESULT" | jq -r '.result // empty' 2>/dev/null)" || true
 
             if [ -n "$COMMENT" ] && echo "$COMMENT" | grep -q "## Code Review"; then
               echo "Review produced successfully on attempt ${ATTEMPT}"

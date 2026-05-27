@@ -43,17 +43,6 @@ jobs:
 
       - name: Run spec writer
         run: |
-          SCHEMA='{
-            "type": "object",
-            "properties": {
-              "comment": {
-                "type": "string",
-                "description": "The full implementation spec in Markdown. Must start with ## Implementation Spec and include Problem, Goal, Acceptance criteria, Approach, Files to touch, Test plan sections."
-              }
-            },
-            "required": ["comment"]
-          }'
-
           ATTEMPT=0
           MAX_ATTEMPTS=3
 
@@ -63,18 +52,12 @@ jobs:
 
             RESULT="$(~/.local/bin/claude -p \
               --output-format json \
-              --json-schema "$SCHEMA" \
               --max-turns 6 \
               --max-budget-usd 2.00 \
               --dangerously-skip-permissions \
               < /tmp/spec-prompt.txt 2>/tmp/spec-stderr.txt)" || true
 
-            if [ -z "$RESULT" ]; then
-              echo "Claude produced no output. Stderr:"
-              cat /tmp/spec-stderr.txt 2>/dev/null || true
-            fi
-
-            COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
+            COMMENT="$(echo "$RESULT" | jq -r '.result // empty' 2>/dev/null)" || true
 
             if [ -n "$COMMENT" ] && echo "$COMMENT" | grep -q "## Implementation Spec"; then
               echo "Spec produced successfully on attempt ${ATTEMPT}"
@@ -85,8 +68,6 @@ jobs:
             echo "Attempt ${ATTEMPT} did not produce valid output"
             if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
               echo "::warning::All ${MAX_ATTEMPTS} spec attempts failed to produce valid output"
-              echo "Last stderr:"
-              cat /tmp/spec-stderr.txt 2>/dev/null || true
               exit 0
             fi
           done

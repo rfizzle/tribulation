@@ -13,7 +13,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
-    private static final ResourceLocation ICON = Tribulation.id("icon.png");
+    private static final ResourceLocation ICON = Tribulation.id("textures/gui/hud_icon.png");
     private static final int ICON_SIZE = 12;
     private static final int ICON_TEXT_GAP = 2;
     private static final int BOX_PAD_X = 3;

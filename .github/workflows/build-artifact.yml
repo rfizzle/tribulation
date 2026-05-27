@@ -6,7 +6,7 @@ on:
 
 concurrency:
   group: build-artifact-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -54,7 +54,7 @@ jobs:
             --repo "${{ github.repository }}" \
             --json comments \
             --jq '.comments[]
-              | select(.author.login == "github-actions")
+              | select(.author.login == "github-actions[bot]")
               | select(.body | test("Build artifact ready"))
               | select(.body | test("${{ steps.pr.outputs.sha }}"))
               | .body' \
@@ -145,7 +145,7 @@ jobs:
             -f content='rocket'
 
       - name: Comment on failure
-        if: failure()
+        if: failure() && steps.dedup.outputs.already_built != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

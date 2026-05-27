@@ -82,10 +82,13 @@ jobs:
               --json-schema "$SCHEMA" \
               --max-turns 6 \
               --max-budget-usd 2.00 \
-              --permission-mode bypassPermissions \
-              --bare \
-              --system-prompt "You are a code reviewer. Read the prompt carefully and produce the review. Do NOT use any tools — just read the provided diff and produce the structured JSON output. Your comment field must contain valid Markdown." \
+              --dangerously-skip-permissions \
               < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
+
+            if [ -z "$RESULT" ]; then
+              echo "Claude produced no output. Stderr:"
+              cat /tmp/review-stderr.txt 2>/dev/null || true
+            fi
 
             COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
 
@@ -98,6 +101,8 @@ jobs:
             echo "Attempt ${ATTEMPT} did not produce valid output"
             if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
               echo "::warning::All ${MAX_ATTEMPTS} review attempts failed to produce valid output"
+              echo "Last stderr:"
+              cat /tmp/review-stderr.txt 2>/dev/null || true
               exit 0
             fi
           done

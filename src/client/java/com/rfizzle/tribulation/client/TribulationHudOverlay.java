@@ -7,18 +7,24 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
-    static final String SHIELD_CHAR = "⛨";
-    private static final int PADDING_X = 4;
-    private static final int PADDING_Y = 3;
-    private static final int BG_COLOR = 0x80000000;
+    private static final ResourceLocation ICON = Tribulation.id("icon.png");
+    private static final int ICON_SIZE = 12;
+    private static final int ICON_TEXT_GAP = 2;
+    private static final int BOX_PAD_X = 3;
+    private static final int BOX_PAD_Y = 2;
+    private static final int BG_COLOR = 0x99000000;
+    private static final int TEXT_HEIGHT = 9;
+    private static final int BASE_X = 2;
+    private static final int BASE_Y = 2;
+
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
-    private static final int ICON_COLOR = 0xFFFFFFFF;
 
     private static final int[] TIER_COLORS = {
             0xFFFFFFFF, // Tier 0: White
@@ -46,37 +52,35 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
 
         int tierColor = color & 0x00FFFFFF;
-        MutableComponent text = Component.literal(SHIELD_CHAR + " ")
-                .withStyle(Style.EMPTY.withColor(ICON_COLOR & 0x00FFFFFF))
-                .append(Component.literal(String.valueOf(level))
-                        .withStyle(Style.EMPTY.withColor(tierColor)));
+        MutableComponent text = Component.literal("Lv. " + level)
+                .withStyle(Style.EMPTY.withColor(tierColor));
 
         int textWidth = mc.font.width(text);
-        int totalWidth = textWidth + PADDING_X * 2;
-        int totalHeight = mc.font.lineHeight + PADDING_Y * 2;
+        int totalWidth = computeWidth(textWidth);
+        int totalHeight = computeHeight();
 
-        int screenWidth = mc.getWindow().getGuiScaledWidth();
-        int screenHeight = mc.getWindow().getGuiScaledHeight();
+        int x = BASE_X;
+        int y = BASE_Y;
 
-        int bgX = computeX(config.hud, screenWidth, totalWidth);
-        int bgY = computeY(config.hud, screenHeight, totalHeight);
+        drawBox(graphics, x, y, totalWidth, totalHeight);
+        // Render the 32x32 texture at 12x12 size on the screen
+        graphics.blit(ICON, x + BOX_PAD_X, y + BOX_PAD_Y, 0, 0, ICON_SIZE, ICON_SIZE, 32, 32);
 
-        graphics.fill(bgX, bgY, bgX + totalWidth, bgY + totalHeight, BG_COLOR);
-        graphics.drawString(mc.font, text, bgX + PADDING_X, bgY + PADDING_Y, 0xFFFFFFFF, true);
+        int textY = y + BOX_PAD_Y + (ICON_SIZE - TEXT_HEIGHT) / 2;
+        graphics.drawString(mc.font, text, x + BOX_PAD_X + ICON_SIZE + ICON_TEXT_GAP, textY, 0xFFFFFFFF, true);
     }
 
-    static int computeX(TribulationConfig.Hud hud, int screenWidth, int elementWidth) {
-        return switch (hud.anchor) {
-            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - elementWidth - hud.offsetX;
-            default -> hud.offsetX;
-        };
+    static int computeWidth(int textWidth) {
+        return BOX_PAD_X + ICON_SIZE + ICON_TEXT_GAP + textWidth + BOX_PAD_X;
     }
 
-    static int computeY(TribulationConfig.Hud hud, int screenHeight, int elementHeight) {
-        return switch (hud.anchor) {
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - elementHeight - hud.offsetY;
-            default -> hud.offsetY;
-        };
+    static int computeHeight() {
+        return BOX_PAD_Y + ICON_SIZE + BOX_PAD_Y;
+    }
+
+    private static void drawBox(GuiGraphics g, int x, int y, int w, int h) {
+        g.fill(x + 1, y, x + w - 1, y + h, BG_COLOR);
+        g.fill(x, y + 1, x + w, y + h - 1, BG_COLOR);
     }
 
     static int getTextColor(int tier, long levelUpTimestamp) {

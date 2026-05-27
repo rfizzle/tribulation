@@ -626,15 +626,8 @@ public class TribulationConfig {
         public int tier5 = 250;
     }
 
-    public enum AnchorPosition {
-        TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
-    }
-
     public static class Hud {
         public boolean enabled = true;
-        public AnchorPosition anchor = AnchorPosition.TOP_LEFT;
-        public int offsetX = 4;
-        public int offsetY = 4;
     }
 
     public static class Abilities {

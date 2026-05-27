@@ -63,8 +63,8 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         int y = BASE_Y;
 
         drawBox(graphics, x, y, totalWidth, totalHeight);
-        // Render the 32x32 texture at 12x12 size on the screen (suite convention)
-        graphics.blit(ICON, x + BOX_PAD_X, y + BOX_PAD_Y, 0, 0, ICON_SIZE, ICON_SIZE, 32, 32);
+        // Render and scale the 32x32 texture to 12x12 native size
+        graphics.blit(ICON, x + BOX_PAD_X, y + BOX_PAD_Y, ICON_SIZE, ICON_SIZE, 0, 0, 32, 32, 32, 32);
 
         int textY = y + BOX_PAD_Y + (ICON_SIZE - TEXT_HEIGHT) / 2;
         graphics.drawString(mc.font, text, x + BOX_PAD_X + ICON_SIZE + ICON_TEXT_GAP, textY, 0xFFFFFFFF, true);

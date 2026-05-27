@@ -29,7 +29,7 @@ jobs:
       - name: Build review prompt
         run: |
           DIFF="$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }})"
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_TITLE="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title --jq .title)"
           PR_BODY="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body --jq .body)"
 
           PROMPT="$(cat .ai/prompts/code-reviewer.md)
@@ -78,8 +78,8 @@ jobs:
 
             echo "Attempt ${ATTEMPT} did not produce valid output"
             if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-              echo "::warning::All ${MAX_ATTEMPTS} review attempts failed to produce valid output"
-              exit 0
+              echo "::error::All ${MAX_ATTEMPTS} review attempts failed to produce valid output"
+              exit 1
             fi
           done
         env:

@@ -11,7 +11,6 @@ concurrency:
 permissions:
   contents: read
   issues: write
-  id-token: write
 
 jobs:
   spec:
@@ -23,20 +22,83 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Load spec-writer prompt
-        id: load_prompt
+      - name: Install Claude Code
         run: |
-          {
-            echo 'prompt<<PROMPT_EOF'
-            cat .ai/prompts/spec-writer.md
-            echo 'PROMPT_EOF'
-          } >> "$GITHUB_OUTPUT"
+          curl -fsSL https://claude.ai/install.sh | bash
+          mkdir -p ~/.claude
+          echo '{"claudeAiOauth": {"accessToken": "'"$CLAUDE_CODE_OAUTH_TOKEN"'"}}' > ~/.claude/.credentials.json
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-      - name: Run Claude spec writer
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: ${{ steps.load_prompt.outputs.prompt }}
-          claude_args: >-
-            --allowedTools
-            "Bash(gh issue comment:*),Bash(gh issue view:*)"
+      - name: Build spec prompt
+        run: |
+          ISSUE_TITLE="$(gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }} --json title --jq .title)"
+          ISSUE_BODY="$(gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }} --json body --jq .body)"
+
+          PROMPT="$(cat .ai/prompts/spec-writer.md)
+
+          ---
+          Issue #${{ github.event.issue.number }}: ${ISSUE_TITLE}
+
+          ${ISSUE_BODY}"
+
+          echo "$PROMPT" > /tmp/spec-prompt.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run spec writer
+        run: |
+          SCHEMA='{
+            "type": "object",
+            "properties": {
+              "comment": {
+                "type": "string",
+                "description": "The full implementation spec in Markdown. Must start with ## Implementation Spec and include Problem, Goal, Acceptance criteria, Approach, Files to touch, Test plan sections."
+              }
+            },
+            "required": ["comment"]
+          }'
+
+          ATTEMPT=0
+          MAX_ATTEMPTS=3
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Spec attempt ${ATTEMPT}/${MAX_ATTEMPTS}"
+
+            RESULT="$(~/.local/bin/claude -p \
+              --output-format json \
+              --json-schema "$SCHEMA" \
+              --max-turns 6 \
+              --max-budget-usd 2.00 \
+              --permission-mode bypassPermissions \
+              --bare \
+              --system-prompt "You are a spec writer for the Tribulation Minecraft Fabric mod. Read the prompt carefully and produce the implementation spec. Do NOT use any tools — just read the provided issue and produce the structured JSON output. Your comment field must contain valid Markdown." \
+              < /tmp/spec-prompt.txt 2>/tmp/spec-stderr.txt)" || true
+
+            COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
+
+            if [ -n "$COMMENT" ] && echo "$COMMENT" | grep -q "## Implementation Spec"; then
+              echo "Spec produced successfully on attempt ${ATTEMPT}"
+              echo "$COMMENT" > /tmp/spec-comment.md
+              break
+            fi
+
+            echo "Attempt ${ATTEMPT} did not produce valid output"
+            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+              echo "::warning::All ${MAX_ATTEMPTS} spec attempts failed to produce valid output"
+              exit 0
+            fi
+          done
+
+      - name: Post spec comment
+        run: |
+          if [ -s /tmp/spec-comment.md ]; then
+            gh issue comment ${{ github.event.issue.number }} \
+              --repo ${{ github.repository }} \
+              --body-file /tmp/spec-comment.md
+          else
+            echo "No spec comment to post"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

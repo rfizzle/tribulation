@@ -12,7 +12,6 @@ permissions:
   contents: read
   pull-requests: write
   issues: read
-  id-token: write
 
 jobs:
   review:
@@ -24,24 +23,93 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Load review prompt
-        id: load_prompt
+      - name: Install Claude Code
         run: |
-          {
-            echo 'prompt<<PROMPT_EOF'
-            cat .ai/prompts/code-reviewer.md
-            echo
-            echo "---"
-            echo "Categories to score (from .ai/review-criteria.yml):"
-            cat .ai/review-criteria.yml
-            echo 'PROMPT_EOF'
-          } >> "$GITHUB_OUTPUT"
+          curl -fsSL https://claude.ai/install.sh | bash
+          mkdir -p ~/.claude
+          echo '{"claudeAiOauth": {"accessToken": "'"$CLAUDE_CODE_OAUTH_TOKEN"'"}}' > ~/.claude/.credentials.json
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-      - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: ${{ steps.load_prompt.outputs.prompt }}
-          claude_args: >-
-            --allowedTools
-            "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+      - name: Build review prompt
+        run: |
+          DIFF="$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }})"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body --jq .body)"
+
+          PROMPT="$(cat .ai/prompts/code-reviewer.md)
+
+          ---
+          Categories to score (from .ai/review-criteria.yml):
+          $(cat .ai/review-criteria.yml)
+
+          ---
+          PR title: ${PR_TITLE}
+
+          PR description:
+          ${PR_BODY}
+
+          ---
+          Diff:
+          ${DIFF}"
+
+          echo "$PROMPT" > /tmp/review-prompt.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run review
+        run: |
+          SCHEMA='{
+            "type": "object",
+            "properties": {
+              "comment": {
+                "type": "string",
+                "description": "The full review comment in Markdown. Must start with ## Code Review and include the scoring table and details sections."
+              }
+            },
+            "required": ["comment"]
+          }'
+
+          ATTEMPT=0
+          MAX_ATTEMPTS=3
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Review attempt ${ATTEMPT}/${MAX_ATTEMPTS}"
+
+            RESULT="$(~/.local/bin/claude -p \
+              --output-format json \
+              --json-schema "$SCHEMA" \
+              --max-turns 6 \
+              --max-budget-usd 2.00 \
+              --permission-mode bypassPermissions \
+              --bare \
+              --system-prompt "You are a code reviewer. Read the prompt carefully and produce the review. Do NOT use any tools — just read the provided diff and produce the structured JSON output. Your comment field must contain valid Markdown." \
+              < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
+
+            COMMENT="$(echo "$RESULT" | jq -r '.result.comment // empty' 2>/dev/null)" || true
+
+            if [ -n "$COMMENT" ] && echo "$COMMENT" | grep -q "## Code Review"; then
+              echo "Review produced successfully on attempt ${ATTEMPT}"
+              echo "$COMMENT" > /tmp/review-comment.md
+              break
+            fi
+
+            echo "Attempt ${ATTEMPT} did not produce valid output"
+            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+              echo "::warning::All ${MAX_ATTEMPTS} review attempts failed to produce valid output"
+              exit 0
+            fi
+          done
+
+      - name: Post review comment
+        run: |
+          if [ -s /tmp/review-comment.md ]; then
+            gh pr comment ${{ github.event.pull_request.number }} \
+              --repo ${{ github.repository }} \
+              --body-file /tmp/review-comment.md
+          else
+            echo "No review comment to post"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

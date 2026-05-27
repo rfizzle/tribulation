@@ -33,6 +33,10 @@ jobs:
           PROMPT="$(cat .ai/prompts/spec-writer.md)
 
           ---
+          Project conventions (from AGENTS.md):
+          $(cat AGENTS.md)
+
+          ---
           Issue #${{ github.event.issue.number }}: ${ISSUE_TITLE}
 
           ${ISSUE_BODY}"

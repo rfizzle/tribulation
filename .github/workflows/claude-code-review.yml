@@ -35,6 +35,10 @@ jobs:
           PROMPT="$(cat .ai/prompts/code-reviewer.md)
 
           ---
+          Project conventions (from AGENTS.md):
+          $(cat AGENTS.md)
+
+          ---
           Categories to score (from .ai/review-criteria.yml):
           $(cat .ai/review-criteria.yml)
 

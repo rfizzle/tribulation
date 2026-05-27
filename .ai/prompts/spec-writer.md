@@ -2,7 +2,8 @@ You are writing an implementation spec for a GitHub issue on the Tribulation
 Minecraft Fabric mod. Your output will be posted as a comment on the issue
 and used by a downstream coding agent (Google Jules) to implement the work.
 
-The issue title, body, and project context are provided below.
+The issue title and body are provided below, along with AGENTS.md
+for project conventions and source layout.
 
 # What to produce
 

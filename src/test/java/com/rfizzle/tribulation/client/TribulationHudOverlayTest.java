@@ -1,8 +1,6 @@
 // Tier: 1 (pure JUnit)
 package com.rfizzle.tribulation.client;
 
-import com.rfizzle.tribulation.config.TribulationConfig;
-import com.rfizzle.tribulation.config.TribulationConfig.AnchorPosition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -12,78 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class TribulationHudOverlayTest {
 
-    private static final int SAMPLE_ELEMENT_WIDTH = 30;
-    private static final int SAMPLE_ELEMENT_HEIGHT = 15;
-
-    private static TribulationConfig.Hud hudWith(AnchorPosition anchor, int offsetX, int offsetY) {
-        TribulationConfig.Hud hud = new TribulationConfig.Hud();
-        hud.anchor = anchor;
-        hud.offsetX = offsetX;
-        hud.offsetY = offsetY;
-        return hud;
-    }
-
-    // ---- Position tests ----
+    // ---- Layout tests ----
 
     @Test
-    void computeX_topLeft_returnsOffsetX() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 4, 4);
-        assertEquals(4, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
+    void computeWidth_returnsExpected() {
+        // BOX_PAD_X(3) + ICON_SIZE(12) + ICON_TEXT_GAP(2) + textWidth(20) + BOX_PAD_X(3) = 40
+        assertEquals(40, TribulationHudOverlay.computeWidth(20));
     }
 
     @Test
-    void computeX_topRight_anchorsFromRight() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_RIGHT, 4, 4);
-        // 800 - 30 - 4 = 766
-        assertEquals(766, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
-    }
-
-    @Test
-    void computeX_bottomLeft_returnsOffsetX() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_LEFT, 10, 10);
-        assertEquals(10, TribulationHudOverlay.computeX(hud, 1920, SAMPLE_ELEMENT_WIDTH));
-    }
-
-    @Test
-    void computeX_bottomRight_anchorsFromRight() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_RIGHT, 8, 8);
-        // 1920 - 30 - 8 = 1882
-        assertEquals(1882, TribulationHudOverlay.computeX(hud, 1920, SAMPLE_ELEMENT_WIDTH));
-    }
-
-    @Test
-    void computeY_topLeft_returnsOffsetY() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 4, 4);
-        assertEquals(4, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
-    }
-
-    @Test
-    void computeY_topRight_returnsOffsetY() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_RIGHT, 4, 8);
-        assertEquals(8, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
-    }
-
-    @Test
-    void computeY_bottomLeft_anchorsFromBottom() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_LEFT, 4, 4);
-        // 600 - 15 - 4 = 581
-        assertEquals(581, TribulationHudOverlay.computeY(hud, 600, SAMPLE_ELEMENT_HEIGHT));
-    }
-
-    @Test
-    void computeY_bottomRight_anchorsFromBottom() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.BOTTOM_RIGHT, 4, 10);
-        // 1080 - 15 - 10 = 1055
-        assertEquals(1055, TribulationHudOverlay.computeY(hud, 1080, SAMPLE_ELEMENT_HEIGHT));
-    }
-
-    @Test
-    void computeX_zeroOffset_touchesEdge() {
-        TribulationConfig.Hud hud = hudWith(AnchorPosition.TOP_LEFT, 0, 0);
-        assertEquals(0, TribulationHudOverlay.computeX(hud, 800, SAMPLE_ELEMENT_WIDTH));
-
-        TribulationConfig.Hud hudR = hudWith(AnchorPosition.TOP_RIGHT, 0, 0);
-        assertEquals(800 - SAMPLE_ELEMENT_WIDTH, TribulationHudOverlay.computeX(hudR, 800, SAMPLE_ELEMENT_WIDTH));
+    void computeHeight_returnsExpected() {
+        // BOX_PAD_Y(2) + ICON_SIZE(12) + BOX_PAD_Y(2) = 16
+        assertEquals(16, TribulationHudOverlay.computeHeight());
     }
 
     // ---- Color tests ----

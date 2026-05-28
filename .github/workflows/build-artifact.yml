@@ -53,8 +53,8 @@ jobs:
         run: |
           PR_JSON=$(gh pr view "${{ github.event.issue.number }}" \
             --repo "${{ github.repository }}" \
-            --json headRefSha,headRefName)
-          SHA=$(echo "$PR_JSON" | jq -r .headRefSha)
+            --json headRefOid,headRefName)
+          SHA=$(echo "$PR_JSON" | jq -r .headRefOid)
           BRANCH=$(echo "$PR_JSON" | jq -r .headRefName)
           if [ -z "$SHA" ] || [ "$SHA" = "null" ]; then
             echo "::error::Failed to resolve PR head SHA"

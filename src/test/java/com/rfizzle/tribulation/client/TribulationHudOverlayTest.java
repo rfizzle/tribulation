@@ -1,6 +1,7 @@
 // Tier: 1 (pure JUnit)
 package com.rfizzle.tribulation.client;
 
+import com.rfizzle.tribulation.config.TribulationConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,15 +14,82 @@ class TribulationHudOverlayTest {
     // ---- Layout tests ----
 
     @Test
-    void computeWidth_returnsExpected() {
-        // BOX_PAD_X(3) + ICON_SIZE(12) + ICON_TEXT_GAP(2) + textWidth(20) + BOX_PAD_X(3) = 40
-        assertEquals(40, TribulationHudOverlay.computeWidth(20));
+    void computeWidth_textWiderThanIcon_returnsTextWidth() {
+        // Number overlays the icon top-right; if it extends leftward, total footprint
+        // is the text width.
+        assertEquals(20, TribulationHudOverlay.computeWidth(20));
     }
 
     @Test
-    void computeHeight_returnsExpected() {
-        // BOX_PAD_Y(2) + ICON_SIZE(12) + BOX_PAD_Y(2) = 16
-        assertEquals(16, TribulationHudOverlay.computeHeight());
+    void computeWidth_textNarrowerThanIcon_returnsIconWidth() {
+        // Short labels (e.g. single digits) stay within the 16-px icon footprint.
+        assertEquals(16, TribulationHudOverlay.computeWidth(5));
+    }
+
+    @Test
+    void computeHeight_returnsIconPlusBar() {
+        // ICON_SIZE(16) + BAR_GAP(1) + BAR_HEIGHT(2) = 19
+        assertEquals(19, TribulationHudOverlay.computeHeight());
+    }
+
+    // ---- Anchor origin tests ----
+
+    @Test
+    void computeOriginX_topLeft_appliesOffsetFromLeft() {
+        // Single-digit label: footprint == ICON_SIZE, no extra shift needed.
+        assertEquals(4, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, 5));
+    }
+
+    @Test
+    void computeOriginX_topLeft_wideTextShiftsIconRight() {
+        // When the number is wider than the icon it overhangs to the LEFT of the
+        // icon. Push the icon right by the overhang so the badge stays at the
+        // configured X offset from the left edge.
+        int textWidth = 20;
+        int overhang = textWidth - 16; // 4
+        assertEquals(4 + overhang, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, textWidth));
+    }
+
+    @Test
+    void computeOriginX_topRight_appliesOffsetFromRight() {
+        // screenW - offset - iconSize.
+        assertEquals(854 - 4 - 16, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4, 5));
+    }
+
+    @Test
+    void computeOriginX_bottomLeft_matchesTopLeft() {
+        // X axis behaves identically for left/right pairs.
+        assertEquals(
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, 5),
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_LEFT, 854, 4, 5));
+    }
+
+    @Test
+    void computeOriginX_bottomRight_matchesTopRight() {
+        assertEquals(
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4, 5),
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_RIGHT, 854, 4, 5));
+    }
+
+    @Test
+    void computeOriginY_topLeft_returnsOffset() {
+        assertEquals(4, TribulationHudOverlay.computeOriginY(TribulationConfig.Anchor.TOP_LEFT, 480, 4));
+    }
+
+    @Test
+    void computeOriginY_topRight_returnsOffset() {
+        assertEquals(4, TribulationHudOverlay.computeOriginY(TribulationConfig.Anchor.TOP_RIGHT, 480, 4));
+    }
+
+    @Test
+    void computeOriginY_bottomLeft_offsetFromBottom() {
+        // screenH - offset - computeHeight(19).
+        assertEquals(480 - 4 - 19, TribulationHudOverlay.computeOriginY(TribulationConfig.Anchor.BOTTOM_LEFT, 480, 4));
+    }
+
+    @Test
+    void computeOriginY_bottomRight_offsetFromBottom() {
+        assertEquals(480 - 4 - 19, TribulationHudOverlay.computeOriginY(TribulationConfig.Anchor.BOTTOM_RIGHT, 480, 4));
     }
 
     // ---- Color tests ----

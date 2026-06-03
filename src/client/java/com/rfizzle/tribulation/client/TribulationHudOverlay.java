@@ -14,13 +14,11 @@ import net.minecraft.network.chat.Style;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
     private static final ResourceLocation ICON = Tribulation.id("textures/gui/hud_icon.png");
-    private static final int ICON_SIZE = 12;
-    private static final int ICON_TEXT_GAP = 2;
-    private static final int BOX_PAD_X = 3;
-    private static final int BOX_PAD_Y = 2;
-    private static final int BG_COLOR = 0x99000000;
-    private static final int BASE_X = 2;
-    private static final int BASE_Y = 2;
+    private static final int ICON_SIZE = 16;
+
+    private static final int BAR_HEIGHT = 2;
+    private static final int BAR_GAP = 1;
+    private static final int BAR_BG_COLOR = 0xC0202020;
 
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
@@ -48,39 +46,74 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);
-        int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
+        int textColor = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp()) & 0x00FFFFFF;
+        int tierColor = getTierColor(tier);
 
-        int tierColor = color & 0x00FFFFFF;
-        MutableComponent text = Component.literal("Lv. " + level)
-                .withStyle(Style.EMPTY.withColor(tierColor));
+        MutableComponent text = Component.literal(String.valueOf(level))
+                .withStyle(Style.EMPTY.withColor(textColor));
 
-        int textWidth = mc.font.width(text);
-        int totalWidth = computeWidth(textWidth);
-        int totalHeight = computeHeight();
+        int textWidthForLayout = mc.font.width(text);
+        int screenW = graphics.guiWidth();
+        int screenH = graphics.guiHeight();
+        TribulationConfig.Anchor anchor = config.hud.anchor != null ? config.hud.anchor : TribulationConfig.Anchor.TOP_LEFT;
+        int x = computeOriginX(anchor, screenW, config.hud.offsetX, textWidthForLayout);
+        int y = computeOriginY(anchor, screenH, config.hud.offsetY);
 
-        int x = BASE_X;
-        int y = BASE_Y;
+        float r = ((tierColor >> 16) & 0xFF) / 255f;
+        float g = ((tierColor >> 8) & 0xFF) / 255f;
+        float b = (tierColor & 0xFF) / 255f;
+        graphics.setColor(r, g, b, 1.0f);
+        graphics.blit(ICON, x, y, ICON_SIZE, ICON_SIZE, 0, 0, 32, 32, 32, 32);
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        drawBox(graphics, x, y, totalWidth, totalHeight);
-        // Render and scale the 32x32 texture to 12x12 native size
-        graphics.blit(ICON, x + BOX_PAD_X, y + BOX_PAD_Y, ICON_SIZE, ICON_SIZE, 0, 0, 32, 32, 32, 32);
+        // Level badge anchored to the top-right of the icon — right edge of text
+        // aligns with right edge of icon, top edge aligns with top of icon. No
+        // centering math, so the result is robust regardless of which icon
+        // texture is used or how the glyph sits inside its cell.
+        int textX = x + ICON_SIZE - textWidthForLayout;
+        int textY = y;
+        graphics.drawString(mc.font, text, textX, textY, 0xFFFFFFFF, true);
 
-        // Visible glyph is 8px; font.lineHeight (9) includes an unused descender row.
-        int textY = y + BOX_PAD_Y + (ICON_SIZE - 8) / 2;
-        graphics.drawString(mc.font, text, x + BOX_PAD_X + ICON_SIZE + ICON_TEXT_GAP, textY, 0xFFFFFFFF, true);
+        // Progress bar under the icon — fraction of ticks toward next level.
+        int barX = x;
+        int barY = y + ICON_SIZE + BAR_GAP;
+        int barW = ICON_SIZE;
+        graphics.fill(barX, barY, barX + barW, barY + BAR_HEIGHT, BAR_BG_COLOR);
+        float fraction = ClientTribulationState.getProgressFraction();
+        int filledW = Math.round(barW * fraction);
+        if (filledW > 0) {
+            graphics.fill(barX, barY, barX + filledW, barY + BAR_HEIGHT, tierColor);
+        }
     }
 
     static int computeWidth(int textWidth) {
-        return BOX_PAD_X + ICON_SIZE + ICON_TEXT_GAP + textWidth + BOX_PAD_X;
+        // Number overlays the icon and may extend leftward for wide values; bar
+        // sits below at icon width. Total footprint is the larger of the two.
+        return Math.max(ICON_SIZE, textWidth);
     }
 
     static int computeHeight() {
-        return BOX_PAD_Y + ICON_SIZE + BOX_PAD_Y;
+        return ICON_SIZE + BAR_GAP + BAR_HEIGHT;
     }
 
-    private static void drawBox(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x + 1, y, x + w - 1, y + h, BG_COLOR);
-        g.fill(x, y + 1, x + w, y + h - 1, BG_COLOR);
+    /**
+     * Origin = top-left corner of the icon. Offset is measured from the
+     * configured anchor edge inward, so the badge stays the same distance
+     * from its corner regardless of screen size or how wide the number is.
+     */
+    static int computeOriginX(TribulationConfig.Anchor anchor, int screenW, int offsetX, int textWidth) {
+        int footprint = computeWidth(textWidth);
+        return switch (anchor) {
+            case TOP_LEFT, BOTTOM_LEFT -> offsetX + (footprint - ICON_SIZE);
+            case TOP_RIGHT, BOTTOM_RIGHT -> screenW - offsetX - ICON_SIZE;
+        };
+    }
+
+    static int computeOriginY(TribulationConfig.Anchor anchor, int screenH, int offsetY) {
+        return switch (anchor) {
+            case TOP_LEFT, TOP_RIGHT -> offsetY;
+            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenH - offsetY - computeHeight();
+        };
     }
 
     static int getTextColor(int tier, long levelUpTimestamp) {

@@ -82,7 +82,7 @@ public class ShatterShardItem extends Item {
             level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
                     SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
 
-            TribulationNetworking.syncLevel(serverPlayer, after);
+            TribulationNetworking.syncLevel(serverPlayer);
 
             if (before != after) {
                 serverPlayer.displayClientMessage(

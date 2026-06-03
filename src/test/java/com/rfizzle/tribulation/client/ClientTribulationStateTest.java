@@ -57,8 +57,47 @@ class ClientTribulationStateTest {
     @Test
     void reset_clearsState() {
         ClientTribulationState.setLevel(100);
+        ClientTribulationState.setProgress(50000, 72000);
         ClientTribulationState.reset();
         assertEquals(0, ClientTribulationState.getLevel());
         assertEquals(-1, ClientTribulationState.getLevelUpTimestamp());
+        assertEquals(0, ClientTribulationState.getProgressTicks());
+        assertEquals(1, ClientTribulationState.getGoalTicks());
+    }
+
+    @Test
+    void getProgressFraction_atZero_returnsZero() {
+        ClientTribulationState.setProgress(0, 72000);
+        assertEquals(0f, ClientTribulationState.getProgressFraction(), 0.0001f);
+    }
+
+    @Test
+    void getProgressFraction_atHalfway_returnsHalf() {
+        ClientTribulationState.setProgress(36000, 72000);
+        assertEquals(0.5f, ClientTribulationState.getProgressFraction(), 0.0001f);
+    }
+
+    @Test
+    void getProgressFraction_atFull_returnsOne() {
+        ClientTribulationState.setProgress(72000, 72000);
+        assertEquals(1f, ClientTribulationState.getProgressFraction(), 0.0001f);
+    }
+
+    @Test
+    void getProgressFraction_overflow_clampsToOne() {
+        ClientTribulationState.setProgress(99999999, 72000);
+        assertEquals(1f, ClientTribulationState.getProgressFraction(), 0.0001f);
+    }
+
+    @Test
+    void setProgress_clampsNegativeProgressToZero() {
+        ClientTribulationState.setProgress(-100, 72000);
+        assertEquals(0, ClientTribulationState.getProgressTicks());
+    }
+
+    @Test
+    void setProgress_clampsNonPositiveGoalToOne() {
+        ClientTribulationState.setProgress(50, 0);
+        assertEquals(1, ClientTribulationState.getGoalTicks());
     }
 }

@@ -93,6 +93,25 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> hud.enabled = v)
                 .build());
+        cat.addEntry(entry.startSelector(
+                        Component.translatable("config.tribulation.hud.anchor"),
+                        TribulationConfig.Anchor.values(),
+                        hud.anchor)
+                .setDefaultValue(TribulationConfig.Anchor.TOP_LEFT)
+                .setSaveConsumer(v -> hud.anchor = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.hud.offset_x"),
+                        hud.offsetX)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> hud.offsetX = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.hud.offset_y"),
+                        hud.offsetY)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> hud.offsetY = v)
+                .build());
     }
 
     private static void addScalingSources(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {

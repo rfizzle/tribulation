@@ -54,7 +54,7 @@ public final class DeathReliefHandler {
                 return;
             }
             int after = state.getLevel(player.getUUID());
-            TribulationNetworking.syncLevel(player, after);
+            TribulationNetworking.syncLevel(player);
             if (before != after) {
                 Tribulation.LOGGER.debug(
                         "Death relief: {} reduced from level {} to {}",

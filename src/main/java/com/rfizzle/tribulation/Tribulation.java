@@ -66,7 +66,7 @@ public class Tribulation implements ModInitializer {
             ServerPlayer player = handler.getPlayer();
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
             int level = state.getLevel(player.getUUID());
-            TribulationNetworking.syncLevel(player, level);
+            TribulationNetworking.syncLevel(player);
         });
     }
 
@@ -91,7 +91,7 @@ public class Tribulation implements ModInitializer {
                 int levelsGained = state.incrementTick(player.getUUID(), TICK_INTERVAL, levelUpTicks, maxLevel);
                 if (levelsGained > 0) {
                     int newLevel = state.getLevel(player.getUUID());
-                    TribulationNetworking.syncLevel(player, newLevel);
+                    TribulationNetworking.syncLevel(player);
                     if (cfg.general.notifyLevelUp) {
                         int newTier = TierManager.getTier(newLevel, cfg.tiers);
                         sendLevelUpMessage(player, newLevel, oldTier, newTier, maxLevel, cfg.general.notifyLevelUpShowTier);

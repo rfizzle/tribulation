@@ -542,6 +542,8 @@ class TribulationConfigTest {
         assertNotNull(loaded.hud);
         assertTrue(loaded.hud.enabled);
         assertEquals(TribulationConfig.Anchor.TOP_LEFT, loaded.hud.anchor);
+        assertEquals(4, loaded.hud.offsetX);
+        assertEquals(4, loaded.hud.offsetY);
     }
 
     @Test

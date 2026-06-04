@@ -5,11 +5,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
 public record TribulationLevelPayload(int level, int progressTicks, int goalTicks) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<TribulationLevelPayload> TYPE =
-            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "level_sync"));
+            new CustomPacketPayload.Type<>(Tribulation.id("level_sync"));
 
     public static final StreamCodec<FriendlyByteBuf, TribulationLevelPayload> STREAM_CODEC =
             StreamCodec.composite(

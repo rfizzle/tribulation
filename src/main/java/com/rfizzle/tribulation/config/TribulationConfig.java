@@ -213,6 +213,7 @@ public class TribulationConfig {
         if (tiers == null) tiers = new Tiers();
         if (abilities == null) abilities = new Abilities();
         if (hud == null) hud = new Hud();
+        if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
 
         if (scaling == null) {
             scaling = defaultScaling();
@@ -626,15 +627,15 @@ public class TribulationConfig {
         public int tier5 = 250;
     }
 
-    public enum AnchorPosition {
-        TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
-    }
-
     public static class Hud {
         public boolean enabled = true;
-        public AnchorPosition anchor = AnchorPosition.TOP_LEFT;
+        public Anchor anchor = Anchor.TOP_LEFT;
         public int offsetX = 4;
         public int offsetY = 4;
+    }
+
+    public enum Anchor {
+        TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
     }
 
     public static class Abilities {

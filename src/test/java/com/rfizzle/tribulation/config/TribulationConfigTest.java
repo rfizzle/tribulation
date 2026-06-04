@@ -527,7 +527,7 @@ class TribulationConfigTest {
         TribulationConfig cfg = new TribulationConfig();
         assertNotNull(cfg.hud);
         assertTrue(cfg.hud.enabled);
-        assertEquals(TribulationConfig.AnchorPosition.TOP_LEFT, cfg.hud.anchor);
+        assertEquals(TribulationConfig.Anchor.TOP_LEFT, cfg.hud.anchor);
         assertEquals(4, cfg.hud.offsetX);
         assertEquals(4, cfg.hud.offsetY);
     }
@@ -541,7 +541,7 @@ class TribulationConfigTest {
 
         assertNotNull(loaded.hud);
         assertTrue(loaded.hud.enabled);
-        assertEquals(TribulationConfig.AnchorPosition.TOP_LEFT, loaded.hud.anchor);
+        assertEquals(TribulationConfig.Anchor.TOP_LEFT, loaded.hud.anchor);
         assertEquals(4, loaded.hud.offsetX);
         assertEquals(4, loaded.hud.offsetY);
     }
@@ -551,7 +551,7 @@ class TribulationConfigTest {
         Path path = tmp.resolve("tribulation.json");
         TribulationConfig original = new TribulationConfig();
         original.hud.enabled = false;
-        original.hud.anchor = TribulationConfig.AnchorPosition.BOTTOM_RIGHT;
+        original.hud.anchor = TribulationConfig.Anchor.BOTTOM_RIGHT;
         original.hud.offsetX = 12;
         original.hud.offsetY = 20;
         original.save(path);
@@ -559,7 +559,7 @@ class TribulationConfigTest {
         TribulationConfig reloaded = TribulationConfig.load(path);
 
         assertFalse(reloaded.hud.enabled);
-        assertEquals(TribulationConfig.AnchorPosition.BOTTOM_RIGHT, reloaded.hud.anchor);
+        assertEquals(TribulationConfig.Anchor.BOTTOM_RIGHT, reloaded.hud.anchor);
         assertEquals(12, reloaded.hud.offsetX);
         assertEquals(20, reloaded.hud.offsetY);
     }

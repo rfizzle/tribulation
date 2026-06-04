@@ -8,7 +8,10 @@ public final class ClientNetworkHandler {
 
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(TribulationLevelPayload.TYPE, (payload, context) -> {
-            context.client().execute(() -> ClientTribulationState.setLevel(payload.level()));
+            context.client().execute(() -> {
+                ClientTribulationState.setLevel(payload.level());
+                ClientTribulationState.setProgress(payload.progressTicks(), payload.goalTicks());
+            });
         });
     }
 }

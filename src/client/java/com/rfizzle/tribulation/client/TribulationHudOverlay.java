@@ -7,18 +7,18 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
-    static final String SHIELD_CHAR = "⛨";
-    private static final int PADDING_X = 4;
-    private static final int PADDING_Y = 3;
-    private static final int BG_COLOR = 0x80000000;
+    private static final ResourceLocation ICON = Tribulation.id("textures/gui/hud_icon.png");
+    private static final int ICON_SIZE = 16;
+
+    private static final int BAR_HEIGHT = 2;
+    private static final int BAR_GAP = 1;
+    private static final int BAR_BG_COLOR = 0xC0202020;
+
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
-    private static final int ICON_COLOR = 0xFFFFFFFF;
 
     private static final int[] TIER_COLORS = {
             0xFFFFFFFF, // Tier 0: White
@@ -43,43 +43,66 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);
-        int color = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp());
+        // The badge is icon-only: tier is conveyed by the icon tint and the
+        // progress bar. The level-up flash (gold -> tier color) is applied to
+        // the tint so feedback isn't lost now that the number is gone.
+        int color = getAnimatedColor(tier, ClientTribulationState.getLevelUpTimestamp());
 
-        int tierColor = color & 0x00FFFFFF;
-        MutableComponent text = Component.literal(SHIELD_CHAR + " ")
-                .withStyle(Style.EMPTY.withColor(ICON_COLOR & 0x00FFFFFF))
-                .append(Component.literal(String.valueOf(level))
-                        .withStyle(Style.EMPTY.withColor(tierColor)));
+        int screenW = graphics.guiWidth();
+        int screenH = graphics.guiHeight();
+        TribulationConfig.Anchor anchor = config.hud.anchor != null ? config.hud.anchor : TribulationConfig.Anchor.TOP_LEFT;
+        int x = computeOriginX(anchor, screenW, config.hud.offsetX);
+        int y = computeOriginY(anchor, screenH, config.hud.offsetY);
 
-        int textWidth = mc.font.width(text);
-        int totalWidth = textWidth + PADDING_X * 2;
-        int totalHeight = mc.font.lineHeight + PADDING_Y * 2;
+        float r = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
+        graphics.setColor(r, g, b, 1.0f);
+        graphics.blit(ICON, x, y, ICON_SIZE, ICON_SIZE, 0, 0, 32, 32, 32, 32);
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        int screenWidth = mc.getWindow().getGuiScaledWidth();
-        int screenHeight = mc.getWindow().getGuiScaledHeight();
-
-        int bgX = computeX(config.hud, screenWidth, totalWidth);
-        int bgY = computeY(config.hud, screenHeight, totalHeight);
-
-        graphics.fill(bgX, bgY, bgX + totalWidth, bgY + totalHeight, BG_COLOR);
-        graphics.drawString(mc.font, text, bgX + PADDING_X, bgY + PADDING_Y, 0xFFFFFFFF, true);
+        // Progress bar under the icon — fraction of ticks toward next level.
+        int barX = x;
+        int barY = y + ICON_SIZE + BAR_GAP;
+        int barW = ICON_SIZE;
+        graphics.fill(barX, barY, barX + barW, barY + BAR_HEIGHT, BAR_BG_COLOR);
+        float fraction = ClientTribulationState.getProgressFraction();
+        int filledW = Math.round(barW * fraction);
+        if (filledW > 0) {
+            graphics.fill(barX, barY, barX + filledW, barY + BAR_HEIGHT, color);
+        }
     }
 
-    static int computeX(TribulationConfig.Hud hud, int screenWidth, int elementWidth) {
-        return switch (hud.anchor) {
-            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - elementWidth - hud.offsetX;
-            default -> hud.offsetX;
+    static int computeWidth() {
+        // Icon-only badge: footprint is the icon width; the bar sits below at
+        // the same width.
+        return ICON_SIZE;
+    }
+
+    static int computeHeight() {
+        return ICON_SIZE + BAR_GAP + BAR_HEIGHT;
+    }
+
+    /**
+     * Origin = top-left corner of the icon. Offset is measured from the
+     * configured anchor edge inward, so the badge stays the same distance
+     * from its corner regardless of screen size or how wide the number is.
+     */
+    static int computeOriginX(TribulationConfig.Anchor anchor, int screenW, int offsetX) {
+        return switch (anchor) {
+            case TOP_LEFT, BOTTOM_LEFT -> offsetX;
+            case TOP_RIGHT, BOTTOM_RIGHT -> screenW - offsetX - ICON_SIZE;
         };
     }
 
-    static int computeY(TribulationConfig.Hud hud, int screenHeight, int elementHeight) {
-        return switch (hud.anchor) {
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - elementHeight - hud.offsetY;
-            default -> hud.offsetY;
+    static int computeOriginY(TribulationConfig.Anchor anchor, int screenH, int offsetY) {
+        return switch (anchor) {
+            case TOP_LEFT, TOP_RIGHT -> offsetY;
+            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenH - offsetY - computeHeight();
         };
     }
 
-    static int getTextColor(int tier, long levelUpTimestamp) {
+    static int getAnimatedColor(int tier, long levelUpTimestamp) {
         long elapsed = System.currentTimeMillis() - levelUpTimestamp;
         if (elapsed >= 0 && elapsed < ANIMATION_DURATION_MS) {
             float progress = (float) elapsed / ANIMATION_DURATION_MS;

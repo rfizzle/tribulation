@@ -95,9 +95,9 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .build());
         cat.addEntry(entry.startSelector(
                         Component.translatable("config.tribulation.hud.anchor"),
-                        TribulationConfig.AnchorPosition.values(),
+                        TribulationConfig.Anchor.values(),
                         hud.anchor)
-                .setDefaultValue(TribulationConfig.AnchorPosition.TOP_LEFT)
+                .setDefaultValue(TribulationConfig.Anchor.TOP_LEFT)
                 .setSaveConsumer(v -> hud.anchor = v)
                 .build());
         cat.addEntry(entry.startIntField(

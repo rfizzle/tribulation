@@ -139,7 +139,7 @@ public final class TribulationCommand {
         }
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
         int actual = state.setLevel(target.getUUID(), requested, cfg.general.maxLevel);
-        TribulationNetworking.syncLevel(target, actual);
+        TribulationNetworking.syncLevel(target);
         src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                 "Set %s to level %d", target.getGameProfile().getName(), actual)), true);
         return Command.SINGLE_SUCCESS;
@@ -150,7 +150,7 @@ public final class TribulationCommand {
         CommandSourceStack src = ctx.getSource();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
         state.reset(target.getUUID());
-        TribulationNetworking.syncLevel(target, 0);
+        TribulationNetworking.syncLevel(target);
         src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                 "Reset %s to level 0", target.getGameProfile().getName())), true);
         return Command.SINGLE_SUCCESS;

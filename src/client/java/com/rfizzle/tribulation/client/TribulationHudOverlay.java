@@ -8,9 +8,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 
 public final class TribulationHudOverlay implements HudRenderCallback {
     private static final ResourceLocation ICON = Tribulation.id("textures/gui/hud_icon.png");
@@ -46,33 +43,23 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);
-        int textColor = getTextColor(tier, ClientTribulationState.getLevelUpTimestamp()) & 0x00FFFFFF;
-        int tierColor = getTierColor(tier);
+        // The badge is icon-only: tier is conveyed by the icon tint and the
+        // progress bar. The level-up flash (gold -> tier color) is applied to
+        // the tint so feedback isn't lost now that the number is gone.
+        int color = getAnimatedColor(tier, ClientTribulationState.getLevelUpTimestamp());
 
-        MutableComponent text = Component.literal(String.valueOf(level))
-                .withStyle(Style.EMPTY.withColor(textColor));
-
-        int textWidthForLayout = mc.font.width(text);
         int screenW = graphics.guiWidth();
         int screenH = graphics.guiHeight();
         TribulationConfig.Anchor anchor = config.hud.anchor != null ? config.hud.anchor : TribulationConfig.Anchor.TOP_LEFT;
-        int x = computeOriginX(anchor, screenW, config.hud.offsetX, textWidthForLayout);
+        int x = computeOriginX(anchor, screenW, config.hud.offsetX);
         int y = computeOriginY(anchor, screenH, config.hud.offsetY);
 
-        float r = ((tierColor >> 16) & 0xFF) / 255f;
-        float g = ((tierColor >> 8) & 0xFF) / 255f;
-        float b = (tierColor & 0xFF) / 255f;
+        float r = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
         graphics.setColor(r, g, b, 1.0f);
         graphics.blit(ICON, x, y, ICON_SIZE, ICON_SIZE, 0, 0, 32, 32, 32, 32);
         graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        // Level badge anchored to the top-right of the icon — right edge of text
-        // aligns with right edge of icon, top edge aligns with top of icon. No
-        // centering math, so the result is robust regardless of which icon
-        // texture is used or how the glyph sits inside its cell.
-        int textX = x + ICON_SIZE - textWidthForLayout;
-        int textY = y;
-        graphics.drawString(mc.font, text, textX, textY, 0xFFFFFFFF, true);
 
         // Progress bar under the icon — fraction of ticks toward next level.
         int barX = x;
@@ -82,14 +69,14 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         float fraction = ClientTribulationState.getProgressFraction();
         int filledW = Math.round(barW * fraction);
         if (filledW > 0) {
-            graphics.fill(barX, barY, barX + filledW, barY + BAR_HEIGHT, tierColor);
+            graphics.fill(barX, barY, barX + filledW, barY + BAR_HEIGHT, color);
         }
     }
 
-    static int computeWidth(int textWidth) {
-        // Number overlays the icon and may extend leftward for wide values; bar
-        // sits below at icon width. Total footprint is the larger of the two.
-        return Math.max(ICON_SIZE, textWidth);
+    static int computeWidth() {
+        // Icon-only badge: footprint is the icon width; the bar sits below at
+        // the same width.
+        return ICON_SIZE;
     }
 
     static int computeHeight() {
@@ -101,10 +88,9 @@ public final class TribulationHudOverlay implements HudRenderCallback {
      * configured anchor edge inward, so the badge stays the same distance
      * from its corner regardless of screen size or how wide the number is.
      */
-    static int computeOriginX(TribulationConfig.Anchor anchor, int screenW, int offsetX, int textWidth) {
-        int footprint = computeWidth(textWidth);
+    static int computeOriginX(TribulationConfig.Anchor anchor, int screenW, int offsetX) {
         return switch (anchor) {
-            case TOP_LEFT, BOTTOM_LEFT -> offsetX + (footprint - ICON_SIZE);
+            case TOP_LEFT, BOTTOM_LEFT -> offsetX;
             case TOP_RIGHT, BOTTOM_RIGHT -> screenW - offsetX - ICON_SIZE;
         };
     }
@@ -116,7 +102,7 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         };
     }
 
-    static int getTextColor(int tier, long levelUpTimestamp) {
+    static int getAnimatedColor(int tier, long levelUpTimestamp) {
         long elapsed = System.currentTimeMillis() - levelUpTimestamp;
         if (elapsed >= 0 && elapsed < ANIMATION_DURATION_MS) {
             float progress = (float) elapsed / ANIMATION_DURATION_MS;

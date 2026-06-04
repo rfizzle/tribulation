@@ -14,16 +14,9 @@ class TribulationHudOverlayTest {
     // ---- Layout tests ----
 
     @Test
-    void computeWidth_textWiderThanIcon_returnsTextWidth() {
-        // Number overlays the icon top-right; if it extends leftward, total footprint
-        // is the text width.
-        assertEquals(20, TribulationHudOverlay.computeWidth(20));
-    }
-
-    @Test
-    void computeWidth_textNarrowerThanIcon_returnsIconWidth() {
-        // Short labels (e.g. single digits) stay within the 16-px icon footprint.
-        assertEquals(16, TribulationHudOverlay.computeWidth(5));
+    void computeWidth_returnsIconWidth() {
+        // Icon-only badge: footprint is always the 16-px icon width.
+        assertEquals(16, TribulationHudOverlay.computeWidth());
     }
 
     @Test
@@ -36,39 +29,28 @@ class TribulationHudOverlayTest {
 
     @Test
     void computeOriginX_topLeft_appliesOffsetFromLeft() {
-        // Single-digit label: footprint == ICON_SIZE, no extra shift needed.
-        assertEquals(4, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, 5));
-    }
-
-    @Test
-    void computeOriginX_topLeft_wideTextShiftsIconRight() {
-        // When the number is wider than the icon it overhangs to the LEFT of the
-        // icon. Push the icon right by the overhang so the badge stays at the
-        // configured X offset from the left edge.
-        int textWidth = 20;
-        int overhang = textWidth - 16; // 4
-        assertEquals(4 + overhang, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, textWidth));
+        assertEquals(4, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4));
     }
 
     @Test
     void computeOriginX_topRight_appliesOffsetFromRight() {
         // screenW - offset - iconSize.
-        assertEquals(854 - 4 - 16, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4, 5));
+        assertEquals(854 - 4 - 16, TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4));
     }
 
     @Test
     void computeOriginX_bottomLeft_matchesTopLeft() {
         // X axis behaves identically for left/right pairs.
         assertEquals(
-                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4, 5),
-                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_LEFT, 854, 4, 5));
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_LEFT, 854, 4),
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_LEFT, 854, 4));
     }
 
     @Test
     void computeOriginX_bottomRight_matchesTopRight() {
         assertEquals(
-                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4, 5),
-                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_RIGHT, 854, 4, 5));
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.TOP_RIGHT, 854, 4),
+                TribulationHudOverlay.computeOriginX(TribulationConfig.Anchor.BOTTOM_RIGHT, 854, 4));
     }
 
     @Test
@@ -153,23 +135,23 @@ class TribulationHudOverlayTest {
     }
 
     @Test
-    void getTextColor_noAnimation_returnsTierColor() {
+    void getAnimatedColor_noAnimation_returnsTierColor() {
         long oldTimestamp = System.currentTimeMillis() - 5000;
-        int color = TribulationHudOverlay.getTextColor(0, oldTimestamp);
+        int color = TribulationHudOverlay.getAnimatedColor(0, oldTimestamp);
         assertEquals(TribulationHudOverlay.getTierColor(0), color);
     }
 
     @Test
-    void getTextColor_duringAnimation_returnsBlendedColor() {
+    void getAnimatedColor_duringAnimation_returnsBlendedColor() {
         long recentTimestamp = System.currentTimeMillis() - 100;
-        int color = TribulationHudOverlay.getTextColor(0, recentTimestamp);
+        int color = TribulationHudOverlay.getAnimatedColor(0, recentTimestamp);
         int tierColor = TribulationHudOverlay.getTierColor(0);
         assertNotEquals(tierColor, color);
     }
 
     @Test
-    void getTextColor_negativeTimestamp_returnsTierColor() {
-        int color = TribulationHudOverlay.getTextColor(3, -1);
+    void getAnimatedColor_negativeTimestamp_returnsTierColor() {
+        int color = TribulationHudOverlay.getAnimatedColor(3, -1);
         assertEquals(TribulationHudOverlay.getTierColor(3), color);
     }
 }

@@ -83,7 +83,7 @@ class TribulationHudOverlayTest {
             "2, 255, 255, 140, 0",   // orange
             "3, 255, 255, 96, 96",   // light red
             "4, 255, 255, 0, 0",     // red
-            "5, 255, 139, 0, 139",   // purple
+            "5, 255, 139, 0, 0",     // dark crimson
     })
     void getTierColor_returnsExpectedForTier(int tier, int expectedA, int expectedR, int expectedG, int expectedB) {
         int color = TribulationHudOverlay.getTierColor(tier);

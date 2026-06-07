@@ -61,12 +61,16 @@ public class APIGameTest implements FabricGameTest {
         TribulationConfig cfg = Tribulation.getConfig();
 
         AtomicInteger eventFiredCount = new AtomicInteger(0);
+        AtomicInteger lastOldLevel = new AtomicInteger(-1);
+        AtomicInteger lastNewLevel = new AtomicInteger(-1);
         AtomicBoolean active = new AtomicBoolean(true);
 
         TribulationLevelCallback listener = (p, oldLvl, newLvl) -> {
             if (!active.get()) return;
             if (p.getUUID().equals(player.getUUID())) {
                 eventFiredCount.incrementAndGet();
+                lastOldLevel.set(oldLvl);
+                lastNewLevel.set(newLvl);
             }
         };
         TribulationLevelCallback.EVENT.register(listener);
@@ -79,6 +83,8 @@ public class APIGameTest implements FabricGameTest {
 
             helper.succeedWhen(() -> {
                 helper.assertValueEqual(eventFiredCount.get(), 1, "Event should fire on level up");
+                helper.assertValueEqual(lastOldLevel.get(), 0, "Old level should be 0");
+                helper.assertValueEqual(lastNewLevel.get(), 1, "New level should be 1");
             });
         } finally {
             active.set(false);

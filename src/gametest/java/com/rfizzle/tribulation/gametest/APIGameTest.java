@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.gametest;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
+import com.rfizzle.tribulation.command.TribulationCommand;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -10,6 +11,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class APIGameTest implements FabricGameTest {
@@ -24,8 +26,10 @@ public class APIGameTest implements FabricGameTest {
         AtomicInteger eventFiredCount = new AtomicInteger(0);
         AtomicInteger lastOldLevel = new AtomicInteger(-1);
         AtomicInteger lastNewLevel = new AtomicInteger(-1);
+        AtomicBoolean active = new AtomicBoolean(true);
 
         TribulationLevelCallback listener = (p, oldLvl, newLvl) -> {
+            if (!active.get()) return;
             if (p.getUUID().equals(player.getUUID())) {
                 eventFiredCount.incrementAndGet();
                 lastOldLevel.set(oldLvl);
@@ -37,21 +41,7 @@ public class APIGameTest implements FabricGameTest {
 
         try {
             state.reset(player.getUUID());
-            int oldLevel = state.getLevel(player.getUUID()); // Should be 0
-
-            // We need to use the same logic as the command to fire the event,
-            // but since we want to test that our hooks work, we should ideally
-            // trigger the hooks. However, GameTest is a bit limited for commands.
-            // Let's manually trigger the state change and fire the event to see if registration works,
-            // OR better, call a method that has the hook.
-
-            // Actually, we should test the hooks we added.
-            // Let's simulate what runSet does.
-            int requestedLevel = 5;
-            int actual = state.setLevel(player.getUUID(), requestedLevel, cfg.general.maxLevel);
-            if (oldLevel != actual) {
-                TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, actual);
-            }
+            TribulationCommand.applySetLevel(player, 5, state, cfg);
 
             helper.succeedWhen(() -> {
                 helper.assertValueEqual(eventFiredCount.get(), 1, "Event should fire once");
@@ -59,8 +49,7 @@ public class APIGameTest implements FabricGameTest {
                 helper.assertValueEqual(lastNewLevel.get(), 5, "New level should be 5");
             });
         } finally {
-            // No easy way to unregister Fabric events in a test, but since this is a mock/temporary
-            // environment it might be okay. In a real scenario we'd want a way to remove the listener.
+            active.set(false);
         }
     }
 
@@ -72,8 +61,10 @@ public class APIGameTest implements FabricGameTest {
         TribulationConfig cfg = Tribulation.getConfig();
 
         AtomicInteger eventFiredCount = new AtomicInteger(0);
+        AtomicBoolean active = new AtomicBoolean(true);
 
         TribulationLevelCallback listener = (p, oldLvl, newLvl) -> {
+            if (!active.get()) return;
             if (p.getUUID().equals(player.getUUID())) {
                 eventFiredCount.incrementAndGet();
             }
@@ -82,20 +73,15 @@ public class APIGameTest implements FabricGameTest {
 
         try {
             state.reset(player.getUUID());
-            int levelUpTicks = cfg.general.levelUpTicks;
-
-            // Simulate Tribulation.registerTickHandler logic
-            int oldLevel = state.getLevel(player.getUUID());
-            int levelsGained = state.incrementTick(player.getUUID(), levelUpTicks, levelUpTicks, cfg.general.maxLevel);
-            if (levelsGained > 0) {
-                int newLevel = state.getLevel(player.getUUID());
-                TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
-            }
+            // Pass levelUpTicks as ticksToAdd to cross a level boundary in one call,
+            // exercising the same production path the server tick handler uses.
+            Tribulation.applyLevelTick(player, state, cfg, cfg.general.levelUpTicks);
 
             helper.succeedWhen(() -> {
                 helper.assertValueEqual(eventFiredCount.get(), 1, "Event should fire on level up");
             });
         } finally {
+            active.set(false);
         }
     }
 }

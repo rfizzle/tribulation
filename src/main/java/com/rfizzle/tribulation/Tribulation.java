@@ -84,23 +84,31 @@ public class Tribulation implements ModInitializer {
                 return;
             }
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-            int levelUpTicks = cfg.general.levelUpTicks;
-            int maxLevel = cfg.general.maxLevel;
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                int oldLevel = state.getLevel(player.getUUID());
-                int oldTier = TierManager.getTier(oldLevel, cfg.tiers);
-                int levelsGained = state.incrementTick(player.getUUID(), TICK_INTERVAL, levelUpTicks, maxLevel);
-                if (levelsGained > 0) {
-                    int newLevel = state.getLevel(player.getUUID());
-                    TribulationNetworking.syncLevel(player);
-                    TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
-                    if (cfg.general.notifyLevelUp) {
-                        int newTier = TierManager.getTier(newLevel, cfg.tiers);
-                        sendLevelUpMessage(player, newLevel, oldTier, newTier, maxLevel, cfg.general.notifyLevelUpShowTier);
-                    }
-                }
+                applyLevelTick(player, state, cfg, TICK_INTERVAL);
             }
         });
+    }
+
+    /**
+     * Advance one player's tick counter by {@code ticksToAdd}, and fire
+     * {@link TribulationLevelCallback} if a level boundary is crossed. The
+     * production tick handler calls this with {@link #TICK_INTERVAL}; tests
+     * may pass {@code cfg.general.levelUpTicks} to force a level-up.
+     */
+    public static void applyLevelTick(ServerPlayer player, PlayerDifficultyState state, TribulationConfig cfg, int ticksToAdd) {
+        int oldLevel = state.getLevel(player.getUUID());
+        int oldTier = TierManager.getTier(oldLevel, cfg.tiers);
+        int levelsGained = state.incrementTick(player.getUUID(), ticksToAdd, cfg.general.levelUpTicks, cfg.general.maxLevel);
+        if (levelsGained > 0) {
+            int newLevel = state.getLevel(player.getUUID());
+            TribulationNetworking.syncLevel(player);
+            TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
+            if (cfg.general.notifyLevelUp) {
+                int newTier = TierManager.getTier(newLevel, cfg.tiers);
+                sendLevelUpMessage(player, newLevel, oldTier, newTier, cfg.general.maxLevel, cfg.general.notifyLevelUpShowTier);
+            }
+        }
     }
 
     private static void sendLevelUpMessage(ServerPlayer player, int newLevel, int oldTier, int newTier, int maxLevel, boolean showTier) {

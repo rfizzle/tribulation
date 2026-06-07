@@ -139,15 +139,25 @@ public final class TribulationCommand {
             return 0;
         }
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
+        int actual = applySetLevel(target, requested, state, cfg);
+        src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                "Set %s to level %d", target.getGameProfile().getName(), actual)), true);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    /**
+     * Core of the {@code /tribulation set} operation. Sets the player's level,
+     * syncs it to the client, and fires {@link TribulationLevelCallback} if the
+     * level changed. Exposed for integration testing.
+     */
+    public static int applySetLevel(ServerPlayer target, int requested, PlayerDifficultyState state, TribulationConfig cfg) {
         int oldLevel = state.getLevel(target.getUUID());
         int actual = state.setLevel(target.getUUID(), requested, cfg.general.maxLevel);
         TribulationNetworking.syncLevel(target);
         if (oldLevel != actual) {
             TribulationLevelCallback.EVENT.invoker().onLevelChanged(target, oldLevel, actual);
         }
-        src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "Set %s to level %d", target.getGameProfile().getName(), actual)), true);
-        return Command.SINGLE_SUCCESS;
+        return actual;
     }
 
     private static int runReset(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

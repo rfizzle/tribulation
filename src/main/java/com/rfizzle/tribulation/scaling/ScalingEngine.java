@@ -7,16 +7,21 @@ import com.rfizzle.tribulation.config.TribulationConfig.HeightScaling;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.config.TribulationConfig.StatCaps;
 import com.rfizzle.tribulation.config.TribulationConfig.Tiers;
+import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 import java.util.Collections;
@@ -268,19 +273,19 @@ public final class ScalingEngine {
      * player within the configured detection range. Returns 0 if no player is
      * nearby or if the range is disabled.
      */
-    public static int getEffectiveLevel(net.minecraft.world.entity.Entity entity, ServerLevel world) {
+    public static int getEffectiveLevel(Entity entity, ServerLevel world) {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) return 0;
         double range = cfg.general.mobDetectionRange;
         if (range <= 0) return 0;
 
-        net.minecraft.world.entity.player.Player nearest = world.getNearestPlayer(entity, range);
-        if (!(nearest instanceof net.minecraft.server.level.ServerPlayer sp)) return 0;
+        Player nearest = world.getNearestPlayer(entity, range);
+        if (!(nearest instanceof ServerPlayer sp)) return 0;
 
-        net.minecraft.server.MinecraftServer server = world.getServer();
+        MinecraftServer server = world.getServer();
         if (server == null) return 0;
 
-        com.rfizzle.tribulation.data.PlayerDifficultyState state = com.rfizzle.tribulation.data.PlayerDifficultyState.getOrCreate(server);
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         return state.getLevel(sp.getUUID());
     }
 

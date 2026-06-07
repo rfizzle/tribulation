@@ -26,7 +26,7 @@ public final class TribulationHudOverlay implements HudRenderCallback {
             0xFFFF8C00, // Tier 2: Orange
             0xFFFF6060, // Tier 3: Light Red
             0xFFFF0000, // Tier 4: Red
-            0xFF8B008B, // Tier 5: Dark Red / Purple
+            0xFF8B0000, // Tier 5: Dark Crimson
     };
 
     @Override

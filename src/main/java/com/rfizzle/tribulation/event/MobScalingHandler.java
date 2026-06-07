@@ -4,6 +4,7 @@ import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.ability.AbilityManager;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
+import com.rfizzle.tribulation.data.TribulationAttachments;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.scaling.BossScalingEngine;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
@@ -75,6 +76,9 @@ public final class MobScalingHandler {
                 return;
             }
             int bossPlayerLevel = ScalingEngine.getEffectiveLevel(mob, world);
+            int bossTier = TierManager.getTier(bossPlayerLevel, cfg.tiers);
+            mob.setAttached(TribulationAttachments.SCALED_TIER, bossTier);
+
             BossScalingEngine.applyModifiers(mob, world, bossPlayerLevel, cfg);
             mob.setHealth(mob.getMaxHealth());
             mob.addTag(PROCESSED_TAG);
@@ -87,6 +91,9 @@ public final class MobScalingHandler {
         }
 
         int playerLevel = ScalingEngine.getEffectiveLevel(mob, world);
+        int tier = TierManager.getTier(playerLevel, cfg.tiers);
+        mob.setAttached(TribulationAttachments.SCALED_TIER, tier);
+
         ScalingEngine.applyModifiers(mob, world, playerLevel, cfg, scaling);
 
         // Abilities and zombie variants are vanilla-only concerns — they key off
@@ -96,10 +103,13 @@ public final class MobScalingHandler {
         // ability injection happens.
         String toggleKey = resolveToggleKey(typeId);
         if (toggleKey != null && cfg.isMobEnabled(toggleKey)) {
-            int tier = TierManager.getTier(playerLevel, cfg.tiers);
+            ArmorEquipmentHandler.processArmor(mob, tier, cfg);
             AbilityManager.applyAbilities(mob, tier, toggleKey, cfg);
             ZombieVariantHandler.apply(mob, toggleKey, cfg.specialZombies, world.getRandom());
         }
+
+        ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_ARMOR, cfg.armorEquipment.armorCeiling);
+        ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_TOUGHNESS, cfg.armorEquipment.toughnessCeiling);
 
         // Modifying max health does not raise current HP; top the mob off so
         // its displayed and effective HP match the scaled maximum at spawn.

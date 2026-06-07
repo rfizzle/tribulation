@@ -35,6 +35,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addShards(builder, entry, current);
             addHardcoreHearts(builder, entry, current);
             addSoulInventory(builder, entry, current);
+            addArmorEquipment(builder, entry, current);
             addSpecialZombies(builder, entry, current);
             addBosses(builder, entry, current);
             addXpAndLoot(builder, entry, current);
@@ -588,6 +589,44 @@ public final class ModMenuIntegration implements ModMenuApi {
                         config.xpAndLoot.maxLootChance)
                 .setDefaultValue(0.7).setMin(0.0).setMax(1.0)
                 .setSaveConsumer(v -> config.xpAndLoot.maxLootChance = v)
+                .build());
+    }
+
+    private static void addArmorEquipment(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.armor"));
+        TribulationConfig.ArmorEquipment ae = config.armorEquipment;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.armor.enabled"),
+                        ae.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> ae.enabled = v)
+                .build());
+        cat.addEntry(entry.startSelector(
+                        Component.translatable("config.tribulation.armor.material_roll_mode"),
+                        TribulationConfig.MaterialRollMode.values(),
+                        ae.materialRollMode)
+                .setDefaultValue(TribulationConfig.MaterialRollMode.PER_MOB)
+                .setSaveConsumer(v -> ae.materialRollMode = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.armor.drop_chance"),
+                        ae.armorDropChance)
+                .setDefaultValue(0.085).setMin(0.0).setMax(2.0)
+                .setSaveConsumer(v -> ae.armorDropChance = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.armor.armor_ceiling"),
+                        ae.armorCeiling)
+                .setDefaultValue(24.0).setMin(0.0)
+                .setSaveConsumer(v -> ae.armorCeiling = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.armor.toughness_ceiling"),
+                        ae.toughnessCeiling)
+                .setDefaultValue(15.0).setMin(0.0)
+                .setSaveConsumer(v -> ae.toughnessCeiling = v)
                 .build());
     }
 }

@@ -141,6 +141,25 @@ if (FabricLoader.getInstance().isModLoaded("tribulation")) {
 int clientLevel = com.rfizzle.tribulation.api.TribulationAPI.getClientLevel();
 ```
 
+**Checking Mob Scaling State:**
+```java
+if (FabricLoader.getInstance().isModLoaded("tribulation")) {
+    // Returns the tier (0-5) the mob was scaled to at spawn
+    OptionalInt tier = com.rfizzle.tribulation.api.TribulationAPI.getScaledTier(mob);
+    boolean wasScaled = com.rfizzle.tribulation.api.TribulationAPI.wasScaledByTribulation(mob);
+}
+```
+
+**Overriding Armor Drop Chance:**
+```java
+if (FabricLoader.getInstance().isModLoaded("tribulation")) {
+    // Hook armor drops for integration with loot mods
+    com.rfizzle.tribulation.api.TribulationAPI.setArmorDropChanceProvider((mob, tier, slot, stack, defaultChance) -> {
+        return 2.0f; // Force 100% drop chance (Mob.PRESERVE_ITEM_DROP_CHANCE)
+    });
+}
+```
+
 ---
 
 ## License

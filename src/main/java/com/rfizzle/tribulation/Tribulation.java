@@ -36,6 +36,7 @@ public class Tribulation implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("Tribulation initializing");
         config = TribulationConfig.load();
+        com.rfizzle.tribulation.data.TribulationAttachments.register();
         TribulationNetworking.register();
         TribulationItems.register();
         registerTickHandler();

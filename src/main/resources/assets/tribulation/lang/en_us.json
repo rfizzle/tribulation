@@ -148,6 +148,13 @@
     "config.tribulation.soul_inventory.destroy_xp": "Destroy XP on Death",
     "config.tribulation.soul_inventory.respect_keep_inventory": "Respect keepInventory Gamerule",
 
+    "config.tribulation.category.armor": "Armor Equipment",
+    "config.tribulation.armor.enabled": "Enabled",
+    "config.tribulation.armor.material_roll_mode": "Material Selection Mode",
+    "config.tribulation.armor.drop_chance": "Armor Drop Chance",
+    "config.tribulation.armor.armor_ceiling": "Max Combined Armor",
+    "config.tribulation.armor.toughness_ceiling": "Max Combined Toughness",
+
     "item.tribulation.heart_fragment": "Heart Fragment",
     "item.tribulation.heart_fragment.tooltip": "Right-click to restore a lost heart.",
     "item.tribulation.heart_fragment.used": "Restored %s hearts (%s/%s max HP)",

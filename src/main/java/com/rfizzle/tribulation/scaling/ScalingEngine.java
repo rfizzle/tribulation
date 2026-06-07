@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -461,6 +462,55 @@ public final class ScalingEngine {
             }
         }
         return false;
+    }
+
+    /**
+     * Proportionally scale down the tribulation axis modifiers for an attribute
+     * if the total value (base + all modifiers) exceeds the ceiling.
+     *
+     * <p>Formula:
+     * 1. Calculate surplus = total - ceiling.
+     * 2. Calculate sum of tribulation modifiers.
+     * 3. If surplus > 0 and tribulation sum > 0:
+     *    new_amount = old_amount * (tribulationSum - surplus) / tribulationSum
+     *    (clamped to 0).
+     */
+    public static void clampToCeiling(Mob mob, String attributeKey, double ceiling) {
+        if (ceiling <= 0) return;
+        Holder<Attribute> holder = attributeHolder(attributeKey);
+        if (holder == null) return;
+        AttributeInstance instance = mob.getAttribute(holder);
+        if (instance == null) return;
+
+        double total = instance.getValue();
+        double surplus = total - ceiling;
+        if (surplus <= 0) return;
+
+        double tribulationSum = 0;
+        List<AttributeModifier> mods = new ArrayList<>();
+        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
+            AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
+            if (mod != null) {
+                tribulationSum += mod.amount();
+                mods.add(mod);
+            }
+        }
+
+        if (tribulationSum <= 0) return;
+
+        double scale = Math.max(0, (tribulationSum - surplus) / tribulationSum);
+        AttributeModifier.Operation op = usesAddValue(attributeKey)
+                ? AttributeModifier.Operation.ADD_VALUE
+                : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+
+        for (AttributeModifier mod : mods) {
+            ResourceLocation id = mod.id();
+            double newAmount = mod.amount() * scale;
+            instance.removeModifier(id);
+            if (newAmount > 0) {
+                instance.addPermanentModifier(new AttributeModifier(id, newAmount, op));
+            }
+        }
     }
 
     /** Map view of attribute key → Holder for external consumers (commands, etc.). */

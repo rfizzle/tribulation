@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.item;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.network.TribulationNetworking;
@@ -85,6 +86,7 @@ public class ShatterShardItem extends Item {
             TribulationNetworking.syncLevel(serverPlayer);
 
             if (before != after) {
+                TribulationLevelCallback.EVENT.invoker().onLevelChanged(serverPlayer, before, after);
                 serverPlayer.displayClientMessage(
                         Component.translatable("item.tribulation.shatter_shard.used", before, after),
                         true

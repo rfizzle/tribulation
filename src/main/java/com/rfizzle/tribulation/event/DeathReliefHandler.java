@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.event;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.network.TribulationNetworking;
@@ -56,6 +57,7 @@ public final class DeathReliefHandler {
             int after = state.getLevel(player.getUUID());
             TribulationNetworking.syncLevel(player);
             if (before != after) {
+                TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, before, after);
                 Tribulation.LOGGER.debug(
                         "Death relief: {} reduced from level {} to {}",
                         player.getGameProfile().getName(),

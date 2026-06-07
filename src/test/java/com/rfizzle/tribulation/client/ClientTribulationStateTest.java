@@ -15,8 +15,8 @@ class ClientTribulationStateTest {
     }
 
     @Test
-    void initialState_isZero() {
-        assertEquals(0, ClientTribulationState.getLevel());
+    void initialState_isSentinel() {
+        assertEquals(-1, ClientTribulationState.getLevel());
         assertEquals(-1, ClientTribulationState.getLevelUpTimestamp());
     }
 
@@ -59,7 +59,7 @@ class ClientTribulationStateTest {
         ClientTribulationState.setLevel(100);
         ClientTribulationState.setProgress(50000, 72000);
         ClientTribulationState.reset();
-        assertEquals(0, ClientTribulationState.getLevel());
+        assertEquals(-1, ClientTribulationState.getLevel());
         assertEquals(-1, ClientTribulationState.getLevelUpTimestamp());
         assertEquals(0, ClientTribulationState.getProgressTicks());
         assertEquals(1, ClientTribulationState.getGoalTicks());

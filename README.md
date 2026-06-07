@@ -105,6 +105,44 @@ If you previously used a mob scaling mod, remove it before installing Tribulatio
 
 ---
 
+## For Mod Developers
+
+Tribulation provides a stable, read-only API and a level-change event for other mods to integrate with. You can use it as a soft dependency by compiling against it with `modCompileOnly` and guarding calls with `FabricLoader.isModLoaded("tribulation")`.
+
+### Gradle Setup
+```gradle
+dependencies {
+    modCompileOnly "maven.modrinth:tribulation:<version>"
+}
+```
+
+### Usage Examples
+
+**Reading Player Level:**
+```java
+if (FabricLoader.getInstance().isModLoaded("tribulation")) {
+    int level = com.rfizzle.tribulation.api.TribulationAPI.getLevel(serverPlayer);
+    int tier = com.rfizzle.tribulation.api.TribulationAPI.getTier(serverPlayer);
+}
+```
+
+**Listening for Level Changes:**
+```java
+if (FabricLoader.getInstance().isModLoaded("tribulation")) {
+    com.rfizzle.tribulation.api.TribulationLevelCallback.EVENT.register((player, oldLevel, newLevel) -> {
+        player.sendMessage(Text.of("Your level changed from " + oldLevel + " to " + newLevel + "!"), false);
+    });
+}
+```
+
+**Safe Client-Side Access:**
+```java
+// Safe to call on client; returns -1 if unknown or mod not present
+int clientLevel = com.rfizzle.tribulation.api.TribulationAPI.getClientLevel();
+```
+
+---
+
 ## License
 
 MIT

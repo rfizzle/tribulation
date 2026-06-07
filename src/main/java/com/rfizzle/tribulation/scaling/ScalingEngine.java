@@ -263,6 +263,27 @@ public final class ScalingEngine {
 
     // ---- World-aware ----
 
+    /**
+     * Resolve the effective Tribulation level for an entity based on the nearest
+     * player within the configured detection range. Returns 0 if no player is
+     * nearby or if the range is disabled.
+     */
+    public static int getEffectiveLevel(net.minecraft.world.entity.Entity entity, ServerLevel world) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg == null) return 0;
+        double range = cfg.general.mobDetectionRange;
+        if (range <= 0) return 0;
+
+        net.minecraft.world.entity.player.Player nearest = world.getNearestPlayer(entity, range);
+        if (!(nearest instanceof net.minecraft.server.level.ServerPlayer sp)) return 0;
+
+        net.minecraft.server.MinecraftServer server = world.getServer();
+        if (server == null) return 0;
+
+        com.rfizzle.tribulation.data.PlayerDifficultyState state = com.rfizzle.tribulation.data.PlayerDifficultyState.getOrCreate(server);
+        return state.getLevel(sp.getUUID());
+    }
+
     /** 2D horizontal distance from world spawn (Y is excluded by design). */
     public static double horizontalDistanceFromSpawn(ServerLevel world, double mobX, double mobZ) {
         BlockPos spawn = world.getSharedSpawnPos();

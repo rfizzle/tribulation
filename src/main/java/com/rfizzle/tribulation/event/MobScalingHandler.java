@@ -74,7 +74,7 @@ public final class MobScalingHandler {
             if (!cfg.bosses.affectBosses) {
                 return;
             }
-            int bossPlayerLevel = resolveNearestPlayerLevel(mob, world, cfg);
+            int bossPlayerLevel = ScalingEngine.getEffectiveLevel(mob, world);
             BossScalingEngine.applyModifiers(mob, world, bossPlayerLevel, cfg);
             mob.setHealth(mob.getMaxHealth());
             mob.addTag(PROCESSED_TAG);
@@ -86,7 +86,7 @@ public final class MobScalingHandler {
             return;
         }
 
-        int playerLevel = resolveNearestPlayerLevel(mob, world, cfg);
+        int playerLevel = ScalingEngine.getEffectiveLevel(mob, world);
         ScalingEngine.applyModifiers(mob, world, playerLevel, cfg, scaling);
 
         // Abilities and zombie variants are vanilla-only concerns — they key off
@@ -127,17 +127,4 @@ public final class MobScalingHandler {
         return excludedEntities.contains(asString);
     }
 
-    static int resolveNearestPlayerLevel(Mob mob, ServerLevel world, TribulationConfig cfg) {
-        double range = cfg.general.mobDetectionRange;
-        if (range <= 0) return 0;
-
-        Player nearest = world.getNearestPlayer(mob, range);
-        if (!(nearest instanceof ServerPlayer sp)) return 0;
-
-        MinecraftServer server = world.getServer();
-        if (server == null) return 0;
-
-        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-        return state.getLevel(sp.getUUID());
-    }
 }

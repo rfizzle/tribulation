@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation;
 
+import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.command.TribulationCommand;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -92,6 +93,7 @@ public class Tribulation implements ModInitializer {
                 if (levelsGained > 0) {
                     int newLevel = state.getLevel(player.getUUID());
                     TribulationNetworking.syncLevel(player);
+                    TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
                     if (cfg.general.notifyLevelUp) {
                         int newTier = TierManager.getTier(newLevel, cfg.tiers);
                         sendLevelUpMessage(player, newLevel, oldTier, newTier, maxLevel, cfg.general.notifyLevelUpShowTier);

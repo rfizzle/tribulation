@@ -32,6 +32,12 @@ jobs:
           PR_TITLE="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title --jq .title)"
           PR_BODY="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body --jq .body)"
 
+          # Most recent prior review by this bot, so the reviewer doesn't
+          # re-raise findings the latest push already addressed.
+          PREV_REVIEW="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} \
+            --json comments \
+            --jq '[.comments[] | select(.body | startswith("## Code Review"))] | last | .body // ""')"
+
           PROMPT="$(cat .ai/prompts/code-reviewer.md)
 
           ---
@@ -51,6 +57,16 @@ jobs:
           ${PR_BODY}
 
           ---
+          Previous review (if any) — do not repeat findings this push has
+          already addressed; only carry forward items that are genuinely still
+          open:
+          ${PREV_REVIEW:-(none)}
+
+          ---
+          The full repository is checked out in the current working directory.
+          Read any file you need (Read/Grep) to verify a finding before
+          including it.
+
           Diff:
           ${DIFF}"
 
@@ -69,8 +85,8 @@ jobs:
 
             RESULT="$(~/.local/bin/claude -p \
               --output-format json \
-              --max-turns 6 \
-              --max-budget-usd 2.00 \
+              --max-turns 25 \
+              --max-budget-usd 3.00 \
               < /tmp/review-prompt.txt 2>/tmp/review-stderr.txt)" || true
 
             COMMENT="$(echo "$RESULT" | jq -r '.result // empty' 2>/dev/null)" || true

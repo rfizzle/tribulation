@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.command;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -138,19 +139,38 @@ public final class TribulationCommand {
             return 0;
         }
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
-        int actual = state.setLevel(target.getUUID(), requested, cfg.general.maxLevel);
-        TribulationNetworking.syncLevel(target);
+        int actual = applySetLevel(target, requested, state, cfg);
         src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                 "Set %s to level %d", target.getGameProfile().getName(), actual)), true);
         return Command.SINGLE_SUCCESS;
+    }
+
+    /**
+     * Core of the {@code /tribulation set} operation. Sets the player's level,
+     * syncs it to the client, and fires {@link TribulationLevelCallback} if the
+     * level changed. Exposed for integration testing.
+     */
+    public static int applySetLevel(ServerPlayer target, int requested, PlayerDifficultyState state, TribulationConfig cfg) {
+        int oldLevel = state.getLevel(target.getUUID());
+        int actual = state.setLevel(target.getUUID(), requested, cfg.general.maxLevel);
+        TribulationNetworking.syncLevel(target);
+        if (oldLevel != actual) {
+            TribulationLevelCallback.EVENT.invoker().onLevelChanged(target, oldLevel, actual);
+        }
+        return actual;
     }
 
     private static int runReset(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
         CommandSourceStack src = ctx.getSource();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
+        int oldLevel = state.getLevel(target.getUUID());
         state.reset(target.getUUID());
+        int newLevel = state.getLevel(target.getUUID());
         TribulationNetworking.syncLevel(target);
+        if (oldLevel != newLevel) {
+            TribulationLevelCallback.EVENT.invoker().onLevelChanged(target, oldLevel, newLevel);
+        }
         src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                 "Reset %s to level 0", target.getGameProfile().getName())), true);
         return Command.SINGLE_SUCCESS;

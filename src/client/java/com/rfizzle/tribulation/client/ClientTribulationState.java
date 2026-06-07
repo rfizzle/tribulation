@@ -1,8 +1,8 @@
 package com.rfizzle.tribulation.client;
 
 public final class ClientTribulationState {
-    private static int level = 0;
-    private static int previousLevel = 0;
+    private static int level = -1;
+    private static int previousLevel = -1;
     private static long levelUpTimestamp = -1;
     private static int progressTicks = 0;
     private static int goalTicks = 1;
@@ -49,8 +49,8 @@ public final class ClientTribulationState {
     }
 
     public static void reset() {
-        level = 0;
-        previousLevel = 0;
+        level = -1;
+        previousLevel = -1;
         levelUpTimestamp = -1;
         progressTicks = 0;
         goalTicks = 1;

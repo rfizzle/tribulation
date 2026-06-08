@@ -482,28 +482,60 @@ public final class ScalingEngine {
         AttributeInstance instance = mob.getAttribute(holder);
         if (instance == null) return;
 
-        double total = instance.getValue();
-        double surplus = total - ceiling;
-        if (surplus <= 0) return;
-
+        // Sum current Tribulation modifiers
         double tribulationSum = 0;
-        List<AttributeModifier> mods = new ArrayList<>();
+        List<AttributeModifier> tribMods = new ArrayList<>();
         for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
             AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) {
                 tribulationSum += mod.amount();
-                mods.add(mod);
+                tribMods.add(mod);
             }
         }
 
         if (tribulationSum <= 0) return;
+
+        // Calculate projected total because Mob.setItemSlot doesn't update attributes immediately.
+        // base + equipment + other_modifiers + current_tribulation
+        double base = instance.getBaseValue();
+        double equipmentSum = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            net.minecraft.world.item.ItemStack stack = mob.getItemBySlot(slot);
+            if (!stack.isEmpty()) {
+                final double[] slotSum = {0};
+                stack.forEachModifier(slot, (h, mod) -> {
+                    if (h.equals(holder) && mod.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                        slotSum[0] += mod.amount();
+                    }
+                });
+                equipmentSum += slotSum[0];
+            }
+        }
+
+        // Other modifiers (not tribulation, not equipment) already in the instance.
+        double otherSum = 0;
+        for (AttributeModifier mod : instance.getModifiers()) {
+            ResourceLocation id = mod.id();
+            boolean isTrib = id.getNamespace().equals(Tribulation.MOD_ID);
+            boolean isEquip = id.getNamespace().equals("minecraft") && id.getPath().startsWith("armor.");
+            if (!isTrib && !isEquip) {
+                // Heuristic: for Armor/Toughness we only care about ADD_VALUE for the sum
+                if (mod.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                    otherSum += mod.amount();
+                }
+            }
+        }
+
+        double total = base + equipmentSum + otherSum + tribulationSum;
+        double surplus = total - ceiling;
+        if (surplus <= 0) return;
 
         double scale = Math.max(0, (tribulationSum - surplus) / tribulationSum);
         AttributeModifier.Operation op = usesAddValue(attributeKey)
                 ? AttributeModifier.Operation.ADD_VALUE
                 : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
 
-        for (AttributeModifier mod : mods) {
+        for (AttributeModifier mod : tribMods) {
             ResourceLocation id = mod.id();
             double newAmount = mod.amount() * scale;
             instance.removeModifier(id);

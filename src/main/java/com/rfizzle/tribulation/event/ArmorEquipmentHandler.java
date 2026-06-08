@@ -78,17 +78,17 @@ public final class ArmorEquipmentHandler {
         if (mob.getTags().contains(PROCESSED_TAG)) return;
         if (!cfg.armorEquipment.enabled) return;
 
+        // Unconditionally clear armor slots for takeover
+        mob.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+
         ArmorTier tierCfg = cfg.armorEquipment.tiers.get("tier" + tier);
         if (tierCfg == null || tierCfg.materialWeights.isEmpty()) {
             mob.addTag(PROCESSED_TAG);
             return;
         }
-
-        // Clear armor slots for takeover now that we have a tier config
-        mob.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-        mob.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
-        mob.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
-        mob.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
 
         RandomSource random = mob.getRandom();
         if (random.nextInt(100) >= tierCfg.wearChancePercent) {

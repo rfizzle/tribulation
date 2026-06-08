@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -461,6 +462,102 @@ public final class ScalingEngine {
             }
         }
         return false;
+    }
+
+    /**
+     * Proportionally scale down the tribulation axis modifiers for an attribute
+     * if the total value (base + all modifiers) exceeds the ceiling.
+     *
+     * <p>Formula:
+     * 1. Calculate surplus = total - ceiling.
+     * 2. Calculate sum of tribulation modifiers.
+     * 3. If surplus > 0 and tribulation sum > 0:
+     *    new_amount = old_amount * (tribulationSum - surplus) / tribulationSum
+     *    (clamped to 0).
+     */
+    public static void clampToCeiling(Mob mob, String attributeKey, double ceiling) {
+        if (ceiling <= 0) return;
+        Holder<Attribute> holder = attributeHolder(attributeKey);
+        if (holder == null) return;
+        AttributeInstance instance = mob.getAttribute(holder);
+        if (instance == null) return;
+
+        // Sum current Tribulation modifiers
+        double tribulationSum = 0;
+        List<AttributeModifier> tribMods = new ArrayList<>();
+        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
+            AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
+            if (mod != null) {
+                tribulationSum += mod.amount();
+                tribMods.add(mod);
+            }
+        }
+
+        if (tribulationSum <= 0) return;
+
+        // Calculate projected total because Mob.setItemSlot doesn't update attributes immediately.
+        // base + equipment + other_modifiers + current_tribulation
+        double base = instance.getBaseValue();
+        double equipmentSum = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            net.minecraft.world.item.ItemStack stack = mob.getItemBySlot(slot);
+            if (!stack.isEmpty()) {
+                final double[] slotSum = {0};
+                stack.forEachModifier(slot, (h, mod) -> {
+                    if (h.equals(holder) && mod.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                        slotSum[0] += mod.amount();
+                    }
+                });
+                equipmentSum += slotSum[0];
+            }
+        }
+
+        // Other modifiers (not tribulation, not equipment) already in the instance.
+        double otherSum = 0;
+        for (AttributeModifier mod : instance.getModifiers()) {
+            ResourceLocation id = mod.id();
+            boolean isTrib = id.getNamespace().equals(Tribulation.MOD_ID);
+            boolean isEquip = id.getNamespace().equals("minecraft") && id.getPath().startsWith("armor.");
+            if (!isTrib && !isEquip) {
+                // Heuristic: for Armor/Toughness we only care about ADD_VALUE for the sum
+                if (mod.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                    otherSum += mod.amount();
+                }
+            }
+        }
+
+        // Only the tribulation buff is trimmed; base + equipment keep their full value.
+        double scale = ceilingKeepRatio(tribulationSum, base + equipmentSum + otherSum, ceiling);
+        if (scale >= 1.0) return;
+        AttributeModifier.Operation op = usesAddValue(attributeKey)
+                ? AttributeModifier.Operation.ADD_VALUE
+                : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+
+        for (AttributeModifier mod : tribMods) {
+            ResourceLocation id = mod.id();
+            double newAmount = mod.amount() * scale;
+            instance.removeModifier(id);
+            if (newAmount > 0) {
+                instance.addPermanentModifier(new AttributeModifier(id, newAmount, op));
+            }
+        }
+    }
+
+    /**
+     * Pure keep-ratio for the combined-attribute ceiling: the fraction of the
+     * tribulation buff that survives so that {@code nonTribTotal + buff*ratio <= ceiling}.
+     *
+     * <p>{@code nonTribTotal} is everything not owned by Tribulation (base value +
+     * equipment + foreign modifiers). Returns {@code 1.0} when nothing needs trimming,
+     * {@code 0.0} when the buff must be fully removed (or there is no buff to trim).
+     * Extracted as a pure static so the trim math is unit-testable without an
+     * {@link AttributeInstance}.
+     */
+    public static double ceilingKeepRatio(double tribulationSum, double nonTribTotal, double ceiling) {
+        if (tribulationSum <= 0) return 0.0;
+        double surplus = (nonTribTotal + tribulationSum) - ceiling;
+        if (surplus <= 0) return 1.0;
+        return Math.max(0.0, (tribulationSum - surplus) / tribulationSum);
     }
 
     /** Map view of attribute key → Holder for external consumers (commands, etc.). */

@@ -53,6 +53,7 @@ public class TribulationConfig {
     public Tiers tiers = new Tiers();
     public Map<String, Boolean> mobToggles = defaultMobToggles();
     public Abilities abilities = new Abilities();
+    public ArmorEquipment armorEquipment = new ArmorEquipment();
     public Hud hud = new Hud();
 
     public static TribulationConfig load() {
@@ -212,6 +213,18 @@ public class TribulationConfig {
         if (xpAndLoot == null) xpAndLoot = new XpAndLoot();
         if (tiers == null) tiers = new Tiers();
         if (abilities == null) abilities = new Abilities();
+        if (armorEquipment == null) armorEquipment = new ArmorEquipment();
+        if (armorEquipment.tiers == null) {
+            armorEquipment.tiers = ArmorEquipment.defaultArmorTiers();
+        } else {
+            Map<String, ArmorTier> defaults = ArmorEquipment.defaultArmorTiers();
+            for (Map.Entry<String, ArmorTier> entry : defaults.entrySet()) {
+                armorEquipment.tiers.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+        for (ArmorTier at : armorEquipment.tiers.values()) {
+            if (at.materialWeights == null) at.materialWeights = new LinkedHashMap<>();
+        }
         if (hud == null) hud = new Hud();
         if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
 
@@ -344,6 +357,31 @@ public class TribulationConfig {
         if (tiers.tier3 < tiers.tier2) tiers.tier3 = tiers.tier2;
         if (tiers.tier4 < tiers.tier3) tiers.tier4 = tiers.tier3;
         if (tiers.tier5 < tiers.tier4) tiers.tier5 = tiers.tier4;
+
+        // Drop chance is [0,2], not [0,1]: a value >= 1.0 is a valid request for a
+        // guaranteed + pristine drop (vanilla's PRESERVE threshold).
+        armorEquipment.armorDropChance = clampNonNegative("armorEquipment.armorDropChance", armorEquipment.armorDropChance);
+        if (armorEquipment.armorDropChance > 2.0) {
+            Tribulation.LOGGER.warn("armorEquipment.armorDropChance must be <= 2.0, got {}; clamped to 2.0", armorEquipment.armorDropChance);
+            armorEquipment.armorDropChance = 2.0;
+        }
+        armorEquipment.armorCeiling = clampNonNegative("armorEquipment.armorCeiling", armorEquipment.armorCeiling);
+        armorEquipment.toughnessCeiling = clampNonNegative("armorEquipment.toughnessCeiling", armorEquipment.toughnessCeiling);
+
+        for (Map.Entry<String, ArmorTier> entry : armorEquipment.tiers.entrySet()) {
+            ArmorTier at = entry.getValue();
+            at.wearChancePercent = clampPercent("armorEquipment.tiers." + entry.getKey() + ".wearChancePercent", at.wearChancePercent);
+            at.slotCoveragePercent = clampPercent("armorEquipment.tiers." + entry.getKey() + ".slotCoveragePercent", at.slotCoveragePercent);
+            at.enchantChancePercent = clampPercent("armorEquipment.tiers." + entry.getKey() + ".enchantChancePercent", at.enchantChancePercent);
+            if (at.maxProtectionLevel < 0) at.maxProtectionLevel = 0;
+            at.materialWeights.entrySet().removeIf(e -> {
+                if (e.getValue() < 0) {
+                    Tribulation.LOGGER.warn("armorEquipment.tiers.{}.materialWeights.{} must be >= 0, got {}; removing", entry.getKey(), e.getKey(), e.getValue());
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     private static void clampMobScaling(String prefix, MobScaling m) {
@@ -636,6 +674,49 @@ public class TribulationConfig {
 
     public enum Anchor {
         TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+    }
+
+    public static class ArmorEquipment {
+        public boolean enabled = true;
+        public MaterialRollMode materialRollMode = MaterialRollMode.PER_MOB;
+        // Tier armor does not drop by default; a loot mod can opt in via the
+        // ArmorDropChanceProvider API. [0,2]: >=1.0 requests a guaranteed + pristine drop.
+        public double armorDropChance = 0.0;
+        public double armorCeiling = 24.0;
+        public double toughnessCeiling = 15.0;
+        public Map<String, ArmorTier> tiers = defaultArmorTiers();
+
+        public static Map<String, ArmorTier> defaultArmorTiers() {
+            Map<String, ArmorTier> map = new LinkedHashMap<>();
+            map.put("tier1", new ArmorTier(12, 60, 0, 0, Map.of("leather", 80, "gold", 15, "chain", 5)));
+            map.put("tier2", new ArmorTier(18, 68, 10, 1, Map.of("leather", 55, "gold", 25, "chain", 15, "iron", 5)));
+            map.put("tier3", new ArmorTier(25, 75, 20, 2, Map.of("leather", 35, "gold", 25, "chain", 20, "iron", 18, "diamond", 2)));
+            map.put("tier4", new ArmorTier(35, 80, 30, 2, Map.of("leather", 20, "gold", 18, "chain", 20, "iron", 30, "diamond", 11, "netherite", 1)));
+            map.put("tier5", new ArmorTier(45, 85, 40, 3, Map.of("leather", 12, "gold", 12, "chain", 16, "iron", 30, "diamond", 25, "netherite", 5)));
+            return map;
+        }
+    }
+
+    public static class ArmorTier {
+        public int wearChancePercent;
+        public int slotCoveragePercent;
+        public int enchantChancePercent;
+        public int maxProtectionLevel;
+        public Map<String, Integer> materialWeights;
+
+        public ArmorTier() {}
+
+        public ArmorTier(int wear, int coverage, int enchant, int maxProt, Map<String, Integer> weights) {
+            this.wearChancePercent = wear;
+            this.slotCoveragePercent = coverage;
+            this.enchantChancePercent = enchant;
+            this.maxProtectionLevel = maxProt;
+            this.materialWeights = new LinkedHashMap<>(weights);
+        }
+    }
+
+    public enum MaterialRollMode {
+        PER_MOB, PER_SLOT
     }
 
     public static class Abilities {

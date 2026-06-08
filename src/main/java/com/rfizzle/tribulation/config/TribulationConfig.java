@@ -54,6 +54,7 @@ public class TribulationConfig {
     public Map<String, Boolean> mobToggles = defaultMobToggles();
     public Abilities abilities = new Abilities();
     public ArmorEquipment armorEquipment = new ArmorEquipment();
+    public WeaponEquipment weaponEquipment = new WeaponEquipment();
     public Hud hud = new Hud();
 
     public static TribulationConfig load() {
@@ -225,6 +226,20 @@ public class TribulationConfig {
         for (ArmorTier at : armorEquipment.tiers.values()) {
             if (at.materialWeights == null) at.materialWeights = new LinkedHashMap<>();
         }
+
+        if (weaponEquipment == null) weaponEquipment = new WeaponEquipment();
+        if (weaponEquipment.tiers == null) {
+            weaponEquipment.tiers = WeaponEquipment.defaultWeaponTiers();
+        } else {
+            Map<String, WeaponTier> defaults = WeaponEquipment.defaultWeaponTiers();
+            for (Map.Entry<String, WeaponTier> entry : defaults.entrySet()) {
+                weaponEquipment.tiers.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+        for (WeaponTier wt : weaponEquipment.tiers.values()) {
+            if (wt.materialWeights == null) wt.materialWeights = new LinkedHashMap<>();
+        }
+
         if (hud == null) hud = new Hud();
         if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
 
@@ -377,6 +392,27 @@ public class TribulationConfig {
             at.materialWeights.entrySet().removeIf(e -> {
                 if (e.getValue() < 0) {
                     Tribulation.LOGGER.warn("armorEquipment.tiers.{}.materialWeights.{} must be >= 0, got {}; removing", entry.getKey(), e.getKey(), e.getValue());
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        weaponEquipment.weaponDropChance = clampNonNegative("weaponEquipment.weaponDropChance", weaponEquipment.weaponDropChance);
+        if (weaponEquipment.weaponDropChance > 2.0) {
+            Tribulation.LOGGER.warn("weaponEquipment.weaponDropChance must be <= 2.0, got {}; clamped to 2.0", weaponEquipment.weaponDropChance);
+            weaponEquipment.weaponDropChance = 2.0;
+        }
+        weaponEquipment.damageCeiling = clampNonNegative("weaponEquipment.damageCeiling", weaponEquipment.damageCeiling);
+
+        for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
+            WeaponTier wt = entry.getValue();
+            wt.wearChancePercent = clampPercent("weaponEquipment.tiers." + entry.getKey() + ".wearChancePercent", wt.wearChancePercent);
+            wt.enchantChancePercent = clampPercent("weaponEquipment.tiers." + entry.getKey() + ".enchantChancePercent", wt.enchantChancePercent);
+            if (wt.maxEnchantmentLevel < 0) wt.maxEnchantmentLevel = 0;
+            wt.materialWeights.entrySet().removeIf(e -> {
+                if (e.getValue() < 0) {
+                    Tribulation.LOGGER.warn("weaponEquipment.tiers.{}.materialWeights.{} must be >= 0, got {}; removing", entry.getKey(), e.getKey(), e.getValue());
                     return true;
                 }
                 return false;
@@ -711,6 +747,40 @@ public class TribulationConfig {
             this.slotCoveragePercent = coverage;
             this.enchantChancePercent = enchant;
             this.maxProtectionLevel = maxProt;
+            this.materialWeights = new LinkedHashMap<>(weights);
+        }
+    }
+
+    public static class WeaponEquipment {
+        public boolean enabled = true;
+        // Weapon drop chance [0,2]: >=1.0 requests guaranteed + pristine drop.
+        public double weaponDropChance = 0.0;
+        public double damageCeiling = 20.0;
+        public Map<String, WeaponTier> tiers = defaultWeaponTiers();
+
+        public static Map<String, WeaponTier> defaultWeaponTiers() {
+            Map<String, WeaponTier> map = new LinkedHashMap<>();
+            map.put("tier1", new WeaponTier(10, 0, 0, Map.of("wood", 80, "stone", 20)));
+            map.put("tier2", new WeaponTier(20, 10, 1, Map.of("wood", 40, "stone", 45, "iron", 15)));
+            map.put("tier3", new WeaponTier(30, 20, 2, Map.of("stone", 30, "iron", 60, "diamond", 10)));
+            map.put("tier4", new WeaponTier(45, 30, 3, Map.of("iron", 40, "diamond", 55, "netherite", 5)));
+            map.put("tier5", new WeaponTier(60, 40, 4, Map.of("iron", 15, "diamond", 65, "netherite", 20)));
+            return map;
+        }
+    }
+
+    public static class WeaponTier {
+        public int wearChancePercent;
+        public int enchantChancePercent;
+        public int maxEnchantmentLevel;
+        public Map<String, Integer> materialWeights;
+
+        public WeaponTier() {}
+
+        public WeaponTier(int wear, int enchant, int maxLevel, Map<String, Integer> weights) {
+            this.wearChancePercent = wear;
+            this.enchantChancePercent = enchant;
+            this.maxEnchantmentLevel = maxLevel;
             this.materialWeights = new LinkedHashMap<>(weights);
         }
     }

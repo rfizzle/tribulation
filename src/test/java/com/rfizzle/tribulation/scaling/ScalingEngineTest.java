@@ -341,4 +341,36 @@ class ScalingEngineTest {
     void classification_positionScaledSubset(String attribute, boolean expected) {
         assertEquals(expected, ScalingEngine.isPositionScaled(attribute));
     }
+
+    // ---- Combined-attribute ceiling trim (only the tribulation buff is reduced) ----
+
+    @Test
+    void ceilingKeepRatio_underCeiling_keepsFullBuff() {
+        // base+equipment 10, buff 5, total 15 <= ceiling 24 → no trim.
+        assertEquals(1.0, ScalingEngine.ceilingKeepRatio(5.0, 10.0, 24.0), EPS);
+    }
+
+    @Test
+    void ceilingKeepRatio_overCeiling_trimsOnlySurplusFromBuff() {
+        // Mirrors the gametest: nonTrib 22 (2 base + 20 netherite), buff 10, ceiling 24.
+        // total 32, surplus 8 → keep (10-8)/10 = 0.2, leaving buff 2 and final value 24.
+        assertEquals(0.2, ScalingEngine.ceilingKeepRatio(10.0, 22.0, 24.0), EPS);
+    }
+
+    @Test
+    void ceilingKeepRatio_equipmentAloneExceeds_removesBuffEntirely() {
+        // nonTrib 30 already over ceiling 24; the 5-point buff can't save it → fully removed.
+        assertEquals(0.0, ScalingEngine.ceilingKeepRatio(5.0, 30.0, 24.0), EPS);
+    }
+
+    @Test
+    void ceilingKeepRatio_noBuff_isZero() {
+        assertEquals(0.0, ScalingEngine.ceilingKeepRatio(0.0, 30.0, 24.0), EPS);
+    }
+
+    @Test
+    void ceilingKeepRatio_exactlyAtCeiling_keepsFullBuff() {
+        // nonTrib 14 + buff 10 == ceiling 24 exactly → surplus 0, no trim.
+        assertEquals(1.0, ScalingEngine.ceilingKeepRatio(10.0, 14.0, 24.0), EPS);
+    }
 }

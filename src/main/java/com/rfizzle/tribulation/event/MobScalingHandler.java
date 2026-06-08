@@ -108,8 +108,13 @@ public final class MobScalingHandler {
             ZombieVariantHandler.apply(mob, toggleKey, cfg.specialZombies, world.getRandom());
         }
 
-        ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_ARMOR, cfg.armorEquipment.armorCeiling);
-        ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_TOUGHNESS, cfg.armorEquipment.toughnessCeiling);
+        // The combined-armor ceiling is part of the armor-equipment feature; when it
+        // is disabled, vanilla armor-on-spawn behavior (and the raw attribute buff)
+        // is left untouched.
+        if (cfg.armorEquipment.enabled) {
+            ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_ARMOR, cfg.armorEquipment.armorCeiling);
+            ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_TOUGHNESS, cfg.armorEquipment.toughnessCeiling);
+        }
 
         // Modifying max health does not raise current HP; top the mob off so
         // its displayed and effective HP match the scaled maximum at spawn.

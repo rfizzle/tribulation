@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +37,38 @@ class ArmorEquipmentHandlerTest {
     void testRollMaterial_ZeroWeights() {
         Map<String, Integer> weights = Map.of("iron", 0, "gold", 0);
         assertNull(ArmorEquipmentHandler.rollMaterial(weights, RandomSource.create()));
+    }
+
+    @Test
+    void testRollMaterial_boundaryRolls_landOnExpectedMaterial() {
+        // Insertion order is meaningful for the cumulative cursor; use a LinkedHashMap.
+        Map<String, Integer> weights = new LinkedHashMap<>();
+        weights.put("leather", 80);
+        weights.put("diamond", 20);
+
+        // [0,80) → leather, [80,100) → diamond. Assert the exact boundaries.
+        assertEquals(ArmorMaterial.LEATHER, ArmorEquipmentHandler.rollMaterial(weights, 0));
+        assertEquals(ArmorMaterial.LEATHER, ArmorEquipmentHandler.rollMaterial(weights, 79));
+        assertEquals(ArmorMaterial.DIAMOND, ArmorEquipmentHandler.rollMaterial(weights, 80));
+        assertEquals(ArmorMaterial.DIAMOND, ArmorEquipmentHandler.rollMaterial(weights, 99));
+    }
+
+    @Test
+    void testRollMaterial_zeroWeightMaterialIsUnreachable() {
+        Map<String, Integer> weights = new LinkedHashMap<>();
+        weights.put("iron", 0);   // unlocked nowhere here
+        weights.put("gold", 5);
+        // Every valid roll skips the zero-weight iron and lands on gold.
+        for (int roll = 0; roll < 5; roll++) {
+            assertEquals(ArmorMaterial.GOLD, ArmorEquipmentHandler.rollMaterial(weights, roll));
+        }
+    }
+
+    @Test
+    void testRollMaterial_rollPastTotal_returnsNull() {
+        Map<String, Integer> weights = new LinkedHashMap<>();
+        weights.put("gold", 5);
+        assertNull(ArmorEquipmentHandler.rollMaterial(weights, 5));
     }
 
     @Test

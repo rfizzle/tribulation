@@ -526,11 +526,9 @@ public final class ScalingEngine {
             }
         }
 
-        double total = base + equipmentSum + otherSum + tribulationSum;
-        double surplus = total - ceiling;
-        if (surplus <= 0) return;
-
-        double scale = Math.max(0, (tribulationSum - surplus) / tribulationSum);
+        // Only the tribulation buff is trimmed; base + equipment keep their full value.
+        double scale = ceilingKeepRatio(tribulationSum, base + equipmentSum + otherSum, ceiling);
+        if (scale >= 1.0) return;
         AttributeModifier.Operation op = usesAddValue(attributeKey)
                 ? AttributeModifier.Operation.ADD_VALUE
                 : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
@@ -543,6 +541,23 @@ public final class ScalingEngine {
                 instance.addPermanentModifier(new AttributeModifier(id, newAmount, op));
             }
         }
+    }
+
+    /**
+     * Pure keep-ratio for the combined-attribute ceiling: the fraction of the
+     * tribulation buff that survives so that {@code nonTribTotal + buff*ratio <= ceiling}.
+     *
+     * <p>{@code nonTribTotal} is everything not owned by Tribulation (base value +
+     * equipment + foreign modifiers). Returns {@code 1.0} when nothing needs trimming,
+     * {@code 0.0} when the buff must be fully removed (or there is no buff to trim).
+     * Extracted as a pure static so the trim math is unit-testable without an
+     * {@link AttributeInstance}.
+     */
+    public static double ceilingKeepRatio(double tribulationSum, double nonTribTotal, double ceiling) {
+        if (tribulationSum <= 0) return 0.0;
+        double surplus = (nonTribTotal + tribulationSum) - ceiling;
+        if (surplus <= 0) return 1.0;
+        return Math.max(0.0, (tribulationSum - surplus) / tribulationSum);
     }
 
     /** Map view of attribute key → Holder for external consumers (commands, etc.). */

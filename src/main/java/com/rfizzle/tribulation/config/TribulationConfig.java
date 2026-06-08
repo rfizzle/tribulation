@@ -358,7 +358,13 @@ public class TribulationConfig {
         if (tiers.tier4 < tiers.tier3) tiers.tier4 = tiers.tier3;
         if (tiers.tier5 < tiers.tier4) tiers.tier5 = tiers.tier4;
 
+        // Drop chance is [0,2], not [0,1]: a value >= 1.0 is a valid request for a
+        // guaranteed + pristine drop (vanilla's PRESERVE threshold).
         armorEquipment.armorDropChance = clampNonNegative("armorEquipment.armorDropChance", armorEquipment.armorDropChance);
+        if (armorEquipment.armorDropChance > 2.0) {
+            Tribulation.LOGGER.warn("armorEquipment.armorDropChance must be <= 2.0, got {}; clamped to 2.0", armorEquipment.armorDropChance);
+            armorEquipment.armorDropChance = 2.0;
+        }
         armorEquipment.armorCeiling = clampNonNegative("armorEquipment.armorCeiling", armorEquipment.armorCeiling);
         armorEquipment.toughnessCeiling = clampNonNegative("armorEquipment.toughnessCeiling", armorEquipment.toughnessCeiling);
 
@@ -673,7 +679,9 @@ public class TribulationConfig {
     public static class ArmorEquipment {
         public boolean enabled = true;
         public MaterialRollMode materialRollMode = MaterialRollMode.PER_MOB;
-        public double armorDropChance = 0.085;
+        // Tier armor does not drop by default; a loot mod can opt in via the
+        // ArmorDropChanceProvider API. [0,2]: >=1.0 requests a guaranteed + pristine drop.
+        public double armorDropChance = 0.0;
         public double armorCeiling = 24.0;
         public double toughnessCeiling = 15.0;
         public Map<String, ArmorTier> tiers = defaultArmorTiers();

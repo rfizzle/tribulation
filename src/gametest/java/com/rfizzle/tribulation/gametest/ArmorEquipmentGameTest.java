@@ -2,22 +2,27 @@ package com.rfizzle.tribulation.gametest;
 
 import com.rfizzle.tribulation.api.TribulationAPI;
 import com.rfizzle.tribulation.config.TribulationConfig;
+import com.rfizzle.tribulation.event.ArmorEquipmentHandler.ArmorMaterial;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 
+import java.util.HashSet;
 import java.util.OptionalInt;
+import java.util.Set;
 
 public class ArmorEquipmentGameTest implements FabricGameTest {
 
@@ -49,6 +54,49 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
                                  !mob.getItemBySlot(EquipmentSlot.FEET).isEmpty();
             if (!hasAnyArmor) {
                 helper.fail("Mob should have armor equipped at tier 5 with 100% wear chance");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void armor_materialStaysWithinTierPool(GameTestHelper helper) {
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(com.rfizzle.tribulation.event.ArmorEquipmentHandler.PROCESSED_TAG);
+
+        // Tier 1's pool is leather/gold/chain only — iron, diamond, and netherite have
+        // zero weight and must never appear here (the "no netherite below unlock" rule).
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.armorEquipment.enabled = true;
+        TribulationConfig.ArmorTier tier1 = cfg.armorEquipment.tiers.get("tier1");
+        tier1.wearChancePercent = 100;
+        tier1.slotCoveragePercent = 100;
+        cfg.armorEquipment.materialRollMode = TribulationConfig.MaterialRollMode.PER_SLOT;
+
+        // Allowed items are exactly the pieces of the tier's non-zero-weight materials.
+        Set<Item> allowed = new HashSet<>();
+        for (var e : tier1.materialWeights.entrySet()) {
+            if (e.getValue() <= 0) continue;
+            ArmorMaterial mat = ArmorMaterial.fromKey(e.getKey());
+            if (mat == null) continue;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                allowed.add(mat.getBySlot(slot));
+            }
+        }
+
+        com.rfizzle.tribulation.event.ArmorEquipmentHandler.processArmor(mob, 1, cfg);
+
+        helper.succeedWhen(() -> {
+            boolean any = false;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                ItemStack stack = mob.getItemBySlot(slot);
+                if (stack.isEmpty()) continue;
+                any = true;
+                if (!allowed.contains(stack.getItem())) {
+                    helper.fail("Tier-1 mob equipped out-of-pool material " + stack.getItem() + " in slot " + slot);
+                }
+            }
+            if (!any) {
+                helper.fail("Tier-1 mob with 100% wear+coverage should have equipped armor");
             }
         });
     }
@@ -154,6 +202,14 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
 
     @GameTest(template = "tribulation:empty_3x3")
     public void api_frozenTierPersistence(GameTestHelper helper) {
+        // Entity with no scaled-tier attachment: the API reports empty / false rather
+        // than a recomputed value. (Mobs are auto-scaled on spawn here, so clear it to
+        // model a never-scaled entity deterministically.)
+        Mob unscaled = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 2));
+        unscaled.removeAttached(com.rfizzle.tribulation.data.TribulationAttachments.SCALED_TIER);
+        helper.assertFalse(TribulationAPI.getScaledTier(unscaled).isPresent(), "Mob without attachment should have no tier");
+        helper.assertFalse(TribulationAPI.wasScaledByTribulation(unscaled), "Mob without attachment should not be marked scaled");
+
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
         int testTier = 3;
         mob.setAttached(com.rfizzle.tribulation.data.TribulationAttachments.SCALED_TIER, testTier);
@@ -162,6 +218,29 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
         helper.assertTrue(tier.isPresent(), "Scaled tier should be present");
         helper.assertValueEqual(tier.getAsInt(), testTier, "Scaled tier should be 3");
         helper.assertTrue(TribulationAPI.wasScaledByTribulation(mob), "wasScaledByTribulation should be true");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void api_frozenTierSurvivesSaveLoad(GameTestHelper helper) {
+        // The frozen tier is backed by a persistent data attachment; it must survive an
+        // NBT save/load round trip (the same path a chunk unload/reload exercises).
+        Mob original = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
+        int frozen = 4;
+        original.setAttached(com.rfizzle.tribulation.data.TribulationAttachments.SCALED_TIER, frozen);
+
+        CompoundTag saved = new CompoundTag();
+        original.saveWithoutId(saved);
+        // Discard first so the reloaded copy doesn't collide on the shared UUID.
+        original.discard();
+
+        Mob reloaded = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(2, 2, 1));
+        reloaded.load(saved);
+
+        OptionalInt tier = TribulationAPI.getScaledTier(reloaded);
+        helper.assertTrue(tier.isPresent(), "Frozen tier should survive save/load");
+        helper.assertValueEqual(tier.getAsInt(), frozen, "Frozen tier should still be 4 after reload");
 
         helper.succeed();
     }

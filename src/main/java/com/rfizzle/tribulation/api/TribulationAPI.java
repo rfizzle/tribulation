@@ -125,9 +125,17 @@ public final class TribulationAPI {
 
     /**
      * Internal use only. Resolves the drop chance for a piece of armor.
+     * A misbehaving provider (throwing or returning a non-finite value) never
+     * breaks mob spawning: it falls back to {@code defaultChance}.
      */
     public static float resolveArmorDropChance(Entity mob, int tier, EquipmentSlot slot, ItemStack stack, float defaultChance) {
-        return armorDropChanceProvider.resolve(mob, tier, slot, stack, defaultChance);
+        try {
+            float resolved = armorDropChanceProvider.resolve(mob, tier, slot, stack, defaultChance);
+            return Float.isFinite(resolved) ? resolved : defaultChance;
+        } catch (Exception e) {
+            Tribulation.LOGGER.warn("Armor drop-chance provider threw; using default", e);
+            return defaultChance;
+        }
     }
 
     @FunctionalInterface

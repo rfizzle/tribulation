@@ -75,29 +75,45 @@ public final class ArmorEquipmentHandler {
     }
 
     public static void processArmor(Mob mob, int tier, TribulationConfig cfg) {
-        if (mob.getTags().contains(PROCESSED_TAG)) return;
-        if (!cfg.armorEquipment.enabled) return;
+        TribulationConfig.ArmorEquipment ae = cfg.armorEquipment;
+        if (ae == null || !ae.enabled || mob.getTags().contains(PROCESSED_TAG)) return;
+        // Babies are always skipped (out of scope, mirrors ZombieVariantHandler's baby
+        // skip). Tag them so a failed/empty roll isn't retried on chunk reload.
+        if (mob.isBaby()) {
+            mob.addTag(PROCESSED_TAG);
+            return;
+        }
 
-        // Unconditionally clear armor slots for takeover
+        // Fail soft: a bad roll/enchant/provider must never abort the rest of mob
+        // scaling, and the tag is marked unconditionally so we don't re-roll on reload.
+        try {
+            equipArmor(mob, tier, ae, cfg);
+        } catch (Exception e) {
+            Tribulation.LOGGER.warn("Failed to apply tier armor to {}", mob, e);
+        }
+        mob.addTag(PROCESSED_TAG);
+    }
+
+    private static void equipArmor(Mob mob, int tier, TribulationConfig.ArmorEquipment ae, TribulationConfig cfg) {
+        // Take over vanilla's armor roll unconditionally: clear every armor slot first,
+        // so a mob that fails the wear roll ends up genuinely bare instead of keeping
+        // whatever vanilla equipped. Mainhand/offhand weapons are left untouched.
         mob.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
         mob.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
         mob.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
         mob.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
 
-        ArmorTier tierCfg = cfg.armorEquipment.tiers.get("tier" + tier);
-        if (tierCfg == null || tierCfg.materialWeights.isEmpty()) {
-            mob.addTag(PROCESSED_TAG);
-            return;
-        }
+        ArmorTier tierCfg = ae.tiers.get("tier" + tier);
+        if (tierCfg == null || tierCfg.materialWeights == null || tierCfg.materialWeights.isEmpty()) return;
 
         RandomSource random = mob.getRandom();
-        if (random.nextInt(100) >= tierCfg.wearChancePercent) {
-            mob.addTag(PROCESSED_TAG);
-            return;
-        }
+        if (random.nextInt(100) >= tierCfg.wearChancePercent) return;
 
-        boolean perMob = cfg.armorEquipment.materialRollMode == TribulationConfig.MaterialRollMode.PER_MOB;
+        boolean perMob = ae.materialRollMode == TribulationConfig.MaterialRollMode.PER_MOB;
         ArmorMaterial sharedMaterial = perMob ? rollMaterial(tierCfg.materialWeights, random) : null;
+        // PER_MOB with an empty/all-zero pool: bail rather than fall through to a
+        // per-slot roll that would also find nothing.
+        if (perMob && sharedMaterial == null) return;
 
         applySlot(mob, EquipmentSlot.HEAD, tier, tierCfg, sharedMaterial, random, cfg);
         applySlot(mob, EquipmentSlot.CHEST, tier, tierCfg, sharedMaterial, random, cfg);
@@ -106,7 +122,6 @@ public final class ArmorEquipmentHandler {
 
         // Armored mobs don't pick up loose loot to avoid "stacking" via player drops
         mob.setCanPickUpLoot(false);
-        mob.addTag(PROCESSED_TAG);
     }
 
     private static void applySlot(Mob mob, EquipmentSlot slot, int tier, ArmorTier tierCfg, ArmorMaterial sharedMaterial, RandomSource random, TribulationConfig cfg) {
@@ -137,24 +152,39 @@ public final class ArmorEquipmentHandler {
         mob.setDropChance(slot, TribulationAPI.resolveArmorDropChance(mob, tier, slot, stack, dropChance));
     }
 
-    /** Pure logic for weighted material selection. */
+    /** Weighted material selection from the tier pool; returns null for an empty/all-zero pool. */
     public static ArmorMaterial rollMaterial(Map<String, Integer> weights, RandomSource random) {
-        if (weights == null || weights.isEmpty()) return null;
-        int totalWeight = 0;
-        for (int w : weights.values()) {
-            totalWeight += Math.max(0, w);
-        }
+        int totalWeight = totalWeight(weights);
         if (totalWeight <= 0) return null;
+        return rollMaterial(weights, random.nextInt(totalWeight));
+    }
 
-        int roll = random.nextInt(totalWeight);
+    /**
+     * Pure weighted pick for a given roll in {@code [0, totalWeight)}. Zero/negative
+     * weights are unreachable. Kept free of Minecraft + RNG so the distribution is
+     * deterministically unit-testable via boundary rolls.
+     */
+    public static ArmorMaterial rollMaterial(Map<String, Integer> weights, int roll) {
+        if (weights == null) return null;
         int cursor = 0;
         for (Map.Entry<String, Integer> entry : weights.entrySet()) {
-            cursor += Math.max(0, entry.getValue());
+            int w = Math.max(0, entry.getValue());
+            if (w <= 0) continue;
+            cursor += w;
             if (roll < cursor) {
                 return ArmorMaterial.fromKey(entry.getKey());
             }
         }
         return null;
+    }
+
+    private static int totalWeight(Map<String, Integer> weights) {
+        if (weights == null || weights.isEmpty()) return 0;
+        int total = 0;
+        for (int w : weights.values()) {
+            total += Math.max(0, w);
+        }
+        return total;
     }
 
     /** Low-biased protection roll: rand(1, max) + rand(0, max) / 2 equivalent. */

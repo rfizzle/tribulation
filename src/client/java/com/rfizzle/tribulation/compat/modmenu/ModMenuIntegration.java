@@ -613,7 +613,7 @@ public final class ModMenuIntegration implements ModMenuApi {
         cat.addEntry(entry.startDoubleField(
                         Component.translatable("config.tribulation.armor.drop_chance"),
                         ae.armorDropChance)
-                .setDefaultValue(0.085).setMin(0.0).setMax(2.0)
+                .setDefaultValue(0.0).setMin(0.0).setMax(2.0)
                 .setSaveConsumer(v -> ae.armorDropChance = v)
                 .build());
         cat.addEntry(entry.startDoubleField(

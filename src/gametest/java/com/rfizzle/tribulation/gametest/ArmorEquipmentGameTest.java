@@ -105,6 +105,54 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
     }
 
     @GameTest(template = "tribulation:empty_3x3")
+    public void armor_toughnessCeilingClamping(GameTestHelper helper) {
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
+
+        // Clear any Tribulation toughness modifiers
+        for (String axis : java.util.List.of(ScalingEngine.AXIS_TIME, ScalingEngine.AXIS_DISTANCE, ScalingEngine.AXIS_HEIGHT)) {
+            mob.getAttribute(Attributes.ARMOR_TOUGHNESS).removeModifier(ScalingEngine.modifierId(axis, ScalingEngine.ATTR_TOUGHNESS));
+        }
+
+        // Equip full netherite (3 toughness per piece = 12 total)
+        mob.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.NETHERITE_HELMET));
+        mob.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.NETHERITE_CHESTPLATE));
+        mob.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.NETHERITE_LEGGINGS));
+        mob.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.NETHERITE_BOOTS));
+
+        // Add a Tribulation toughness modifier (+8)
+        AttributeInstance toughnessInst = mob.getAttribute(Attributes.ARMOR_TOUGHNESS);
+        toughnessInst.addPermanentModifier(new AttributeModifier(
+                ScalingEngine.modifierId(ScalingEngine.AXIS_TIME, ScalingEngine.ATTR_TOUGHNESS),
+                8.0, AttributeModifier.Operation.ADD_VALUE));
+
+        // Total: 0 (zombie base) + 12 (netherite) + 8 (trib) = 20; ceiling 14 → surplus 6
+        // Expected trib sum after clamp: max(0, 8 − 6) = 2; final value should be 14
+        ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_TOUGHNESS, 14.0);
+
+        helper.succeedWhen(() -> {
+            double val = mob.getAttributeValue(Attributes.ARMOR_TOUGHNESS);
+            if (val > 14.1) {
+                helper.fail("Toughness value " + val + " exceeds ceiling 14.0");
+            }
+            // Netherite items must stay (12 toughness), so total must be at least 12
+            if (val < 11.9) {
+                helper.fail("Toughness value " + val + " should not be lower than item contribution (12.0)");
+            }
+
+            // Verify the trib modifier was proportionally scaled: originally 8, expected ~2
+            AttributeInstance toughness = mob.getAttribute(Attributes.ARMOR_TOUGHNESS);
+            double sum = 0;
+            for (String axis : java.util.List.of(ScalingEngine.AXIS_TIME, ScalingEngine.AXIS_DISTANCE, ScalingEngine.AXIS_HEIGHT)) {
+                AttributeModifier mod = toughness.getModifier(ScalingEngine.modifierId(axis, ScalingEngine.ATTR_TOUGHNESS));
+                if (mod != null) sum += mod.amount();
+            }
+            if (Math.abs(sum - 2.0) > 0.5) {
+                helper.fail("Toughness Tribulation modifiers not scaled correctly: expected ~2.0, got " + sum + " (total value: " + val + ")");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
     public void api_frozenTierPersistence(GameTestHelper helper) {
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
         int testTier = 3;

@@ -14,7 +14,8 @@
         "client": ["com.rfizzle.tribulation.client.TribulationClient"],
         "fabric-gametest": [
             "com.rfizzle.tribulation.gametest.MobScalingGameTest",
-            "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest"
+            "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest",
+            "com.rfizzle.tribulation.gametest.ArmorEquipmentGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
         "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],

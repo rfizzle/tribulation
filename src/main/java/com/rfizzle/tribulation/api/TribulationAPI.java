@@ -109,7 +109,7 @@ public final class TribulationAPI {
         return entity.hasAttached(TribulationAttachments.SCALED_TIER);
     }
 
-    private static ArmorDropChanceProvider armorDropChanceProvider = (mob, tier, slot, stack, defaultChance) -> defaultChance;
+    private static volatile ArmorDropChanceProvider armorDropChanceProvider = (mob, tier, slot, stack, defaultChance) -> defaultChance;
 
     /**
      * Set a provider to determine the drop chance of armor equipped by Tribulation.

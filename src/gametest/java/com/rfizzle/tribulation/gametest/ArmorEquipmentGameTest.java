@@ -125,11 +125,13 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
 
         TribulationAPI.setArmorDropChanceProvider((m, tier, slot, s, def) -> 0.5f);
 
-        float chance = TribulationAPI.resolveArmorDropChance(mob, 1, EquipmentSlot.CHEST, stack, 0.085f);
-        helper.assertValueEqual(chance, 0.5f, "Drop chance should be 0.5f from provider");
-
-        // Restore default
-        TribulationAPI.setArmorDropChanceProvider((m, tier, slot, s, def) -> def);
+        try {
+            float chance = TribulationAPI.resolveArmorDropChance(mob, 1, EquipmentSlot.CHEST, stack, 0.085f);
+            helper.assertValueEqual(chance, 0.5f, "Drop chance should be 0.5f from provider");
+        } finally {
+            // Restore default regardless of assertion outcome
+            TribulationAPI.setArmorDropChanceProvider((m, tier, slot, s, def) -> def);
+        }
         helper.succeed();
     }
 }

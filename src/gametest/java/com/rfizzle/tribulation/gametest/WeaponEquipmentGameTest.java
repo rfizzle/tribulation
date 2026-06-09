@@ -44,6 +44,31 @@ public class WeaponEquipmentGameTest implements FabricGameTest {
     }
 
     @GameTest(template = "tribulation:empty_3x3")
+    public void weapon_skippedForIncapableMob(GameTestHelper helper) {
+        // A creeper can't wield a weapon: the capability guard must leave its hand
+        // empty even with a guaranteed wear roll, and mark it processed so the
+        // check isn't retried on reload.
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.CREEPER, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(WeaponEquipmentHandler.PROCESSED_TAG);
+        mob.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.weaponEquipment.enabled = true;
+        cfg.weaponEquipment.tiers.get("tier5").wearChancePercent = 100;
+
+        WeaponEquipmentHandler.processWeapon(mob, 5, cfg);
+
+        helper.succeedWhen(() -> {
+            if (!mob.getMainHandItem().isEmpty()) {
+                helper.fail("Creeper should never be given a weapon");
+            }
+            if (!mob.getTags().contains(WeaponEquipmentHandler.PROCESSED_TAG)) {
+                helper.fail("Skipped mob should still be tagged processed");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
     public void weapon_materialStaysWithinTierPool(GameTestHelper helper) {
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
         mob.getTags().remove(WeaponEquipmentHandler.PROCESSED_TAG);

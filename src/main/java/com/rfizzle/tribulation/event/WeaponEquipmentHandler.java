@@ -8,6 +8,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.AbstractIllager;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -53,9 +57,31 @@ public final class WeaponEquipmentHandler {
         }
     }
 
+    /**
+     * Whether this mob actually wields and renders a main-hand weapon in vanilla.
+     * The zombie, skeleton, and piglin families hold and swing melee/ranged gear,
+     * and illagers (pillager/vindicator) render and use a held weapon via their
+     * {@code ItemInHandLayer}. Everything else (creeper, spider, guardian, …) can't
+     * use a weapon, so a rolled one would be invisible dead weight. Gating here
+     * guards against config toggles or modded callers handing such a mob to
+     * {@link #processWeapon}.
+     */
+    public static boolean supportsWeapons(Mob mob) {
+        return mob instanceof Zombie
+                || mob instanceof AbstractSkeleton
+                || mob instanceof AbstractPiglin
+                || mob instanceof AbstractIllager;
+    }
+
     public static void processWeapon(Mob mob, int tier, TribulationConfig cfg) {
         TribulationConfig.WeaponEquipment we = cfg.weaponEquipment;
         if (we == null || !we.enabled || mob.getTags().contains(PROCESSED_TAG)) return;
+        // Skip mobs that can't wield a weapon. Tag them so the (unchanging)
+        // capability check isn't repeated on every chunk reload.
+        if (!supportsWeapons(mob)) {
+            mob.addTag(PROCESSED_TAG);
+            return;
+        }
         if (mob.isBaby()) {
             mob.addTag(PROCESSED_TAG);
             return;

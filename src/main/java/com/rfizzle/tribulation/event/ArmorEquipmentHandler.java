@@ -9,6 +9,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -74,9 +77,29 @@ public final class ArmorEquipmentHandler {
         }
     }
 
+    /**
+     * Whether this mob actually wears and renders armor in vanilla. Only the
+     * zombie, skeleton, and piglin families use a {@code HumanoidArmorLayer};
+     * equipping armor on anything else (creeper, spider, illager, …) is invisible
+     * and silently applies a hidden defense buff. Gating here keeps tier armor a
+     * visible, intentional thing and guards against config toggles or modded
+     * callers handing a non-humanoid mob to {@link #processArmor}.
+     */
+    public static boolean supportsArmor(Mob mob) {
+        return mob instanceof Zombie
+                || mob instanceof AbstractSkeleton
+                || mob instanceof AbstractPiglin;
+    }
+
     public static void processArmor(Mob mob, int tier, TribulationConfig cfg) {
         TribulationConfig.ArmorEquipment ae = cfg.armorEquipment;
         if (ae == null || !ae.enabled || mob.getTags().contains(PROCESSED_TAG)) return;
+        // Skip mobs that can't visibly wear armor. Tag them so the (unchanging)
+        // capability check isn't repeated on every chunk reload.
+        if (!supportsArmor(mob)) {
+            mob.addTag(PROCESSED_TAG);
+            return;
+        }
         // Babies are always skipped (out of scope, mirrors ZombieVariantHandler's baby
         // skip). Tag them so a failed/empty roll isn't retried on chunk reload.
         if (mob.isBaby()) {

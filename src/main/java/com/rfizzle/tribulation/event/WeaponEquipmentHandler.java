@@ -97,8 +97,9 @@ public final class WeaponEquipmentHandler {
 
     /**
      * Core weapon application logic with the following precedence:
-     * 1. If the roll for {@code wearChancePercent} fails, standard weapons (swords,
-     *    axes, bows, etc.) are cleared to enforce Tribulation's gear-on-spawn policy.
+     * 1. If the roll for {@code wearChancePercent} fails, the mob's existing loadout
+     *    is left untouched — a bare-handed mob stays bare, and a vanilla- or
+     *    ability-armed mob keeps its weapon.
      * 2. If holding a standard melee item (likely from {@link com.rfizzle.tribulation.ability.AbilityManager}),
      *    it is upgraded to the rolled material.
      * 3. If holding a standard ranged item, it is kept and moves straight to the
@@ -112,14 +113,12 @@ public final class WeaponEquipmentHandler {
         RandomSource random = mob.getRandom();
         ItemStack current = mob.getMainHandItem();
 
-        // Roll for wear chance
+        // Roll for wear chance. On a failed roll we leave the mob's existing loadout
+        // untouched. Unlike armor — where the handler clears all four slots first to
+        // take over vanilla's roll — stripping the main hand here would disarm every
+        // vanilla-armed mob (skeleton's bow, pillager's crossbow, vindicator's axe,
+        // drowned's trident, …) and break the attack AI that depends on that weapon.
         if (random.nextInt(100) >= tierCfg.wearChancePercent) {
-            // If roll fails and it's a "standard" weapon we might have given it via Abilities, clear it
-            // to stay consistent with the "take over vanilla" philosophy of the armor system.
-            // But we only clear it if it's one of ours or a standard vanilla weapon.
-            if (isStandardWeapon(current)) {
-                mob.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            }
             return;
         }
 
@@ -149,10 +148,6 @@ public final class WeaponEquipmentHandler {
         mob.setItemSlot(EquipmentSlot.MAINHAND, stack);
         float dropChance = (float) we.weaponDropChance;
         mob.setDropChance(EquipmentSlot.MAINHAND, TribulationAPI.resolveWeaponDropChance(mob, tier, stack, dropChance));
-    }
-
-    private static boolean isStandardWeapon(ItemStack stack) {
-        return isStandardMelee(stack) || isStandardRanged(stack);
     }
 
     private static boolean isStandardMelee(ItemStack stack) {

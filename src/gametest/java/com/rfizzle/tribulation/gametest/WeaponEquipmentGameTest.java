@@ -69,6 +69,29 @@ public class WeaponEquipmentGameTest implements FabricGameTest {
     }
 
     @GameTest(template = "tribulation:empty_3x3")
+    public void weapon_keptOnFailedWearRoll(GameTestHelper helper) {
+        // A failed wear roll must not disarm a mob that came armed. Vindicators are
+        // weapon-capable (pass supportsWeapons) and spawn with an iron axe in vanilla;
+        // a 0% wear chance guarantees the roll fails, and the axe must survive.
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.VINDICATOR, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(WeaponEquipmentHandler.PROCESSED_TAG);
+        mob.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
+
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.weaponEquipment.enabled = true;
+        cfg.weaponEquipment.tiers.get("tier1").wearChancePercent = 0;
+
+        WeaponEquipmentHandler.processWeapon(mob, 1, cfg);
+
+        helper.succeedWhen(() -> {
+            if (mob.getMainHandItem().getItem() != Items.IRON_AXE) {
+                helper.fail("Vindicator must keep its vanilla axe when the wear roll fails, had "
+                        + mob.getMainHandItem().getItem());
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
     public void weapon_materialStaysWithinTierPool(GameTestHelper helper) {
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
         mob.getTags().remove(WeaponEquipmentHandler.PROCESSED_TAG);

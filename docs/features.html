@@ -269,6 +269,35 @@
           </article>
         </section>
 
+        <!-- ===== EQUIPMENT SCALING ===== -->
+        <section id="equipment-scaling" class="mb-16">
+          <h2 class="text-2xl md:text-3xl font-bold mb-6 heading-gradient">Equipment Scaling</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <article id="tier-armor" class="bg-card border border-elevated rounded-lg p-5">
+              <h3 class="text-lg font-semibold text-crimson mb-2">Tier-Driven Mob Armor</h3>
+              <p class="text-sm text-ash leading-relaxed mb-3">Mobs spawn with equipment that scales visually and mechanically with their tier. This provides a clear "threat signal" before you even engage.</p>
+              <ul class="text-sm text-ash leading-relaxed space-y-2 list-disc list-inside">
+                <li><span class="text-bone">Weighted Material Pool:</span> Equipment shifts from leather and gold to iron, diamond, and netherite as tiers increase.</li>
+                <li><span class="text-bone">Per-Tier Coverage:</span> Higher tiers increase both the chance to wear armor and the number of slots covered.</li>
+                <li><span class="text-bone">Protection Enchantments:</span> Armor at higher tiers automatically gains Protection enchantments, capped by configurable ceilings.</li>
+              </ul>
+              <p class="text-smoke text-xs mt-3">Config: <code class="text-ember">armorEquipment.enabled</code>, <code class="text-ember">armorEquipment.materialRollMode</code></p>
+            </article>
+
+            <article id="tier-weapons" class="bg-card border border-elevated rounded-lg p-5">
+              <h3 class="text-lg font-semibold text-crimson mb-2">Tier-Driven Weapons</h3>
+              <p class="text-sm text-ash leading-relaxed mb-3">Hostile mobs receive weapon upgrades and enchantments that match their increasing lethality.</p>
+              <ul class="text-sm text-ash leading-relaxed space-y-2 list-disc list-inside">
+                <li><span class="text-bone">Material Upgrades:</span> Standard melee mobs (Zombies, Skeletons, etc.) receive swords or axes of increasing quality.</li>
+                <li><span class="text-bone">Lethal Enchantments:</span> Weapons gain Sharpness (melee) or Power (ranged) based on tier.</li>
+                <li><span class="text-bone">Failed-Roll Retention:</span> If an upgrade roll fails or the mob has specialized vanilla gear (like a Drowned's trident), the original weapon is kept and enchanted instead.</li>
+              </ul>
+              <p class="text-smoke text-xs mt-3">Config: <code class="text-ember">weaponEquipment.enabled</code></p>
+            </article>
+          </div>
+        </section>
+
         <!-- ===== DEATH & PENALTIES ===== -->
         <section id="death-penalties" class="mb-16">
           <h2 class="text-2xl md:text-3xl font-bold mb-6 heading-gradient">Death &amp; Penalties</h2>

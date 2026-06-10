@@ -1,3 +1,5 @@
+# Thin stub — logic lives in rfizzle/concord (claude-mention.yml).
+# Invokes Claude Code on @claude mentions in issues, comments, and reviews.
 name: Claude
 
 on:
@@ -23,22 +25,5 @@ permissions:
 
 jobs:
   claude:
-    if: |
-      github.event.sender.type != 'Bot' &&
-      (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-      )
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    uses: rfizzle/concord/.github/workflows/claude-mention.yml@master
+    secrets: inherit

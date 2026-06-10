@@ -129,9 +129,37 @@
                 <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">getTier(ServerPlayer)</code></td><td class="px-3 py-2">int</td><td class="px-3 py-2">Server</td><td class="px-3 py-2">The player's current tier (0–5), derived from level and the tier thresholds.</td></tr>
                 <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">getEffectiveLevel(Entity)</code></td><td class="px-3 py-2">int</td><td class="px-3 py-2">Server</td><td class="px-3 py-2">The level that would drive scaling for this entity's position (nearest-player based). Returns 0 off-server.</td></tr>
                 <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">getClientLevel()</code></td><td class="px-3 py-2">int</td><td class="px-3 py-2">Client</td><td class="px-3 py-2">The local player's last-synced level. Returns −1 if unknown or the mod isn't present.</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">getScaledTier(Entity)</code></td><td class="px-3 py-2">OptionalInt</td><td class="px-3 py-2">Server</td><td class="px-3 py-2">The tier the entity was scaled to at spawn. Empty if never scaled.</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">wasScaledByTribulation(Entity)</code></td><td class="px-3 py-2">boolean</td><td class="px-3 py-2">Server</td><td class="px-3 py-2">Check if an entity was scaled by Tribulation.</td></tr>
               </tbody>
             </table>
           </div>
+        </section>
+
+        <!-- Loot control API -->
+        <section id="loot-api" class="mb-12">
+          <h2 class="text-xl md:text-2xl font-bold mb-4 heading-gradient">Loot Control API</h2>
+          <p class="text-sm text-ash leading-relaxed mb-4">Control the drop chance of armor and weapons equipped by Tribulation. This allows external loot-modifying mods to override the default drop rules.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <article class="bg-card border border-elevated rounded-lg p-5">
+              <h3 class="text-base font-semibold text-bone mb-3">Armor Drop Chance</h3>
+              <pre class="bg-ink border border-elevated rounded-md p-3 text-xs text-bone overflow-x-auto"><code>TribulationAPI.setArmorDropChanceProvider(
+    (mob, tier, slot, stack, defaultChance) -> {
+        // return 2.0f for guaranteed pristine drop
+        return 0.085f;
+    }
+);</code></pre>
+            </article>
+            <article class="bg-card border border-elevated rounded-lg p-5">
+              <h3 class="text-base font-semibold text-bone mb-3">Weapon Drop Chance</h3>
+              <pre class="bg-ink border border-elevated rounded-md p-3 text-xs text-bone overflow-x-auto"><code>TribulationAPI.setWeaponDropChanceProvider(
+    (mob, tier, stack, defaultChance) -> {
+        return 0.085f;
+    }
+);</code></pre>
+            </article>
+          </div>
+          <p class="text-sm text-ash leading-relaxed">Providers are "last writer wins". If a provider throws an exception or returns a non-finite value (NaN/Infinity), the API automatically falls back to the configured default chance.</p>
         </section>
 
         <!-- Usage examples -->

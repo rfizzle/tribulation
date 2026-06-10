@@ -473,6 +473,71 @@
 }</code></pre>
         </section>
 
+        <section id="armor-equipment" class="mb-12">
+          <h2 class="text-xl md:text-2xl font-bold mb-4 heading-gradient">armorEquipment</h2>
+          <p class="text-sm text-ash leading-relaxed mb-4">Controls how mobs are equipped with armor based on their tier.</p>
+          <div class="overflow-x-auto mb-4">
+            <table class="w-full text-xs md:text-sm border border-elevated rounded-md">
+              <thead class="bg-card text-bone"><tr><th class="text-left py-2 px-3 border-b border-elevated">Key</th><th class="text-left py-2 px-3 border-b border-elevated">Type</th><th class="text-left py-2 px-3 border-b border-elevated">Default</th><th class="text-left py-2 px-3 border-b border-elevated">Description</th></tr></thead>
+              <tbody class="text-ash">
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">enabled</code></td><td class="px-3 py-2">boolean</td><td class="px-3 py-2">true</td><td class="px-3 py-2">Enable tier-driven armor equipment</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">materialRollMode</code></td><td class="px-3 py-2">enum</td><td class="px-3 py-2">PER_MOB</td><td class="px-3 py-2">Roll once per mob or once per slot: <code class="text-ember">PER_MOB</code>, <code class="text-ember">PER_SLOT</code></td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">armorDropChance</code></td><td class="px-3 py-2">double</td><td class="px-3 py-2">0.0</td><td class="px-3 py-2">Drop probability [0.0, 2.0]. 1.0+ is guaranteed and pristine.</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">armorCeiling</code></td><td class="px-3 py-2">double</td><td class="px-3 py-2">24.0</td><td class="px-3 py-2">Maximum armor points from Tribulation gear</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">toughnessCeiling</code></td><td class="px-3 py-2">double</td><td class="px-3 py-2">15.0</td><td class="px-3 py-2">Maximum toughness from Tribulation gear</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="bg-card border border-elevated rounded-md p-4 text-xs text-bone overflow-x-auto"><code>{
+  "armorEquipment": {
+    "enabled": true,
+    "materialRollMode": "PER_MOB",
+    "armorDropChance": 0.0,
+    "armorCeiling": 24.0,
+    "toughnessCeiling": 15.0,
+    "tiers": {
+      "tier1": {
+        "wearChancePercent": 12,
+        "slotCoveragePercent": 60,
+        "enchantChancePercent": 0,
+        "maxProtectionLevel": 0,
+        "materialWeights": { "leather": 80, "gold": 15, "chain": 5 }
+      }
+    }
+  }
+}</code></pre>
+        </section>
+
+        <section id="weapon-equipment" class="mb-12">
+          <h2 class="text-xl md:text-2xl font-bold mb-4 heading-gradient">weaponEquipment</h2>
+          <p class="text-sm text-ash leading-relaxed mb-4">Controls mob weapon upgrades and enchantments.</p>
+          <div class="overflow-x-auto mb-4">
+            <table class="w-full text-xs md:text-sm border border-elevated rounded-md">
+              <thead class="bg-card text-bone"><tr><th class="text-left py-2 px-3 border-b border-elevated">Key</th><th class="text-left py-2 px-3 border-b border-elevated">Type</th><th class="text-left py-2 px-3 border-b border-elevated">Default</th><th class="text-left py-2 px-3 border-b border-elevated">Description</th></tr></thead>
+              <tbody class="text-ash">
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">enabled</code></td><td class="px-3 py-2">boolean</td><td class="px-3 py-2">true</td><td class="px-3 py-2">Enable tier-driven weapon upgrades</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">weaponDropChance</code></td><td class="px-3 py-2">double</td><td class="px-3 py-2">0.0</td><td class="px-3 py-2">Drop probability [0.0, 2.0]. 1.0+ is guaranteed and pristine.</td></tr>
+                <tr class="border-t border-elevated/40 hover:bg-card/50"><td class="px-3 py-2 whitespace-nowrap"><code class="text-ember">damageCeiling</code></td><td class="px-3 py-2">double</td><td class="px-3 py-2">20.0</td><td class="px-3 py-2">Maximum base damage from Tribulation weapons</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="bg-card border border-elevated rounded-md p-4 text-xs text-bone overflow-x-auto"><code>{
+  "weaponEquipment": {
+    "enabled": true,
+    "weaponDropChance": 0.0,
+    "damageCeiling": 20.0,
+    "tiers": {
+      "tier1": {
+        "wearChancePercent": 10,
+        "enchantChancePercent": 0,
+        "maxEnchantmentLevel": 0,
+        "materialWeights": { "wood": 80, "stone": 20 }
+      }
+    }
+  }
+}</code></pre>
+        </section>
+
         <section id="abilities" class="mb-12">
           <h2 class="text-xl md:text-2xl font-bold mb-4 heading-gradient">abilities</h2>
           <p class="text-sm text-ash leading-relaxed mb-4">Toggle individual tier-gated abilities on or off. All default to <code class="text-ember">true</code>.</p>

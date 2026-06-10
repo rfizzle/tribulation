@@ -1,0 +1,115 @@
+{
+  "nav": "Developers",
+  "metaTitle": "Developers — Tribulation | API for Mod Integration",
+  "metaDescription": "Tribulation's read-only public API and level-change event for mod developers: read a player's level and tier, react to level changes, and integrate as a soft dependency.",
+  "ogTitle": "Developers — Tribulation",
+  "ogDescription": "Read-only public API and level-change event for integrating with Tribulation.",
+  "title": "Developers",
+  "lede": "Tribulation exposes a stable, read-only API and a level-change event so other mods can read a player's difficulty level and react to it — without a hard dependency.",
+  "width": "4xl",
+  "sections": [
+    {
+      "id": "soft-dependency",
+      "title": "Soft Dependency Setup",
+      "blocks": [
+        { "type": "prose", "html": ["Compile against Tribulation with <code class='text-accent2'>modCompileOnly</code> so it stays optional at runtime, then guard every call with a mod-loaded check."] },
+        { "type": "code", "label": "Gradle:", "bottomGap": true, "code": "dependencies {\n    modCompileOnly \"maven.modrinth:tribulation:<version>\"\n}" },
+        { "type": "prose", "html": ["Guard calls so your mod loads cleanly whether or not Tribulation is present:"] },
+        { "type": "code", "code": "if (FabricLoader.getInstance().isModLoaded(\"tribulation\")) {\n    // safe to touch the Tribulation API here\n}" }
+      ]
+    },
+    {
+      "id": "api-reference",
+      "title": "TribulationAPI",
+      "blocks": [
+        { "type": "prose", "html": ["Static entry points on <code class='text-accent2'>com.rfizzle.tribulation.api.TribulationAPI</code>. Server-side methods are authoritative; the client method reads the last value synced to that client."] },
+        {
+          "type": "table",
+          "headers": ["Method", "Returns", "Side", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>getLevel(ServerPlayer)</code>", "int", "Server", "The player's authoritative difficulty level (0–maxLevel)."],
+            ["<code class='text-accent2 whitespace-nowrap'>getTier(ServerPlayer)</code>", "int", "Server", "The player's current tier (0–5), derived from level and the tier thresholds."],
+            ["<code class='text-accent2 whitespace-nowrap'>getEffectiveLevel(Entity)</code>", "int", "Server", "The level that would drive scaling for this entity's position (nearest-player based). Returns 0 off-server."],
+            ["<code class='text-accent2 whitespace-nowrap'>getClientLevel()</code>", "int", "Client", "The local player's last-synced level. Returns −1 if unknown or the mod isn't present."],
+            ["<code class='text-accent2 whitespace-nowrap'>getScaledTier(Entity)</code>", "OptionalInt", "Server", "The tier the entity was scaled to at spawn. Empty if never scaled."],
+            ["<code class='text-accent2 whitespace-nowrap'>wasScaledByTribulation(Entity)</code>", "boolean", "Server", "Check if an entity was scaled by Tribulation."]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loot-api",
+      "title": "Loot Control API",
+      "blocks": [
+        { "type": "prose", "html": ["Control the drop chance of armor and weapons equipped by Tribulation. This allows external loot-modifying mods to override the default drop rules."] },
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "titleSize": "base",
+          "bottomGap": true,
+          "items": [
+            {
+              "title": "Armor Drop Chance",
+              "titleTone": "bone",
+              "html": [],
+              "code": "TribulationAPI.setArmorDropChanceProvider(\n    (mob, tier, slot, stack, defaultChance) -> {\n        // return 2.0f for guaranteed pristine drop\n        return 0.085f;\n    }\n);"
+            },
+            {
+              "title": "Weapon Drop Chance",
+              "titleTone": "bone",
+              "html": [],
+              "code": "TribulationAPI.setWeaponDropChanceProvider(\n    (mob, tier, stack, defaultChance) -> {\n        return 0.085f;\n    }\n);"
+            }
+          ]
+        },
+        { "type": "prose", "html": ["Providers are \"last writer wins\". If a provider throws an exception or returns a non-finite value (NaN/Infinity), the API automatically falls back to the configured default chance."] }
+      ]
+    },
+    {
+      "id": "usage",
+      "title": "Usage Examples",
+      "blocks": [
+        {
+          "type": "examples",
+          "items": [
+            {
+              "title": "Read a player's level &amp; tier (server)",
+              "body": [
+                { "type": "code", "tone": "bone", "code": "import com.rfizzle.tribulation.api.TribulationAPI;\n\nif (FabricLoader.getInstance().isModLoaded(\"tribulation\")) {\n    int level = TribulationAPI.getLevel(serverPlayer);\n    int tier  = TribulationAPI.getTier(serverPlayer);\n    // scale your own content off the same difficulty curve\n}" }
+              ]
+            },
+            {
+              "title": "Listen for level changes (server)",
+              "body": [
+                { "type": "code", "tone": "bone", "code": "import com.rfizzle.tribulation.api.TribulationLevelCallback;\n\nif (FabricLoader.getInstance().isModLoaded(\"tribulation\")) {\n    TribulationLevelCallback.EVENT.register((player, oldLevel, newLevel) -> {\n        player.sendSystemMessage(\n            Component.literal(\"Level: \" + oldLevel + \" → \" + newLevel));\n    });\n}" },
+                { "type": "prose", "html": "The callback fires server-side whenever a player's level changes — from playtime, death relief, Shatter Shards, or an operator command." }
+              ]
+            },
+            {
+              "title": "Read the local level (client)",
+              "body": [
+                { "type": "code", "tone": "bone", "code": "import com.rfizzle.tribulation.api.TribulationAPI;\n\n// Safe on the client; returns -1 if unknown or the mod isn't loaded.\nint clientLevel = TribulationAPI.getClientLevel();\nif (clientLevel >= 0) {\n    // e.g. drive your own HUD element\n}" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "The API package is <code class='text-accent2'>com.rfizzle.tribulation.api</code> — everything outside it is internal and may change without notice.",
+            "Server-side methods require a <code class='text-accent2'>ServerPlayer</code>/<code class='text-accent2'>Entity</code> on a running server; call them from server logic, not client rendering.",
+            "<code class='text-accent2'>getClientLevel()</code> is reflection-backed so the server-side API surface carries no compile-time dependency on client-only classes — it's safe to reference from common code.",
+            "Tribulation uses official Mojang mappings (e.g. <code class='text-accent2'>ServerPlayer</code>, <code class='text-accent2'>Component</code>), matching a standard 1.21.1 Fabric + Loom setup."
+          ]
+        },
+        { "type": "prose", "html": ["Building an integration and something's missing? <a href='https://github.com/rfizzle/tribulation/issues' rel='noopener noreferrer' target='_blank' class='text-accent hover:text-accent2 underline'>Open an issue</a> — the API surface grows based on real integration needs."] }
+      ]
+    }
+  ]
+}

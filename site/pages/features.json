@@ -1,0 +1,298 @@
+{
+  "nav": "Features",
+  "metaTitle": "Features — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "Every Tribulation feature: three-axis mob scaling, per-mob rates, tier-gated abilities, zombie variants, boss scaling, death relief, shatter shards, hardcore hearts, soul inventory, and the level badge HUD.",
+  "ogTitle": "Features — Tribulation",
+  "ogDescription": "Detailed breakdown of every Tribulation feature and mechanic.",
+  "title": "Features",
+  "lede": "Everything Tribulation does to make your world progressively more dangerous. Every system is individually toggleable via <a href='/config.html' class='text-accent hover:text-accent2 underline'>config</a>.",
+  "width": "6xl",
+  "scale": "lg",
+  "sections": [
+    {
+      "id": "mob-scaling",
+      "title": "Mob Scaling",
+      "blocks": [
+        {
+          "type": "sub",
+          "id": "scaling-axes",
+          "title": "Three Scaling Axes",
+          "intro": "Mob stats are boosted by three independent axes that combine per attribute. Each axis produces a factor added to the mob's base stat via attribute modifiers: <code class='text-accent2'>min(level × rate, cap)</code> for time, plus distance and height bonuses.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 3,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Time (Player Level)",
+                  "html": ["Playtime accumulates ticks — 72,000 ticks (1 hour) per level by default, max level 250. Every mob spawned near you uses your level to compute a per-stat time factor."]
+                },
+                {
+                  "title": "Distance from Spawn",
+                  "html": ["Beyond <code class='text-accent2'>startingDistance</code> (1000 blocks), every 300 blocks adds 0.1 to the position bonus, capping at 1.5. Applies to health, damage, armor, and toughness."]
+                },
+                {
+                  "title": "Height (Y-Level)",
+                  "html": ["Deviation from Y=62 by 30 blocks adds 0.1, capping at 0.5. Positive and negative deviation both scale — deep caves and tall mountains alike."]
+                }
+              ]
+            },
+            { "type": "note", "html": "Distance and height are optionally excluded outside the Overworld. Time scaling applies in every dimension." }
+          ]
+        },
+        {
+          "type": "sub",
+          "id": "scaled-mobs",
+          "title": "Scaled Mob Types",
+          "intro": "21 vanilla hostile mobs have individually tuned scaling rates and caps for six attributes. Each can be toggled on or off independently.",
+          "blocks": [
+            {
+              "type": "table",
+              "nowrapHeaders": true,
+              "headers": ["Mob", "Health Rate/Cap", "Damage Rate/Cap", "Speed Rate/Cap", "Armor Rate/Cap"],
+              "rows": [
+                ["<span class='text-bone'>Zombie</span>", "0.010 / 2.50", "0.015 / 3.75", "0.0012 / 0.30", "0.032 / 8.0"],
+                ["<span class='text-bone'>Skeleton</span>", "0.010 / 2.50", "0.012 / 3.00", "0.0012 / 0.30", "0.020 / 5.0"],
+                ["<span class='text-bone'>Creeper</span>", "0.008 / 2.00", "0.010 / 2.50", "0.0012 / 0.30", "0.016 / 4.0"],
+                ["<span class='text-bone'>Spider</span>", "0.008 / 2.00", "0.012 / 3.00", "0.0020 / 0.50", "0.016 / 4.0"],
+                ["<span class='text-bone'>Cave Spider</span>", "0.006 / 1.50", "0.010 / 2.50", "0.0020 / 0.50", "0.008 / 2.0"],
+                ["<span class='text-bone'>Endermite</span>", "0.005 / 1.25", "0.010 / 2.50", "0.0024 / 0.60", "0.0 / 0"],
+                ["<span class='text-bone'>Silverfish</span>", "0.005 / 1.25", "0.008 / 2.00", "0.0010 / 0.25", "0.0 / 0"],
+                ["<span class='text-bone'>Drowned</span>", "0.010 / 2.50", "0.014 / 3.50", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Husk</span>", "0.011 / 2.75", "0.015 / 3.75", "0.0012 / 0.30", "0.032 / 8.0"],
+                ["<span class='text-bone'>Stray</span>", "0.010 / 2.50", "0.012 / 3.00", "0.0012 / 0.30", "0.020 / 5.0"],
+                ["<span class='text-bone'>Pillager</span>", "0.010 / 2.50", "0.014 / 3.50", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Vindicator</span>", "0.012 / 3.00", "0.020 / 5.00", "0.0012 / 0.30", "0.032 / 8.0"],
+                ["<span class='text-bone'>Witch</span>", "0.008 / 2.00", "0.008 / 2.00", "0.0008 / 0.20", "0.016 / 4.0"],
+                ["<span class='text-bone'>Wither Skeleton</span>", "0.012 / 3.00", "0.016 / 4.00", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Guardian</span>", "0.010 / 2.50", "0.014 / 3.50", "0.0010 / 0.25", "0.020 / 5.0"],
+                ["<span class='text-bone'>Hoglin</span>", "0.014 / 3.50", "0.016 / 4.00", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Zoglin</span>", "0.014 / 3.50", "0.015 / 3.75", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Ravager</span>", "0.016 / 4.00", "0.014 / 3.50", "0.0008 / 0.20", "0.032 / 8.0"],
+                ["<span class='text-bone'>Piglin</span>", "0.010 / 2.50", "0.014 / 3.50", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Zombified Piglin</span>", "0.010 / 2.50", "0.015 / 3.75", "0.0012 / 0.30", "0.024 / 6.0"],
+                ["<span class='text-bone'>Bogged</span>", "0.010 / 2.50", "0.012 / 3.00", "0.0012 / 0.30", "0.020 / 5.0"]
+              ],
+              "note": "<em>Rate</em> = stat gain per player level. <em>Cap</em> = maximum total factor from the time axis alone. Follow range and toughness are also scaled per-mob — see <a href='/config.html#scaling' class='text-accent hover:text-accent2 underline'>config</a> for full values."
+            }
+          ]
+        },
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "items": [
+            {
+              "id": "stat-caps",
+              "title": "Global Stat Caps",
+              "html": ["Hard ceilings on the total factor per attribute, preventing infinite scaling regardless of axis combination."],
+              "bullets": [
+                "Health: <span class='text-bone'>4.0×</span>",
+                "Damage: <span class='text-bone'>4.5×</span>",
+                "Speed: <span class='text-bone'>0.5×</span> (additive bonus)",
+                "Armor: <span class='text-bone'>2.0×</span>",
+                "Follow Range: <span class='text-bone'>1.5×</span>"
+              ]
+            },
+            {
+              "id": "boss-scaling",
+              "title": "Boss Scaling",
+              "html": [
+                "Bosses (Ender Dragon, Wither, Elder Guardian, and any entity tagged <code class='text-accent2'>c:bosses</code>) use a separate, gentler formula: time factor <code class='text-accent2'>level × bossTimeFactor / maxLevel</code> plus distance via <code class='text-accent2'>bossDistanceFactor</code>. Height scaling is skipped entirely."
+              ],
+              "note": "Defaults: max factor 3.0×, time rate 0.3, distance rate 0.1. Works in all dimensions."
+            },
+            {
+              "id": "modded-mobs",
+              "title": "Modded Mob Support",
+              "html": ["Any modded mob extending <code class='text-accent2'>Monster</code> gets conservative zombie-equivalent health and damage scaling automatically (no speed/armor changes)."],
+              "bullets": [
+                "Exclude entire namespaces via <code class='text-accent2'>excludedNamespaces</code>",
+                "Override with full-ID entries in the scaling map for fine-tuning",
+                "Toggle via <code class='text-accent2'>unlistedHostileMobs.enabled</code>"
+              ]
+            },
+            {
+              "id": "xp-loot",
+              "title": "Extra XP &amp; Loot",
+              "html": ["Scaled mobs reward more experience to compensate for their increased difficulty."],
+              "bullets": [
+                "XP multiplied by the mob's scaling factor, up to 2.0×",
+                "Optional extra loot drops (off by default) — a chance to drop an additional copy of the loot table"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abilities-variants",
+      "title": "Abilities &amp; Variants",
+      "blocks": [
+        {
+          "type": "sub",
+          "id": "tier-abilities",
+          "title": "Tier-Gated Abilities",
+          "intro": "At five tier thresholds, mobs unlock special behaviors beyond raw stat boosts. Each ability is individually toggleable.",
+          "blocks": [
+            {
+              "type": "table",
+              "nowrapHeaders": true,
+              "headers": ["Tier", "Level", "Abilities Unlocked"],
+              "rows": [
+                ["<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>Tier 1</span>", "<span class='text-bone'>50</span>", "Zombie reinforcements, Creeper shorter fuse, Hoglin knockback resistance"],
+                ["<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>Tier 2</span>", "<span class='text-bone'>100</span>", "Skeleton sword switch, Spider/Cave Spider web placing, Drowned trident upgrade, Piglin crossbow"],
+                ["<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>Tier 3</span>", "<span class='text-bone'>150</span>", "Zombie door-breaking, Spider crop trampling, Wither Skeleton sprint, Zoglin fire resistance"],
+                ["<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>Tier 4</span>", "<span class='text-bone'>200</span>", "Skeleton flame arrows, Husk Hunger II, Wither Skeleton fire aspect, Vindicator damage resistance"],
+                ["<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent2/15 border border-accent2/30 text-accent2'>Tier 5</span>", "<span class='text-bone'>250</span>", "Zombie sprinting, Creeper charged chance (25%), Spider leap attack, Zombified Piglin aggro range"]
+              ],
+              "note": "See the <a href='/config.html#abilities' class='text-accent hover:text-accent2 underline'>full ability list</a> for every per-mob toggle."
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "id": "zombie-variants",
+          "title": "Zombie Variants",
+          "intro": "Zombies have a chance to spawn as special variants with distinct visual and mechanical differences.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Big Zombie",
+                  "html": ["10% chance. Scaled up 1.3× in size with +10 bonus health and +2 bonus damage, but 0.7× movement speed. A lumbering tank."]
+                },
+                {
+                  "title": "Speed Zombie",
+                  "html": ["10% chance. 1.3× movement speed but −10 health. Fast and fragile — ambush-predator behavior."]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equipment-scaling",
+      "title": "Equipment Scaling",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "gap": 6,
+          "items": [
+            {
+              "id": "tier-armor",
+              "title": "Tier-Driven Mob Armor",
+              "html": ["Mobs spawn with equipment that scales visually and mechanically with their tier. This provides a clear \"threat signal\" before you even engage."],
+              "bullets": [
+                "<span class='text-bone'>Weighted Material Pool:</span> Equipment shifts from leather and gold to iron, diamond, and netherite as tiers increase.",
+                "<span class='text-bone'>Per-Tier Coverage:</span> Higher tiers increase both the chance to wear armor and the number of slots covered.",
+                "<span class='text-bone'>Protection Enchantments:</span> Armor at higher tiers automatically gains Protection enchantments, capped by configurable ceilings."
+              ],
+              "bulletSpacing": 2,
+              "note": "Config: <code class='text-accent2'>armorEquipment.enabled</code>, <code class='text-accent2'>armorEquipment.materialRollMode</code>"
+            },
+            {
+              "id": "tier-weapons",
+              "title": "Tier-Driven Weapons",
+              "html": ["Hostile mobs receive weapon upgrades and enchantments that match their increasing lethality."],
+              "bullets": [
+                "<span class='text-bone'>Material Upgrades:</span> Standard melee mobs (Zombies, Skeletons, etc.) receive swords or axes of increasing quality.",
+                "<span class='text-bone'>Lethal Enchantments:</span> Weapons gain Sharpness (melee) or Power (ranged) based on tier.",
+                "<span class='text-bone'>Failed-Roll Retention:</span> If an upgrade roll fails or the mob has specialized vanilla gear (like a Drowned's trident), the original weapon is kept and enchanted instead."
+              ],
+              "bulletSpacing": 2,
+              "note": "Config: <code class='text-accent2'>weaponEquipment.enabled</code>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "death-penalties",
+      "title": "Death &amp; Penalties",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "items": [
+            {
+              "id": "death-relief",
+              "title": "Death Relief",
+              "html": ["When you die, your player level drops by 2 (configurable) — a natural difficulty rubber-band. Dying frequently keeps your level in check; surviving pushes the ceiling higher."],
+              "bullets": [
+                "Default reduction: 2 levels per death",
+                "Cooldown: 6,000 ticks (5 min) between reductions",
+                "Will not reduce below <code class='text-accent2'>minimumLevel</code> (default 0)",
+                "Can be disabled entirely"
+              ]
+            },
+            {
+              "id": "shatter-shards",
+              "title": "Shatter Shards",
+              "html": ["Rare item drops from scaled mobs that let you intentionally lower your difficulty level."],
+              "bullets": [
+                "Drop chance: 0.5% per scaled-mob kill",
+                "Only drop at player level 25+ (configurable)",
+                "Consuming a shard reduces your level by 5",
+                "Applies mild debuffs: Slowness II, Mining Fatigue II, Weakness II (10s)"
+              ]
+            },
+            {
+              "id": "hardcore-hearts",
+              "title": "Hardcore Hearts",
+              "badge": "Opt-in",
+              "html": ["Disabled by default. When enabled, each death permanently reduces your maximum health."],
+              "bullets": [
+                "Lose 2 half-hearts per death (configurable 1–20)",
+                "Minimum floor: 2 half-hearts (1 heart)",
+                "Restore with <strong class='text-bone'>Heart Fragment</strong> items (+2 half-hearts each)",
+                "Crafted from 4 Shatter Shards + 1 Golden Apple",
+                "Admin command to restore or reset hearts"
+              ]
+            },
+            {
+              "id": "soul-inventory",
+              "title": "Soul Inventory",
+              "badge": "Opt-in",
+              "html": ["Disabled by default. When enabled, your inventory is destroyed on death unless items carry the <strong class='text-bone'>Soulbound</strong> enchantment."],
+              "bullets": [
+                "Enchantment ID: <code class='text-accent2'>tribulation:soulbound</code>",
+                "Configurable to use any external enchantment ID",
+                "Option to also destroy XP on death",
+                "Respects the vanilla <code class='text-accent2'>keepInventory</code> gamerule when configured"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interface",
+      "title": "Interface",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 1,
+          "items": [
+            {
+              "id": "level-hud",
+              "title": "Level Badge HUD",
+              "html": [
+                "A compact, icon-only badge in the HUD shows your current difficulty tier at a glance. The icon is tinted by tier — white at Tier 0, escalating through yellow, orange, and red to a dark crimson at Tier 5 — and a thin progress bar underneath fills toward your next level.",
+                "On level-up, the badge flashes gold and settles into the new tier color so the moment isn't missed now that the raw number is gone. It follows the rfizzle overhaul-suite convention: anchor to any screen corner with a configurable pixel offset, so it stacks cleanly with HUDs from Meridian, Mercantile, and other suite mods.",
+                "Hidden automatically during F1, open screens, and spectator mode. Prefer an exact number? Run <code class='text-accent2'>/tribulation info</code>."
+              ],
+              "note": "Client config: <code class='text-accent2'>hud.enabled</code>, <code class='text-accent2'>hud.anchor</code>, <code class='text-accent2'>hud.offsetX</code>, <code class='text-accent2'>hud.offsetY</code>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

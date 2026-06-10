@@ -1,0 +1,397 @@
+{
+  "nav": "Config",
+  "metaTitle": "Config — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "Complete configuration reference for Tribulation. Every config section, key, type, default, and example JSON for tribulation.json.",
+  "ogTitle": "Config — Tribulation",
+  "ogDescription": "Full config reference for tribulation.json with all sections, keys, and defaults.",
+  "title": "Configuration",
+  "lede": "Every Tribulation setting, organized by section. Tune values by hand or reload them live without a restart.",
+  "width": "5xl",
+  "sections": [
+    {
+      "title": "File Location &amp; Reload",
+      "plainTitle": true,
+      "blocks": [
+        { "type": "prose", "html": ["The config file is auto-generated with defaults on first launch at:"] },
+        { "type": "code", "code": ".minecraft/config/tribulation.json", "bottomGap": true },
+        { "type": "prose", "html": ["Server operators can apply changes without a restart with:"] },
+        { "type": "code", "code": "/tribulation reload", "tone": "accent2" },
+        { "type": "prose", "html": ["Out-of-range numeric values are clamped on load — hand-edited typos are silently corrected. Newly spawned mobs use the updated values; existing mobs keep their current modifiers until they despawn."] }
+      ]
+    },
+    {
+      "id": "general",
+      "title": "general",
+      "intro": "Core settings that control the overall scaling system.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>maxLevel</code>", "int", "250", "Maximum player difficulty level"],
+            ["<code class='text-accent2 whitespace-nowrap'>levelUpTicks</code>", "int", "72000", "Ticks of playtime per level (72000 = 1 hour)"],
+            ["<code class='text-accent2 whitespace-nowrap'>mobDetectionRange</code>", "double", "32.0", "Range (blocks) to find nearest player for scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>excludedEntities</code>", "string[]", "[]", "Entity IDs exempt from all scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>notifyLevelUp</code>", "boolean", "true", "Show chat message on level up"],
+            ["<code class='text-accent2 whitespace-nowrap'>notifyLevelUpShowTier</code>", "boolean", "true", "Include tier info in level-up notification"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"general\": {\n    \"maxLevel\": 250,\n    \"levelUpTicks\": 72000,\n    \"mobDetectionRange\": 32.0,\n    \"excludedEntities\": [],\n    \"notifyLevelUp\": true,\n    \"notifyLevelUpShowTier\": true\n  }\n}" }
+      ]
+    },
+    {
+      "id": "time-scaling",
+      "title": "timeScaling",
+      "intro": "Toggle for the time/level scaling axis.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Whether player level affects mob stats"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "distance-scaling",
+      "title": "distanceScaling",
+      "intro": "Controls how horizontal distance from world spawn boosts mob stats.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable distance scaling axis"],
+            ["<code class='text-accent2 whitespace-nowrap'>startingDistance</code>", "double", "1000", "Blocks from spawn before scaling begins"],
+            ["<code class='text-accent2 whitespace-nowrap'>increasingDistance</code>", "double", "300", "Blocks per additional factor step"],
+            ["<code class='text-accent2 whitespace-nowrap'>distanceFactor</code>", "double", "0.1", "Factor added per step"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxDistanceFactor</code>", "double", "1.5", "Maximum distance factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>excludeInOtherDimensions</code>", "boolean", "true", "Only apply in the Overworld"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"distanceScaling\": {\n    \"enabled\": true,\n    \"startingDistance\": 1000,\n    \"increasingDistance\": 300,\n    \"distanceFactor\": 0.1,\n    \"maxDistanceFactor\": 1.5,\n    \"excludeInOtherDimensions\": true\n  }\n}" }
+      ]
+    },
+    {
+      "id": "height-scaling",
+      "title": "heightScaling",
+      "intro": "Controls how Y-level deviation from sea level boosts mob stats.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable height scaling axis"],
+            ["<code class='text-accent2 whitespace-nowrap'>startingHeight</code>", "double", "62", "Y-level baseline (sea level)"],
+            ["<code class='text-accent2 whitespace-nowrap'>heightDistance</code>", "double", "30", "Blocks of Y deviation per step"],
+            ["<code class='text-accent2 whitespace-nowrap'>heightFactor</code>", "double", "0.1", "Factor added per step"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxHeightFactor</code>", "double", "0.5", "Maximum height factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>positiveHeightScaling</code>", "boolean", "true", "Scale mobs above baseline"],
+            ["<code class='text-accent2 whitespace-nowrap'>negativeHeightScaling</code>", "boolean", "true", "Scale mobs below baseline"],
+            ["<code class='text-accent2 whitespace-nowrap'>excludeInOtherDimensions</code>", "boolean", "true", "Only apply in the Overworld"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stat-caps",
+      "title": "statCaps",
+      "intro": "Hard ceilings on the total scaling factor for each attribute (all axes combined).",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>maxFactorHealth</code>", "double", "4.0", "Max health multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxFactorDamage</code>", "double", "4.5", "Max damage multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxFactorSpeed</code>", "double", "0.5", "Max speed bonus"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxFactorProtection</code>", "double", "2.0", "Max armor multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxFactorFollowRange</code>", "double", "1.5", "Max follow range multiplier"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "death-relief",
+      "title": "deathRelief",
+      "intro": "Level reduction on death acts as a natural difficulty rubber-band.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable death level reduction"],
+            ["<code class='text-accent2 whitespace-nowrap'>amount</code>", "int", "2", "Levels lost per death"],
+            ["<code class='text-accent2 whitespace-nowrap'>cooldownTicks</code>", "int", "6000", "Ticks between reductions"],
+            ["<code class='text-accent2 whitespace-nowrap'>minimumLevel</code>", "int", "0", "Level floor (will not reduce below this)"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shards",
+      "title": "shards",
+      "intro": "Shatter Shard drop and use configuration.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable shard drops"],
+            ["<code class='text-accent2 whitespace-nowrap'>dropStartLevel</code>", "int", "25", "Minimum player level for shards to drop"],
+            ["<code class='text-accent2 whitespace-nowrap'>shardPower</code>", "int", "5", "Levels reduced when consuming a shard"],
+            ["<code class='text-accent2 whitespace-nowrap'>dropChance</code>", "double", "0.005", "Drop probability per kill (0.0–1.0)"],
+            ["<code class='text-accent2 whitespace-nowrap'>sideEffects</code>", "boolean", "true", "Apply debuffs on shard use"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hardcore-hearts",
+      "title": "hardcoreHearts",
+      "intro": "Permanent max-health reduction on death. Disabled by default.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "false", "Enable hardcore hearts system"],
+            ["<code class='text-accent2 whitespace-nowrap'>heartsLostPerDeath</code>", "int", "2", "Half-hearts lost per death (1–20)"],
+            ["<code class='text-accent2 whitespace-nowrap'>minimumHearts</code>", "int", "2", "Minimum half-hearts (floor)"],
+            ["<code class='text-accent2 whitespace-nowrap'>heartsRestoredPerFragment</code>", "int", "2", "Half-hearts restored per Heart Fragment"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"hardcoreHearts\": {\n    \"enabled\": false,\n    \"heartsLostPerDeath\": 2,\n    \"minimumHearts\": 2,\n    \"heartsRestoredPerFragment\": 2\n  }\n}" }
+      ]
+    },
+    {
+      "id": "soul-inventory",
+      "title": "soulInventory",
+      "intro": "Inventory destruction on death. Disabled by default.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "false", "Enable soul inventory system"],
+            ["<code class='text-accent2 whitespace-nowrap'>soulboundEnchantment</code>", "string", "\"tribulation:soulbound\"", "Enchantment ID that protects items"],
+            ["<code class='text-accent2 whitespace-nowrap'>destroyXp</code>", "boolean", "false", "Also destroy XP on death"],
+            ["<code class='text-accent2 whitespace-nowrap'>respectKeepInventory</code>", "boolean", "true", "Skip destruction if keepInventory is on"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scaling",
+      "title": "scaling",
+      "intro": "Per-mob scaling rates and caps. Keyed by mob path (e.g. <code class='text-accent2'>zombie</code>) or full ID (e.g. <code class='text-accent2'>mymod:custom_mob</code>).",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default (Zombie)", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>healthRate</code>", "double", "0.010", "Health factor gained per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>healthCap</code>", "double", "2.50", "Max time-axis health factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>damageRate</code>", "double", "0.015", "Damage factor per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>damageCap</code>", "double", "3.75", "Max time-axis damage factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>speedRate</code>", "double", "0.0012", "Speed factor per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>speedCap</code>", "double", "0.30", "Max time-axis speed factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>armorRate</code>", "double", "0.032", "Armor factor per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>armorCap</code>", "double", "8.0", "Max armor factor"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"scaling\": {\n    \"zombie\": {\n      \"healthRate\": 0.010, \"healthCap\": 2.50,\n      \"damageRate\": 0.015, \"damageCap\": 3.75,\n      \"speedRate\": 0.0012, \"speedCap\": 0.30,\n      \"armorRate\": 0.032, \"armorCap\": 8.0\n    }\n  }\n}" }
+      ]
+    },
+    {
+      "id": "unlisted-hostile-mobs",
+      "title": "unlistedHostileMobs",
+      "intro": "Fallback scaling for modded mobs extending <code class='text-accent2'>Monster</code> that aren't in the scaling map.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Apply fallback scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>excludedNamespaces</code>", "string[]", "[]", "Mod namespaces to exclude"],
+            ["<code class='text-accent2 whitespace-nowrap'>scaling</code>", "MobScaling", "(zombie health+damage)", "Scaling values for unlisted mobs"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"unlistedHostileMobs\": {\n    \"enabled\": true,\n    \"excludedNamespaces\": [\"bosses_of_mass_destruction\"],\n    \"scaling\": {\n      \"healthRate\": 0.010, \"healthCap\": 2.50,\n      \"damageRate\": 0.015, \"damageCap\": 3.75,\n      \"speedRate\": 0.0, \"speedCap\": 0.0\n    }\n  }\n}" }
+      ]
+    },
+    {
+      "id": "special-zombies",
+      "title": "specialZombies",
+      "intro": "Zombie variant spawn configuration.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable zombie variants"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieChance</code>", "int", "10", "Percent chance for big variant"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieSize</code>", "double", "1.3", "Scale multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>speedZombieChance</code>", "int", "10", "Percent chance for speed variant"],
+            ["<code class='text-accent2 whitespace-nowrap'>speedZombieSpeedFactor</code>", "double", "1.3", "Speed multiplier for speed zombies"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bosses",
+      "title": "bosses",
+      "intro": "Boss mob scaling uses a separate, gentler formula.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>affectBosses</code>", "boolean", "true", "Enable boss scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>bossMaxFactor</code>", "double", "3.0", "Maximum total factor for bosses"],
+            ["<code class='text-accent2 whitespace-nowrap'>bossDistanceFactor</code>", "double", "0.1", "Distance scaling rate for bosses"],
+            ["<code class='text-accent2 whitespace-nowrap'>bossTimeFactor</code>", "double", "0.3", "Time scaling rate for bosses"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xp-and-loot",
+      "title": "xpAndLoot",
+      "intro": "Rewards for killing scaled mobs.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>extraXp</code>", "boolean", "true", "Enable XP bonus scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxXpFactor</code>", "double", "2.0", "Maximum XP multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>dropMoreLoot</code>", "boolean", "false", "Enable extra loot drops"],
+            ["<code class='text-accent2 whitespace-nowrap'>moreLootChance</code>", "double", "0.02", "Base extra loot chance per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxLootChance</code>", "double", "0.7", "Maximum extra loot probability"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiers",
+      "title": "tiers",
+      "intro": "Level thresholds for ability tiers.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>tier1</code>", "int", "50", "Level for Tier 1 abilities"],
+            ["<code class='text-accent2 whitespace-nowrap'>tier2</code>", "int", "100", "Level for Tier 2"],
+            ["<code class='text-accent2 whitespace-nowrap'>tier3</code>", "int", "150", "Level for Tier 3"],
+            ["<code class='text-accent2 whitespace-nowrap'>tier4</code>", "int", "200", "Level for Tier 4"],
+            ["<code class='text-accent2 whitespace-nowrap'>tier5</code>", "int", "250", "Level for Tier 5"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hud",
+      "title": "hud",
+      "intro": "Client-side settings for the on-screen <a href='/features.html#level-hud' class='text-accent hover:text-accent2 underline'>Level Badge</a>. Stored locally per client and never synced.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Show the level badge overlay"],
+            ["<code class='text-accent2 whitespace-nowrap'>anchor</code>", "enum", "TOP_LEFT", "Screen corner: TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT"],
+            ["<code class='text-accent2 whitespace-nowrap'>offsetX</code>", "int", "4", "Horizontal pixels from the anchored edge"],
+            ["<code class='text-accent2 whitespace-nowrap'>offsetY</code>", "int", "4", "Vertical pixels from the anchored edge"]
+          ]
+        },
+        { "type": "code", "small": true, "topGap": true, "code": "{\n  \"hud\": {\n    \"enabled\": true,\n    \"anchor\": \"TOP_LEFT\",\n    \"offsetX\": 4,\n    \"offsetY\": 4\n  }\n}" }
+      ]
+    },
+    {
+      "id": "mob-toggles",
+      "title": "mobToggles",
+      "intro": "Per-mob on/off switches. Set to <code class='text-accent2'>false</code> to completely disable scaling for a specific mob type.",
+      "blocks": [
+        { "type": "code", "small": true, "code": "{\n  \"mobToggles\": {\n    \"zombie\": true,\n    \"skeleton\": true,\n    \"creeper\": true,\n    \"spider\": true,\n    \"cave_spider\": true,\n    \"endermite\": true,\n    \"silverfish\": true,\n    \"drowned\": true,\n    \"husk\": true,\n    \"stray\": true,\n    \"pillager\": true,\n    \"vindicator\": true,\n    \"witch\": true,\n    \"wither_skeleton\": true,\n    \"guardian\": true,\n    \"hoglin\": true,\n    \"zoglin\": true,\n    \"ravager\": true,\n    \"piglin\": true,\n    \"zombified_piglin\": true,\n    \"bogged\": true\n  }\n}" }
+      ]
+    },
+    {
+      "id": "armor-equipment",
+      "title": "armorEquipment",
+      "intro": "Controls how mobs are equipped with armor based on their tier.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable tier-driven armor equipment"],
+            ["<code class='text-accent2 whitespace-nowrap'>materialRollMode</code>", "enum", "PER_MOB", "Roll once per mob or once per slot: <code class='text-accent2'>PER_MOB</code>, <code class='text-accent2'>PER_SLOT</code>"],
+            ["<code class='text-accent2 whitespace-nowrap'>armorDropChance</code>", "double", "0.0", "Drop probability [0.0, 2.0]. 1.0+ is guaranteed and pristine."],
+            ["<code class='text-accent2 whitespace-nowrap'>armorCeiling</code>", "double", "24.0", "Maximum armor points from Tribulation gear"],
+            ["<code class='text-accent2 whitespace-nowrap'>toughnessCeiling</code>", "double", "15.0", "Maximum toughness from Tribulation gear"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"armorEquipment\": {\n    \"enabled\": true,\n    \"materialRollMode\": \"PER_MOB\",\n    \"armorDropChance\": 0.0,\n    \"armorCeiling\": 24.0,\n    \"toughnessCeiling\": 15.0,\n    \"tiers\": {\n      \"tier1\": {\n        \"wearChancePercent\": 12,\n        \"slotCoveragePercent\": 60,\n        \"enchantChancePercent\": 0,\n        \"maxProtectionLevel\": 0,\n        \"materialWeights\": { \"leather\": 80, \"gold\": 15, \"chain\": 5 }\n      }\n    }\n  }\n}" }
+      ]
+    },
+    {
+      "id": "weapon-equipment",
+      "title": "weaponEquipment",
+      "intro": "Controls mob weapon upgrades and enchantments.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable tier-driven weapon upgrades"],
+            ["<code class='text-accent2 whitespace-nowrap'>weaponDropChance</code>", "double", "0.0", "Drop probability [0.0, 2.0]. 1.0+ is guaranteed and pristine."],
+            ["<code class='text-accent2 whitespace-nowrap'>damageCeiling</code>", "double", "20.0", "Maximum base damage from Tribulation weapons"]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"weaponEquipment\": {\n    \"enabled\": true,\n    \"weaponDropChance\": 0.0,\n    \"damageCeiling\": 20.0,\n    \"tiers\": {\n      \"tier1\": {\n        \"wearChancePercent\": 10,\n        \"enchantChancePercent\": 0,\n        \"maxEnchantmentLevel\": 0,\n        \"materialWeights\": { \"wood\": 80, \"stone\": 20 }\n      }\n    }\n  }\n}" }
+      ]
+    },
+    {
+      "id": "abilities",
+      "title": "abilities",
+      "intro": "Toggle individual tier-gated abilities on or off. All default to <code class='text-accent2'>true</code>.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Mob", "Behavior"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>zombieReinforcements</code>", "Zombie", "Call nearby zombies when hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>zombieDoorBreaking</code>", "Zombie", "Break wooden doors"],
+            ["<code class='text-accent2 whitespace-nowrap'>zombieSprinting</code>", "Zombie", "Sprint toward targets"],
+            ["<code class='text-accent2 whitespace-nowrap'>creeperShorterFuse</code>", "Creeper", "Reduced detonation delay"],
+            ["<code class='text-accent2 whitespace-nowrap'>creeperCharged</code>", "Creeper", "Spawn already charged"],
+            ["<code class='text-accent2 whitespace-nowrap'>skeletonSwordSwitch</code>", "Skeleton", "Switch to melee at close range"],
+            ["<code class='text-accent2 whitespace-nowrap'>skeletonFlameArrows</code>", "Skeleton", "Fire flaming arrows"],
+            ["<code class='text-accent2 whitespace-nowrap'>spiderWebPlacing</code>", "Spider", "Place cobwebs near targets"],
+            ["<code class='text-accent2 whitespace-nowrap'>spiderCropTrample</code>", "Spider", "Destroy crops while chasing"],
+            ["<code class='text-accent2 whitespace-nowrap'>spiderLeapAttack</code>", "Spider", "Leap attack at range"],
+            ["<code class='text-accent2 whitespace-nowrap'>huskHunger</code>", "Husk", "Apply hunger effect on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>witherSkeletonSprint</code>", "Wither Skeleton", "Sprint toward targets"],
+            ["<code class='text-accent2 whitespace-nowrap'>witherSkeletonFireAspect</code>", "Wither Skeleton", "Set targets on fire"],
+            ["<code class='text-accent2 whitespace-nowrap'>drownedTrident</code>", "Drowned", "Always carry and throw trident"],
+            ["<code class='text-accent2 whitespace-nowrap'>hoglinKnockbackResist</code>", "Hoglin", "Resist knockback"],
+            ["<code class='text-accent2 whitespace-nowrap'>zoglinFireResist</code>", "Zoglin", "Resist fire damage"],
+            ["<code class='text-accent2 whitespace-nowrap'>vindicatorResistance</code>", "Vindicator", "Damage resistance effect"],
+            ["<code class='text-accent2 whitespace-nowrap'>zombifiedPiglinAggro</code>", "Zombified Piglin", "Always hostile"],
+            ["<code class='text-accent2 whitespace-nowrap'>piglinCrossbow</code>", "Piglin", "Enhanced crossbow behavior"]
+          ]
+        }
+      ]
+    }
+  ]
+}

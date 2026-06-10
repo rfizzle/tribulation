@@ -1,0 +1,136 @@
+{
+  "nav": "Guide",
+  "metaTitle": "Getting Started — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "A linear walkthrough — install Tribulation, learn how leveling and the three scaling axes work, handle death penalties, and opt into hardcore modes.",
+  "ogTitle": "Getting Started — Tribulation",
+  "ogDescription": "Install Tribulation, learn how leveling works, and opt into hardcore modes.",
+  "title": "Getting Started",
+  "lede": "A linear walkthrough — install Tribulation, understand how leveling and scaling work, survive the death rubber-band, and decide whether to flip on the hardcore mechanics.",
+  "width": "4xl",
+  "scale": "lg",
+  "sections": [
+    {
+      "id": "installation",
+      "title": "1. Installation",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": ["Tribulation is a Fabric mod for Minecraft 1.21.1 with zero external dependencies beyond Fabric API. You'll need:"] },
+        {
+          "type": "list",
+          "ordered": true,
+          "spacing": 3,
+          "items": [
+            "Install <strong class='text-bone'>Fabric Loader 0.16.10+</strong> via the official Fabric installer, targeting Minecraft <strong class='text-bone'>1.21.1</strong>. Tribulation requires <strong class='text-bone'>Java 21</strong>.",
+            "Download <strong class='text-bone'>Fabric API</strong> and drop it into your <code class='text-accent2'>mods/</code> folder.",
+            "Download Tribulation from the <a href='https://github.com/rfizzle/tribulation/releases' rel='noopener noreferrer' target='_blank' class='text-accent hover:text-accent2 underline'>releases page</a> and drop the jar into <code class='text-accent2'>mods/</code> — on both the server and every client.",
+            "Launch the game once. The first run generates <code class='text-accent2'>.minecraft/config/tribulation.json</code> with default values."
+          ]
+        },
+        { "type": "prose", "html": [
+          "<strong class='text-bone'>Already using a mob-scaling mod?</strong> Remove it first. Tribulation provides a unified, formula-driven scaling system, and stacking two scaling mods produces unpredictable stat inflation.",
+          "Mod Menu and Cloth Config are optional — install both for an in-game settings screen. See the <a href='/config.html' class='text-accent hover:text-accent2 underline'>full config reference</a> for every available setting."
+        ] }
+      ]
+    },
+    {
+      "id": "leveling",
+      "title": "2. How Leveling Works",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": [
+          "Tribulation's difficulty is driven by a per-player <strong class='text-bone'>difficulty level</strong> from 0 to 250. It is <em>not</em> your XP level — it advances purely with playtime, one level roughly every hour of being in the world.",
+          "The higher your level, the stronger the mobs that spawn near you. But your level is only one of <strong class='text-bone'>three scaling axes</strong> that combine per stat:"
+        ] },
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Axis", "Trigger", "Caps at"],
+          "rows": [
+            ["<span class='text-bone'>Time</span>", "Your difficulty level (≈1/hour, max 250)", "per-mob (e.g. +250% HP)"],
+            ["<span class='text-bone'>Distance</span>", "Past 1000 blocks from world spawn", "+150%"],
+            ["<span class='text-bone'>Height</span>", "Deviation from Y=62 (up or down)", "+50%"]
+          ]
+        },
+        { "type": "prose", "html": [
+          "The three factors stack per attribute and then clamp to a <a href='/features.html#stat-caps' class='text-accent hover:text-accent2 underline'>global stat cap</a>, so mobs never scale to infinity. A deep cave 2000 blocks from spawn at high level is dramatically more dangerous than the surface near your bed — by design.",
+          "Cross level thresholds of <strong class='text-bone'>50 / 100 / 150 / 200 / 250</strong> and mobs also unlock <a href='/features.html#tier-abilities' class='text-accent hover:text-accent2 underline'>tier-gated abilities</a> — zombies that break doors, skeletons that fire flaming arrows, creepers that spawn charged."
+        ] }
+      ]
+    },
+    {
+      "id": "level-badge",
+      "title": "3. Knowing Your Level",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": [
+          "A compact <strong class='text-bone'>level badge</strong> sits in the top-left of your HUD by default. It's icon-only — the icon's tint tells you your tier (white → yellow → orange → red → crimson as you climb), and the thin bar underneath fills toward your next level. When you level up, the badge flashes gold and settles into the new tier color.",
+          "The badge follows the rfizzle overhaul-suite convention, so it stacks cleanly with HUDs from Meridian, Mercantile, and other suite mods. Move it to any corner or hide it entirely via the <code class='text-accent2'>hud</code> <a href='/config.html#hud' class='text-accent hover:text-accent2 underline'>client config</a>."
+        ] },
+        { "type": "code", "label": "For an exact number, tier, and time-to-next, run:", "tone": "accent2", "code": "/tribulation info" },
+        { "type": "prose", "html": ["Server operators can inspect any player and even break down the exact scaling math at a position with <code class='text-accent2'>/tribulation debug &lt;player&gt;</code>. See the <a href='/commands.html' class='text-accent hover:text-accent2 underline'>commands reference</a>."], "topGap": true }
+      ]
+    },
+    {
+      "id": "death",
+      "title": "4. Death &amp; the Rubber-Band",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": [
+          "Tribulation's baseline death penalty is forgiving on purpose. When you die, you lose <strong class='text-bone'>2 difficulty levels</strong> (configurable). Dying repeatedly naturally pulls your difficulty back down, while a long survival streak pushes the ceiling higher — a self-balancing rubber-band rather than a punishment.",
+          "Want to dial the heat down deliberately? Once you're past level 25, scaled mobs occasionally drop <strong class='text-bone'>Shatter Shards</strong> (0.5% chance). Consume one to cut your level by 5 — at the cost of a few seconds of Slowness, Mining Fatigue, and Weakness. They're also the crafting ingredient for Heart Fragments below.",
+          "All of this is tunable. Don't want death relief at all? Set <code class='text-accent2'>deathRelief.enabled</code> to <code class='text-accent2'>false</code>. Want shards more common? Raise <code class='text-accent2'>shards.dropChance</code>. See <a href='/features.html#death-penalties' class='text-accent hover:text-accent2 underline'>features → Death &amp; Penalties</a>."
+        ] }
+      ]
+    },
+    {
+      "id": "hardcore",
+      "title": "5. Going Hardcore <span class='inline-block ml-1 px-2 py-0.5 text-xs font-semibold rounded bg-accent2/15 border border-accent2/30 text-accent2 align-middle'>Opt-in</span>",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": ["Two of Tribulation's harshest mechanics are <strong class='text-bone'>off by default</strong>. Flip them on only when you want death to carry lasting weight."] },
+        { "type": "sub", "title": "Hardcore Hearts", "blocks": [
+          { "type": "prose", "html": ["Each death permanently removes 2 half-hearts from your maximum health, down to a floor of 1 heart. To claw health back, craft a <strong class='text-bone'>Heart Fragment</strong> from <strong class='text-bone'>4 Shatter Shards + 1 Golden Apple</strong> — each fragment restores 2 half-hearts. Enable it with:"] },
+          { "type": "code", "small": true, "code": "\"hardcoreHearts\": { \"enabled\": true }" }
+        ] },
+        { "type": "sub", "title": "Soul Inventory", "blocks": [
+          { "type": "prose", "html": ["On death, your entire inventory is destroyed — except items carrying the <code class='text-accent2'>tribulation:soulbound</code> enchantment. You can't protect everything, so every Soulbound slot becomes a real decision. Enable it with:"] },
+          { "type": "code", "small": true, "code": "\"soulInventory\": { \"enabled\": true }" },
+          { "type": "prose", "html": ["Both honor the vanilla <code class='text-accent2'>keepInventory</code> gamerule when configured, and operators have admin commands to restore hearts or audit soulbound items. Apply changes live with <code class='text-accent2'>/tribulation reload</code>."] }
+        ] }
+      ]
+    },
+    {
+      "id": "tuning",
+      "title": "6. Tuning the Difficulty",
+      "titleGap": "4",
+      "blocks": [
+        { "type": "prose", "html": ["Every number is editable in <code class='text-accent2'>tribulation.json</code>. A few common starting points:"] },
+        {
+          "type": "list",
+          "items": [
+            "<strong class='text-bone'>Faster ramp:</strong> lower <code class='text-accent2'>general.levelUpTicks</code> (e.g. 36000 = 1 level per 30 min).",
+            "<strong class='text-bone'>Gentler peak:</strong> lower the <code class='text-accent2'>statCaps</code> values, or a specific mob's <code class='text-accent2'>healthCap</code>/<code class='text-accent2'>damageCap</code> in the <code class='text-accent2'>scaling</code> map.",
+            "<strong class='text-bone'>Disable an axis:</strong> set <code class='text-accent2'>distanceScaling.enabled</code> or <code class='text-accent2'>heightScaling.enabled</code> to <code class='text-accent2'>false</code>.",
+            "<strong class='text-bone'>Exempt a mob entirely:</strong> set its key in <code class='text-accent2'>mobToggles</code> to <code class='text-accent2'>false</code>.",
+            "<strong class='text-bone'>Turn off a single ability:</strong> set its flag in <code class='text-accent2'>abilities</code> (e.g. <code class='text-accent2'>zombieDoorBreaking</code>) to <code class='text-accent2'>false</code>."
+          ]
+        },
+        { "type": "prose", "html": ["After editing, run <code class='text-accent2'>/tribulation reload</code> — no restart needed. Out-of-range values are clamped automatically."] }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "panel",
+          "title": "Where to go next",
+          "items": [
+            "<a href='/features.html' class='text-accent hover:text-accent2 underline'>Features</a> — the full breakdown of every system and mechanic.",
+            "<a href='/config.html' class='text-accent hover:text-accent2 underline'>Config</a> — every key, type, and default value.",
+            "<a href='/commands.html' class='text-accent hover:text-accent2 underline'>Commands</a> — operator tools for levels, hearts, and debugging.",
+            "<a href='/faq.html' class='text-accent hover:text-accent2 underline'>FAQ</a> — performance, multiplayer, and compatibility questions."
+          ]
+        }
+      ]
+    }
+  ]
+}

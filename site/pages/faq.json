@@ -1,0 +1,65 @@
+{
+  "nav": "FAQ",
+  "metaTitle": "FAQ — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "Frequently asked questions about Tribulation: performance, multiplayer, modded-mob compatibility, tuning difficulty, and removing other scaling mods.",
+  "ogTitle": "FAQ — Tribulation",
+  "ogDescription": "Performance, compatibility, and common questions about Tribulation.",
+  "title": "FAQ",
+  "lede": "Click any question to expand. If yours isn't here, <a href='https://github.com/rfizzle/tribulation/issues' rel='noopener noreferrer' target='_blank' class='text-accent hover:text-accent2 underline'>open an issue on GitHub</a>.",
+  "width": "4xl",
+  "sections": [
+    {
+      "blocks": [
+        {
+          "type": "faq",
+          "items": [
+            {
+              "q": "Will Tribulation hurt my server's performance?",
+              "a": "No major hits expected. Scaling is computed once, at mob spawn time, from the nearest player's level and position — there's no per-tick recomputation of mob stats. The heaviest repeated work is finding the nearest player within <code class='text-accent2'>mobDetectionRange</code> (default 32 blocks); shrink that radius on dense servers if you want to trim it further. Player level advances on a coarse tick counter, not every frame. If you observe a regression, please file an issue with a Spark profile."
+            },
+            {
+              "q": "Does it work in singleplayer? On a dedicated server?",
+              "a": "Both. In singleplayer (which runs an integrated server) everything works out of the box. On a dedicated server, install Tribulation on both the server and every client — the server owns the scaling logic and config, while the client renders the level badge HUD. Each player carries their own independent difficulty level."
+            },
+            {
+              "q": "How does scaling work with multiple players nearby?",
+              "a": "Each mob scales off the <strong class='text-bone'>nearest player</strong> at spawn time. Difficulty level is per-player and tracked individually, so a veteran with hundreds of hours doesn't drag a brand-new player's nearby mobs up to level 250 unless that veteran is the closest player when the mob spawns. Distance-from-spawn and height bonuses are computed from the mob's own location, independent of who's nearby."
+            },
+            {
+              "q": "Does Tribulation scale modded mobs?",
+              "a": "Yes, conservatively. Any modded mob extending the vanilla <code class='text-accent2'>Monster</code> base class automatically receives zombie-equivalent <strong class='text-bone'>health and damage</strong> scaling (no speed or armor changes) via the <code class='text-accent2'>unlistedHostileMobs</code> fallback. You can exclude an entire mod with <code class='text-accent2'>excludedNamespaces</code>, or add a full-ID entry to the <code class='text-accent2'>scaling</code> map to give a specific modded mob hand-tuned rates and caps. Boss-like modded mobs are best tagged into <code class='text-accent2'>c:bosses</code> so they use the gentler boss formula."
+            },
+            {
+              "q": "I already run another mob-scaling mod. Can I keep it?",
+              "a": "No — remove it first. Tribulation applies its scaling through attribute modifiers, and a second scaling mod stacking on top produces compounding, unpredictable stat inflation. Tribulation is designed to be the single source of difficulty: three scaling axes, per-player progression, tier abilities, and death penalties in one jar with zero external dependencies."
+            },
+            {
+              "q": "How do I make it harder — or easier?",
+              "a": "Everything is tunable in <code class='text-accent2'>tribulation.json</code>. <strong class='text-bone'>Harder:</strong> lower <code class='text-accent2'>levelUpTicks</code> to level faster, raise the <code class='text-accent2'>statCaps</code>, enable <code class='text-accent2'>dropMoreLoot</code>, or turn on Hardcore Hearts and Soul Inventory. <strong class='text-bone'>Easier:</strong> raise <code class='text-accent2'>levelUpTicks</code>, lower the stat caps, disable the distance or height axes, or bump <code class='text-accent2'>deathRelief.amount</code> so deaths claw back more difficulty. Apply changes live with <code class='text-accent2'>/tribulation reload</code>. The <a href='/guide.html#tuning' class='text-accent hover:text-accent2 underline'>guide</a> has a tuning cheat-sheet."
+            },
+            {
+              "q": "Are Hardcore Hearts and Soul Inventory on by default?",
+              "a": "No. Both are <strong class='text-bone'>opt-in</strong> and ship disabled. Out of the box, the only death penalty is the gentle 2-level \"death relief\" rubber-band. Enable Hardcore Hearts for permanent max-health loss (restorable with Heart Fragments) or Soul Inventory for on-death inventory destruction (except Soulbound items) when you want death to carry lasting weight. See the <a href='/guide.html#hardcore' class='text-accent hover:text-accent2 underline'>guide</a>."
+            },
+            {
+              "q": "Can I disable individual features or abilities?",
+              "a": "Yes, granularly. Each major system has an <code class='text-accent2'>enabled</code> flag. Each of the 21 scaled mobs has an on/off switch in <code class='text-accent2'>mobToggles</code>. Each tier-gated ability has its own flag in <code class='text-accent2'>abilities</code> (e.g. set <code class='text-accent2'>zombieDoorBreaking</code> to <code class='text-accent2'>false</code> to keep zombies out of your house). The level badge HUD is a client toggle. See the <a href='/config.html' class='text-accent hover:text-accent2 underline'>full config reference</a>."
+            },
+            {
+              "q": "Does the level badge HUD conflict with other HUD mods?",
+              "a": "It's designed not to. The badge follows the rfizzle overhaul-suite HUD convention, so it stacks predictably alongside HUD elements from Meridian, Mercantile, and other suite mods. It's anchorable to any screen corner with a pixel offset via the <code class='text-accent2'>hud</code> client config, and auto-hides during F1, open screens, and spectator mode. If it overlaps something, move it to a free corner or disable it with <code class='text-accent2'>hud.enabled = false</code>."
+            },
+            {
+              "q": "Can other mods read a player's Tribulation level?",
+              "a": "Yes. Tribulation exposes a stable, read-only API plus a level-change event, so other mods can read a player's level and tier or react when it changes — without a hard dependency. See the <a href='/developers.html' class='text-accent hover:text-accent2 underline'>developers page</a> for the API surface and code snippets."
+            },
+            {
+              "q": "Which Minecraft and Fabric versions are supported?",
+              "a": "Minecraft <strong class='text-bone'>1.21.1</strong> on the Fabric loader (0.16.10+), with Fabric API and Java 21. There's no Forge/NeoForge build. Newer Minecraft versions aren't supported by the current release line — watch the <a href='https://github.com/rfizzle/tribulation/releases' rel='noopener noreferrer' target='_blank' class='text-accent hover:text-accent2 underline'>releases page</a> for version bumps."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

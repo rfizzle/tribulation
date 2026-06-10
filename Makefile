@@ -47,3 +47,9 @@ version:
 release:
 	@test -n "$(BUMP)" || (echo "Usage: make release BUMP=patch|minor|major [NO_PUSH=1]" && exit 1)
 	@scripts/release.sh $(BUMP) $(if $(NO_PUSH),--no-push,)
+
+site:
+	SITE_DIR=$(PWD)/site npx -y @11ty/eleventy@3.0.0 --config=../concord/template/eleventy.config.cjs --input=../concord/template/src --output=_site
+
+site-serve:
+	SITE_DIR=$(PWD)/site npx -y @11ty/eleventy@3.0.0 --config=../concord/template/eleventy.config.cjs --input=../concord/template/src --output=_site --serve

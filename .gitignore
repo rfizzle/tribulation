@@ -23,3 +23,6 @@ logs/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# generated website (built by concord template)
+_site/

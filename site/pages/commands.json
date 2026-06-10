@@ -1,0 +1,122 @@
+{
+  "nav": "Commands",
+  "metaTitle": "Commands — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "Complete command reference for Tribulation. Every /tribulation subcommand with permission level, usage, and example output.",
+  "ogTitle": "Commands — Tribulation",
+  "ogDescription": "Full command reference for /tribulation with permissions and examples.",
+  "title": "Commands",
+  "lede": "Everything lives under the <code class='text-accent2'>/tribulation</code> root. Permission level 0 = any player; level 2 = operator.",
+  "width": "4xl",
+  "sections": [
+    {
+      "id": "command-reference",
+      "title": "Command Reference",
+      "blocks": [
+        {
+          "type": "table",
+          "nowrapHeaders": true,
+          "headers": ["Command", "Perm", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation info</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-elevated border border-elevated text-ash'>0</span>", "Show your own level, tier, and progress to next level"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-elevated border border-elevated text-ash'>0</span>", "Show your own heart penalty (Hardcore Hearts)"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation level &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "View another player's level and time to next"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation set &lt;player&gt; &lt;level&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Set a player's difficulty level (clamped to maxLevel)"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation reset &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Reset a player to level 0"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation reload</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Hot-reload the config file without restarting"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation config</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Print a summary of the current configuration"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation debug &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Show detailed scaling breakdown for a player's position"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation inspect</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Inspect the mob you're looking at (within 10 blocks)"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "View another player's heart penalty"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt; restore &lt;n&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Restore lost half-hearts for a player"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt; reset</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Clear all heart penalties for a player"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation inventory &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Count soulbound items in a player's inventory"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "Usage Examples",
+      "blocks": [
+        {
+          "type": "examples",
+          "items": [
+            {
+              "title": "Check your own status",
+              "body": [
+                { "type": "code", "code": "/tribulation info" },
+                { "type": "prose", "html": "Output:" },
+                { "type": "code", "tone": "bone", "code": "=== Tribulation: Steve ===\nLevel: 87 / 250 (tier 1)\nProgress: 54000 / 72000 ticks (15m until next level)" }
+              ]
+            },
+            {
+              "title": "Set a player's level",
+              "suffix": "(op 2)",
+              "body": [
+                { "type": "code", "code": "/tribulation set Alex 100" },
+                { "type": "prose", "html": "Sets Alex to level 100, immediately changing the difficulty of mobs near them. Useful for testing or catching up a player who joined late." }
+              ]
+            },
+            {
+              "title": "Debug scaling at a location",
+              "suffix": "(op 2)",
+              "body": [
+                { "type": "code", "code": "/tribulation debug Steve" },
+                { "type": "prose", "html": "Output:" },
+                { "type": "code", "tone": "bone", "code": "=== Debug: Steve ===\nPosition: (1523.4, 34.0, -892.1) in minecraft:overworld\nPlayer level: 87  Tier: 1\nDistance from spawn: 1765.2 blocks  →  factor +0.255\nHeight offset: -28.0 blocks  →  factor +0.093\nTime factors (reference mob: zombie):\n  health       rate=0.0100 cap=2.50  →  time +0.870, +dist +0.255, +height +0.093\n  damage       rate=0.0150 cap=3.75  →  time +1.305, +dist +0.255, +height +0.093\n  speed        rate=0.0012 cap=0.30  →  time +0.104 (time only)\n  follow_range rate=0.0100 cap=1.00  →  time +0.870 (time only)\n  armor        rate=0.0320 cap=8.00  →  time +2.784, +dist +0.255, +height +0.093\n  toughness    rate=0.0240 cap=6.00  →  time +2.088, +dist +0.255, +height +0.093" }
+              ]
+            },
+            {
+              "title": "Inspect a mob",
+              "suffix": "(op 2)",
+              "body": [
+                { "type": "code", "code": "/tribulation inspect" },
+                { "type": "prose", "html": "Look at a mob within 10 blocks and run the command. Shows its type, HP, scaling factor, variant status, and every applied Tribulation modifier." }
+              ]
+            },
+            {
+              "title": "Manage Hardcore Hearts",
+              "body": [
+                { "type": "code", "code": "/tribulation hearts\n/tribulation hearts Alex\n/tribulation hearts Alex restore 4\n/tribulation hearts Alex reset" },
+                { "type": "prose", "html": "Check, view, restore, or fully reset a player's permanent heart penalty. The first form works for any player; the rest require op 2." }
+              ]
+            },
+            {
+              "title": "Hot-reload config",
+              "suffix": "(op 2)",
+              "body": [
+                { "type": "code", "code": "/tribulation reload" },
+                { "type": "prose", "html": "Reloads <code class='text-accent2'>config/tribulation.json</code> without restarting the server. New mobs use the updated values; existing mobs keep their current modifiers until they despawn." }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "permissions",
+      "title": "Permission Notes",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 3,
+          "titleSize": "base",
+          "items": [
+            {
+              "title": "Level 0 — Any Player",
+              "html": ["<code class='text-accent2'>info</code> and <code class='text-accent2'>hearts</code> (self) are available to all players. They can only view their own data."]
+            },
+            {
+              "title": "Level 2 — Operator",
+              "html": ["All other commands require op level 2 — viewing other players' data, modifying levels, reloading config, and the debug/inspect tools."]
+            },
+            {
+              "title": "Permissions Mods",
+              "html": ["With a permissions mod (e.g. LuckPerms), nodes follow the pattern <code class='text-accent2'>tribulation.command.&lt;subcommand&gt;</code>."]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

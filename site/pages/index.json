@@ -1,0 +1,103 @@
+{
+  "type": "home",
+  "nav": "Home",
+  "metaTitle": "Tribulation — Difficulty Overhaul for Minecraft",
+  "metaDescription": "Tribulation is a Minecraft 1.21.1 Fabric mod that overhauls difficulty: three-axis mob scaling, tier-gated abilities, death penalties, hardcore hearts, and soul inventory.",
+  "ogTitle": "Tribulation — Difficulty Overhaul for Minecraft",
+  "ogDescription": "A comprehensive difficulty mod for Minecraft 1.21.1 Fabric. Three scaling axes, tier-gated abilities, death penalties, and opt-in hardcore mechanics.",
+  "hero": {
+    "lede": "A comprehensive difficulty overhaul for Minecraft 1.21.1 (Fabric).",
+    "sub": "Mobs grow stronger as you play longer, venture further, and descend deeper. Every hour survived raises the stakes with scaling stats, tier abilities, and brutal opt-in mechanics.",
+    "buttons": [
+      { "label": "Download Latest Release", "href": "https://github.com/rfizzle/tribulation/releases", "primary": true, "external": true },
+      { "label": "Getting Started", "href": "/guide.html" },
+      { "label": "GitHub", "href": "https://github.com/rfizzle/tribulation", "external": true }
+    ]
+  },
+  "sections": [
+    {
+      "title": "Core Systems",
+      "band": true,
+      "lede": "Four interlocking mechanics that bend Minecraft's flat difficulty curve into an escalating gauntlet. <a href='/features.html' class='text-accent hover:text-accent2 underline'>Full feature list →</a>",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "lgColumns": 4,
+          "hoverAccent": true,
+          "items": [
+            {
+              "icon": "&#9876;",
+              "title": "Mob Scaling",
+              "html": ["21 mob types scale across health, damage, speed, armor, toughness, and follow range — independent rate and cap per stat."]
+            },
+            {
+              "icon": "&#9760;",
+              "title": "Death Penalties",
+              "html": ["Lose 2 difficulty levels on death as relief. Shatter Shards drop rarely from scaled mobs and cut your level by 5 when consumed."]
+            },
+            {
+              "icon": "&#10084;",
+              "title": "Hardcore Hearts",
+              "html": ["Opt-in permanent max-health loss on death. Restore lost hearts with Heart Fragment items crafted from Shatter Shards."]
+            },
+            {
+              "icon": "&#128123;",
+              "title": "Soul Inventory",
+              "html": ["Opt-in inventory destruction on death. Only items enchanted with Soulbound survive — forcing deliberate gear choices."]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Three Scaling Axes",
+      "lede": "Difficulty compounds from three independent sources. Each axis contributes a factor that multiplies mob attributes.",
+      "ledeNarrow": true,
+      "footnote": "The three factors combine multiplicatively per attribute, then clamp to a global stat cap. <a href='/features.html#scaling-axes' class='text-accent hover:text-accent2 underline'>See the formula →</a>",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 3,
+          "leftAccent": true,
+          "items": [
+            {
+              "title": "Time (Player Level)",
+              "titleTone": "bone",
+              "html": ["Every hour of playtime advances your level (0–250). The higher your level, the more stats mobs near you gain. This is the primary axis."]
+            },
+            {
+              "title": "Distance from Spawn",
+              "titleTone": "bone",
+              "html": ["Beyond 1000 blocks from world spawn, mobs gain bonus health, damage, armor, and toughness. Caps at +150%. Overworld-only by default."]
+            },
+            {
+              "title": "Height (Y-Level)",
+              "titleTone": "bone",
+              "html": ["Deviation from sea level (Y=62) in either direction adds threat — deep caves and tall peaks alike. Caps at +50%."]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quick Install",
+      "band": true,
+      "width": "4xl",
+      "lede": "Requires Fabric Loader 0.16.10+, Fabric API, and Java 21 on Minecraft 1.21.1.",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Install <strong class='text-bone'>Fabric Loader 0.16.10+</strong> for Minecraft <strong class='text-bone'>1.21.1</strong>.",
+            "Install <strong class='text-bone'>Fabric API</strong> (required dependency).",
+            "Drop <code class='text-accent2'>tribulation-x.x.x.jar</code> into your <code class='text-accent2'>mods/</code> folder (server and client).",
+            "Launch the game. Config generates at <code class='text-accent2'>config/tribulation.json</code> on first run.",
+            "Adjust settings in the config file or hot-reload with <code class='text-accent2'>/tribulation reload</code> in-game."
+          ],
+          "note": "Remove any other mob-scaling mods before installing. New to the mod? Start with the <a href='/guide.html' class='text-accent hover:text-accent2 underline'>Getting Started guide</a>."
+        }
+      ]
+    }
+  ]
+}

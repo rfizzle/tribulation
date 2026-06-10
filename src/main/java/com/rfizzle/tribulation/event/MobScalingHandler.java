@@ -105,6 +105,7 @@ public final class MobScalingHandler {
         if (toggleKey != null && cfg.isMobEnabled(toggleKey)) {
             ArmorEquipmentHandler.processArmor(mob, tier, cfg);
             AbilityManager.applyAbilities(mob, tier, toggleKey, cfg);
+            WeaponEquipmentHandler.processWeapon(mob, tier, cfg);
             ZombieVariantHandler.apply(mob, toggleKey, cfg.specialZombies, world.getRandom());
         }
 
@@ -114,6 +115,10 @@ public final class MobScalingHandler {
         if (cfg.armorEquipment.enabled) {
             ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_ARMOR, cfg.armorEquipment.armorCeiling);
             ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_TOUGHNESS, cfg.armorEquipment.toughnessCeiling);
+        }
+
+        if (cfg.weaponEquipment.enabled) {
+            ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_DAMAGE, cfg.weaponEquipment.damageCeiling);
         }
 
         // Modifying max health does not raise current HP; top the mob off so

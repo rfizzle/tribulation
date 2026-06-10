@@ -517,17 +517,28 @@ public final class ScalingEngine {
         for (AttributeModifier mod : instance.getModifiers()) {
             ResourceLocation id = mod.id();
             boolean isTrib = id.getNamespace().equals(Tribulation.MOD_ID);
-            boolean isEquip = id.getNamespace().equals("minecraft") && id.getPath().startsWith("armor.");
+            // Armor modifiers use "minecraft:armor.X" namespaced IDs; weapons use "minecraft:base_attack_damage" or "minecraft:weapon.mainhand"
+            boolean isEquip = id.getNamespace().equals("minecraft") && (
+                    id.getPath().startsWith("armor.") ||
+                    id.getPath().startsWith("weapon.") ||
+                    id.getPath().equals("base_attack_damage")
+            );
             if (!isTrib && !isEquip) {
-                // Heuristic: for Armor/Toughness we only care about ADD_VALUE for the sum
+                // Heuristic: we only care about ADD_VALUE for the projected absolute sum
                 if (mod.operation() == AttributeModifier.Operation.ADD_VALUE) {
                     otherSum += mod.amount();
                 }
             }
         }
 
+        // ADD_MULTIPLIED_BASE modifiers (like Damage) contribute (base * sum);
+        // ADD_VALUE modifiers (like Armor) contribute (sum) directly.
+        boolean isAddValue = usesAddValue(attributeKey);
+        double nonTribTotal = base + equipmentSum + otherSum;
+        double tribulationValue = isAddValue ? tribulationSum : (nonTribTotal * tribulationSum);
+
         // Only the tribulation buff is trimmed; base + equipment keep their full value.
-        double scale = ceilingKeepRatio(tribulationSum, base + equipmentSum + otherSum, ceiling);
+        double scale = ceilingKeepRatio(tribulationValue, nonTribTotal, ceiling);
         if (scale >= 1.0) return;
         AttributeModifier.Operation op = usesAddValue(attributeKey)
                 ? AttributeModifier.Operation.ADD_VALUE

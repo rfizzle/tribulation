@@ -59,6 +59,36 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
     }
 
     @GameTest(template = "tribulation:empty_3x3")
+    public void armor_skippedForIncapableMob(GameTestHelper helper) {
+        // A spider can't render armor: the capability guard must leave every slot
+        // empty even with guaranteed wear/coverage rolls, and mark it processed so
+        // the check isn't retried on reload.
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.SPIDER, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(com.rfizzle.tribulation.event.ArmorEquipmentHandler.PROCESSED_TAG);
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            mob.setItemSlot(slot, ItemStack.EMPTY);
+        }
+
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.armorEquipment.enabled = true;
+        cfg.armorEquipment.tiers.get("tier5").wearChancePercent = 100;
+        cfg.armorEquipment.tiers.get("tier5").slotCoveragePercent = 100;
+
+        com.rfizzle.tribulation.event.ArmorEquipmentHandler.processArmor(mob, 5, cfg);
+
+        helper.succeedWhen(() -> {
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                if (!mob.getItemBySlot(slot).isEmpty()) {
+                    helper.fail("Spider should never be given armor (" + slot + ")");
+                }
+            }
+            if (!mob.getTags().contains(com.rfizzle.tribulation.event.ArmorEquipmentHandler.PROCESSED_TAG)) {
+                helper.fail("Skipped mob should still be tagged processed");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
     public void armor_materialStaysWithinTierPool(GameTestHelper helper) {
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
         mob.getTags().remove(com.rfizzle.tribulation.event.ArmorEquipmentHandler.PROCESSED_TAG);

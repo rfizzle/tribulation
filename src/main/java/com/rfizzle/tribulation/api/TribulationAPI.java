@@ -152,4 +152,47 @@ public final class TribulationAPI {
          */
         float resolve(Entity mob, int tier, EquipmentSlot slot, ItemStack stack, float defaultChance);
     }
+
+    private static volatile WeaponDropChanceProvider weaponDropChanceProvider = (mob, tier, stack, defaultChance) -> defaultChance;
+
+    /**
+     * Set a provider to determine the drop chance of a weapon equipped by Tribulation.
+     * Last writer wins. Safe to call as a soft dependency.
+     *
+     * @param provider the provider
+     */
+    public static void setWeaponDropChanceProvider(WeaponDropChanceProvider provider) {
+        if (provider != null) {
+            weaponDropChanceProvider = provider;
+        }
+    }
+
+    /**
+     * Internal use only. Resolves the drop chance for a weapon.
+     * A misbehaving provider (throwing or returning a non-finite value) never
+     * breaks mob spawning: it falls back to {@code defaultChance}.
+     */
+    public static float resolveWeaponDropChance(Entity mob, int tier, ItemStack stack, float defaultChance) {
+        try {
+            float resolved = weaponDropChanceProvider.resolve(mob, tier, stack, defaultChance);
+            return Float.isFinite(resolved) ? resolved : defaultChance;
+        } catch (Exception e) {
+            Tribulation.LOGGER.warn("Weapon drop-chance provider threw; using default", e);
+            return defaultChance;
+        }
+    }
+
+    @FunctionalInterface
+    public interface WeaponDropChanceProvider {
+        /**
+         * Resolve the drop chance for a specific weapon.
+         *
+         * @param mob the mob being equipped
+         * @param tier the mob's Tribulation tier
+         * @param stack the item stack being equipped
+         * @param defaultChance the configured default drop chance
+         * @return the drop chance to use (e.g., 0.085f, or 2.0f for guaranteed)
+         */
+        float resolve(Entity mob, int tier, ItemStack stack, float defaultChance);
+    }
 }

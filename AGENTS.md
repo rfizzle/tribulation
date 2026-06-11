@@ -83,9 +83,8 @@ Compat classes live under `com.rfizzle.tribulation.compat.<modid>`.
 | `site/pages/features.json` | Detailed feature surface and tunable knobs (source for [tribulation.rfizzle.com](https://tribulation.rfizzle.com)). |
 | GitHub Issues | Active work — feature requests, bugs, in-flight specs. |
 | `.ai/skills/` | Domain skills — read these before working in their subject area. |
-| `.ai/prompts/` | Reusable prompts loaded by CI workflows. |
-| `.ai/review-criteria.yml` | Categories scored by `claude-code-review.yml`. |
-| `.github/workflows/` | CI workflows (build, test, Codecov, Claude review, spec-writer). |
+| `.ai/review-criteria.yml` | Categories scored by the review workflow — Tribulation-specific override of the [concord default](https://github.com/rfizzle/concord/blob/master/.ai/review-criteria.yml). |
+| `.github/workflows/` | Thin trigger stubs — workflow logic and default CI prompts live in [rfizzle/concord](https://github.com/rfizzle/concord). |
 
 ## Working with domain skills
 
@@ -110,14 +109,14 @@ relevant `SKILL.md` directly before working in its subject area.
 2. **Triage** — human discussion in the issue.
 3. **`needs-spec` label** added → `.github/workflows/claude-spec.yml` fires,
    Claude posts a structured implementation spec as an issue comment
-   (prompt: `.ai/prompts/spec-writer.md`).
+   (prompt: concord's default `spec-writer.md`, unless a repo-local
+   `.ai/prompts/spec-writer.md` override exists).
 4. **Human review** — spec edited or approved.
 5. **`jules` label** added (remove `needs-spec`) → Jules picks up the issue
    and opens a draft PR.
 6. **PR opened** → `claude-code-review.yml` posts a structured ✓/⚠/✗ review
-   (categories from `.ai/review-criteria.yml`). `test.yml` runs unit tests +
-   gametests, uploads coverage + results to Codecov. `ci.yml` runs the full
-   build.
+   (categories from `.ai/review-criteria.yml`). `ci.yml` runs the full build,
+   unit tests + gametests, and uploads coverage + results to Codecov.
 7. **Human review + merge.**
 
 `@claude <message>` in any issue or PR comment also invokes Claude for ad-hoc

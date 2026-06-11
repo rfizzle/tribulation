@@ -53,3 +53,11 @@ site:
 
 site-serve:
 	SITE_DIR=$(PWD)/site npx -y @11ty/eleventy@3.0.0 --config=../concord/template/eleventy.config.cjs --input=../concord/template/src --output=_site --serve
+
+CONCORD_DIR ?= ../concord
+
+sync-skills:
+	@test -d $(CONCORD_DIR)/.ai/skills || { echo "concord checkout not found at $(CONCORD_DIR) (set CONCORD_DIR=...)"; exit 1; }
+	rsync -a --delete $(CONCORD_DIR)/.ai/skills/ .ai/skills/
+	@git -C $(CONCORD_DIR) rev-parse HEAD > .ai/skills/.concord-rev
+	@echo "synced .ai/skills from concord @ $$(git -C $(CONCORD_DIR) rev-parse --short HEAD)"

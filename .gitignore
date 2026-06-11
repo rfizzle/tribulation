@@ -26,3 +26,7 @@ Thumbs.db
 
 # generated website (built by concord template)
 _site/
+
+# local AI state (per concord REPO-LAYOUT standard gitignore)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

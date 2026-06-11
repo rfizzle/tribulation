@@ -5,26 +5,17 @@ Single, vendor-neutral home for everything AI agents (Claude Code, Jules, future
 | Path | What lives there |
 |---|---|
 | `skills/` | Domain skills (`mc-*/SKILL.md`). Claude Code auto-loads via `.claude/skills` symlink; Jules reads them when `AGENTS.md` points to them. |
-| `review-criteria.yml` | Tribulation-specific categories the reviewer scores — a whole-file override of the [concord default](https://github.com/rfizzle/concord/blob/master/.ai/review-criteria.yml). Edit this to change review behavior without touching workflow YAML. |
 
-The CI prompts (`code-reviewer.md`, `spec-writer.md`) are **not** kept here —
-the generic suite defaults in [rfizzle/concord](https://github.com/rfizzle/concord)
-`.ai/prompts/` are used. Resolution order in the reusable workflows: explicit
-`prompt-file`/`criteria-file` workflow input → repo-local `.ai/` file
-(whole-file override) → concord default. To specialize a prompt for this repo,
-copy the concord default into `.ai/prompts/` and edit it.
+The CI prompts (`code-reviewer.md`, `spec-writer.md`) and the review criteria
+(`review-criteria.yml`) are **not** kept here — the generic suite defaults in
+[rfizzle/concord](https://github.com/rfizzle/concord) `.ai/` are used.
+Domain-specific review emphasis (e.g. the mob-scaling hot path) lives in
+`AGENTS.md`, which the workflows always inject into the prompt.
 
-## How to change the review
-
-1. Edit `review-criteria.yml` (add/remove categories, tweak descriptions).
-2. Re-run the review (push a commit, or use the workflow's re-run button).
-3. The prompt is generic; the criteria file drives the categories.
-
-## How to change the spec format
-
-Copy concord's `.ai/prompts/spec-writer.md` into `.ai/prompts/` here and edit
-it — the workflow picks up the repo-local override at runtime, no YAML changes
-needed.
+Resolution order in the reusable workflows: explicit `prompt-file` /
+`criteria-file` workflow input → repo-local `.ai/` file (whole-file override)
+→ concord default. To specialize a prompt or the scored categories for this
+repo, copy the concord default into `.ai/` and edit it.
 
 ## Adding a new skill
 

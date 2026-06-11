@@ -55,6 +55,9 @@ Fabric APIs must use gametests instead.
   (textures, models, sounds).
 - **Mixin config:** `tribulation.mixins.json` in `src/main/resources`. Mixin
   package: `com.rfizzle.tribulation.mixin`.
+- **Performance hot path:** the mob scaling handler runs on every hostile
+  spawn — avoid per-spawn allocations and expensive lookups in scaling-formula
+  code paths.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/)
   with a topical scope naming the feature area: `feat(scaling): …`,
   `fix(abilities): …`, `refactor(death-penalty): …`, `ci(review): …`,
@@ -83,8 +86,7 @@ Compat classes live under `com.rfizzle.tribulation.compat.<modid>`.
 | `site/pages/features.json` | Detailed feature surface and tunable knobs (source for [tribulation.rfizzle.com](https://tribulation.rfizzle.com)). |
 | GitHub Issues | Active work — feature requests, bugs, in-flight specs. |
 | `.ai/skills/` | Domain skills — read these before working in their subject area. |
-| `.ai/review-criteria.yml` | Categories scored by the review workflow — Tribulation-specific override of the [concord default](https://github.com/rfizzle/concord/blob/master/.ai/review-criteria.yml). |
-| `.github/workflows/` | Thin trigger stubs — workflow logic and default CI prompts live in [rfizzle/concord](https://github.com/rfizzle/concord). |
+| `.github/workflows/` | Thin trigger stubs — workflow logic, default CI prompts, and [review criteria](https://github.com/rfizzle/concord/blob/master/.ai/review-criteria.yml) live in [rfizzle/concord](https://github.com/rfizzle/concord). |
 
 ## Working with domain skills
 
@@ -115,8 +117,10 @@ relevant `SKILL.md` directly before working in its subject area.
 5. **`jules` label** added (remove `needs-spec`) → Jules picks up the issue
    and opens a draft PR.
 6. **PR opened** → `claude-code-review.yml` posts a structured ✓/⚠/✗ review
-   (categories from `.ai/review-criteria.yml`). `ci.yml` runs the full build,
-   unit tests + gametests, and uploads coverage + results to Codecov.
+   (categories from concord's default `review-criteria.yml`, unless a
+   repo-local `.ai/review-criteria.yml` override exists). `ci.yml` runs the
+   full build, unit tests + gametests, and uploads coverage + results to
+   Codecov.
 7. **Human review + merge.**
 
 `@claude <message>` in any issue or PR comment also invokes Claude for ad-hoc

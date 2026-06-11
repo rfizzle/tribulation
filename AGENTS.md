@@ -9,7 +9,7 @@ point at the same content so each agent finds what it expects to read.
 Tribulation is a Minecraft 1.21.1 Fabric mod — a difficulty overhaul that adds
 mob scaling, tier abilities, and death penalties. Java 21, Fabric Loader 0.16.10,
 Loom 1.9. The feature surface is documented in [`README.md`](README.md) and
-[`docs/features.html`](docs/features.html). Work is tracked in GitHub Issues —
+[tribulation.rfizzle.com](https://tribulation.rfizzle.com). Work is tracked in GitHub Issues —
 see the [Development lifecycle](#development-lifecycle) section below.
 
 ## Build commands
@@ -80,7 +80,7 @@ Compat classes live under `com.rfizzle.tribulation.compat.<modid>`.
 | Path | Purpose |
 |---|---|
 | `README.md` | Project overview and feature summary. |
-| `docs/features.html` | Detailed feature surface and tunable knobs. |
+| `site/pages/features.json` | Detailed feature surface and tunable knobs (source for [tribulation.rfizzle.com](https://tribulation.rfizzle.com)). |
 | GitHub Issues | Active work — feature requests, bugs, in-flight specs. |
 | `.ai/skills/` | Domain skills — read these before working in their subject area. |
 | `.ai/prompts/` | Reusable prompts loaded by CI workflows. |

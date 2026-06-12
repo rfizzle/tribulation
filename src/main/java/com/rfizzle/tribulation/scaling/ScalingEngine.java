@@ -426,19 +426,33 @@ public final class ScalingEngine {
      * and re-applying scaling just overwrites the same IDs.
      */
     public static double readHealthScalingFactor(Mob mob) {
+        return readScalingFactor(mob, ATTR_HEALTH);
+    }
+
+    /**
+     * Sum of the tribulation axis modifiers currently attached to one
+     * attribute of a mob — the generalized form of
+     * {@link #readHealthScalingFactor(Mob)}. Covers both normal
+     * ({@code time_/distance_/height_}) and boss
+     * ({@code boss_time_/boss_distance_}) axes; variant modifiers are excluded
+     * by ID. Returns the raw modifier sum in the attribute's native units
+     * (ADD_MULTIPLIED_BASE fraction for health/damage/speed/follow-range,
+     * absolute ADD_VALUE amount for armor/toughness).
+     */
+    public static double readScalingFactor(Mob mob, String attributeKey) {
         if (mob == null) return 0.0;
-        Holder<Attribute> holder = attributeHolder(ATTR_HEALTH);
+        Holder<Attribute> holder = attributeHolder(attributeKey);
         if (holder == null) return 0.0;
         AttributeInstance instance = mob.getAttribute(holder);
         if (instance == null) return 0.0;
 
         double total = 0.0;
         for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
-            AttributeModifier mod = instance.getModifier(modifierId(axis, ATTR_HEALTH));
+            AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) total += mod.amount();
         }
         for (String axis : List.of(BossScalingEngine.AXIS_BOSS_TIME, BossScalingEngine.AXIS_BOSS_DISTANCE)) {
-            AttributeModifier mod = instance.getModifier(BossScalingEngine.modifierId(axis, ATTR_HEALTH));
+            AttributeModifier mod = instance.getModifier(BossScalingEngine.modifierId(axis, attributeKey));
             if (mod != null) total += mod.amount();
         }
         return total;

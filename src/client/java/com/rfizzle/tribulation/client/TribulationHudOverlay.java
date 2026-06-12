@@ -17,6 +17,14 @@ public final class TribulationHudOverlay implements HudRenderCallback {
     private static final int BAR_GAP = 1;
     private static final int BAR_BG_COLOR = 0xC0202020;
 
+    /**
+     * Standard HUD element height per the Concord HUD Standard: the badge's
+     * 16px icon + 1px gap + 2px bar = 19px rounds into a 20px box, stacked
+     * with a 2px gap between sibling mods' elements.
+     */
+    private static final int STANDARD_ELEMENT_HEIGHT = 20;
+    private static final int STACK_GAP = 2;
+
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
 
@@ -29,17 +37,45 @@ public final class TribulationHudOverlay implements HudRenderCallback {
             0xFF8B0000, // Tier 5: Dark Crimson
     };
 
-    @Override
-    public void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
+    /**
+     * Whether the Tribulation HUD element is currently drawn. Combines the
+     * config gate with the four visibility rules from the Concord HUD
+     * Standard: F1 (hideGui), any open screen, spectator mode, and the death
+     * screen (checked via {@code isDeadOrDying} so the element also hides in
+     * the ticks between death and the screen opening).
+     *
+     * <p>Reflection target for {@code TribulationAPI.isHudVisible()} — keep
+     * the signature stable.
+     */
+    public static boolean isHudVisible() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-        if (mc.options.hideGui) return;
-        if (mc.screen != null) return;
-        if (mc.player.isSpectator()) return;
+        if (mc == null || mc.player == null) return false;
+        if (mc.options.hideGui) return false;
+        if (mc.screen != null) return false;
+        if (mc.player.isSpectator()) return false;
+        if (mc.player.isDeadOrDying()) return false;
 
         TribulationConfig config = Tribulation.getConfig();
-        if (config == null) return;
-        if (config.hud == null || !config.hud.enabled) return;
+        return config != null && config.hud != null && config.hud.enabled;
+    }
+
+    /**
+     * This element's stacking contribution in pixels — the standard 20px
+     * element plus the 2px stack gap when visible, 0 otherwise. Sibling mods
+     * sum this over higher-priority slots to compute their own offset.
+     *
+     * <p>Reflection target for {@code TribulationAPI.getHudHeight()} — keep
+     * the signature stable.
+     */
+    public static int getHudHeightContribution() {
+        return isHudVisible() ? STANDARD_ELEMENT_HEIGHT + STACK_GAP : 0;
+    }
+
+    @Override
+    public void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
+        if (!isHudVisible()) return;
+
+        TribulationConfig config = Tribulation.getConfig();
 
         int level = ClientTribulationState.getLevel();
         int tier = TierManager.getTier(level, config.tiers);

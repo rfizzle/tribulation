@@ -6,8 +6,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Callback for when a player's Tribulation level changes.
- * Only fired on the server.
+ * Only fired on the server — on playtime progression, death relief,
+ * Shatter Shard use, and {@code /tribulation set}.
  */
+@Stable
 public interface TribulationLevelCallback {
     Event<TribulationLevelCallback> EVENT = EventFactory.createArrayBacked(TribulationLevelCallback.class,
             (listeners) -> (player, oldLevel, newLevel) -> {

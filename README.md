@@ -2,11 +2,23 @@
   <img src="logo.png" alt="Tribulation" width="800">
 </p>
 
-<p align="center"><strong>A comprehensive difficulty overhaul for Minecraft 1.21.1 Fabric.</strong></p>
+<p align="center"><strong>Survive what comes next.</strong></p>
 
-Tribulation transforms Minecraft's flat difficulty curve into an escalating gauntlet. Mobs grow stronger as you play longer, venture further from spawn, and delve deeper underground. Beyond raw stat scaling, the mod layers in tier-gated mob abilities, opt-in permanent death penalties, and inventory risk mechanics — all configurable, all formula-driven, zero external dependencies.
+<p align="center">
+  <a href="https://www.minecraft.net/"><img alt="Minecraft 1.21.1" src="https://img.shields.io/badge/Minecraft-1.21.1-62B47A?logo=minecraft&logoColor=white"></a>
+  <a href="https://fabricmc.net/"><img alt="Fabric" src="https://img.shields.io/badge/Mod_Loader-Fabric-DBB69B"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/rfizzle/tribulation"></a>
+  <a href="https://github.com/rfizzle/tribulation/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/rfizzle/tribulation?include_prereleases"></a>
+  <a href="https://github.com/rfizzle/tribulation/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rfizzle/tribulation/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul"><img alt="CurseForge downloads" src="https://img.shields.io/curseforge/dt/1546072?logo=curseforge&label=CurseForge"></a>
+</p>
 
-**[Documentation](https://tribulation.rfizzle.com)** | **[Releases](https://github.com/rfizzle/tribulation/releases)**
+A comprehensive difficulty overhaul for Minecraft 1.21.1 (Fabric). Tribulation transforms Minecraft's flat difficulty curve into an escalating gauntlet. Mobs grow stronger as you play longer, venture further from spawn, and delve deeper underground. Beyond raw stat scaling, the mod layers in tier-gated mob abilities, opt-in permanent death penalties, and inventory risk mechanics — all configurable, all formula-driven, zero external dependencies.
+
+## Download
+
+| [CurseForge](https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul) | [GitHub Releases](https://github.com/rfizzle/tribulation/releases) | [Website](https://tribulation.rfizzle.com) | [Report an issue](https://github.com/rfizzle/tribulation/issues) |
+| --- | --- | --- | --- |
 
 ---
 
@@ -162,6 +174,18 @@ if (FabricLoader.getInstance().isModLoaded("tribulation")) {
 
 ---
 
+## Part of Concord
+
+Part of [Concord](https://github.com/rfizzle/concord) — a Vanilla+ collection.
+Install any, combine all.
+
+- [Meridian](https://meridian.rfizzle.com) — Chart your enchantments.
+- [Mercantile](https://mercantile.rfizzle.com) — Every villager remembers.
+- [Prosperity](https://prosperity.rfizzle.com) — Every chest, yours to discover.
+
+---
+
 ## License
 
-MIT
+Licensed under the [MIT License](LICENSE). © 2026 rfizzle. Tribulation is not
+affiliated with Mojang Studios or Microsoft.

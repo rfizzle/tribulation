@@ -9,7 +9,17 @@
   "defaultBranch": "master",
   "copyright": "© 2026 rfizzle. Tribulation is not affiliated with Mojang Studios or Microsoft.",
   "footerMeta": "Minecraft 1.21.1 · Fabric",
-  "nav": ["index", "features", "config", "commands", "guide", "faq", "developers"],
+  "nav": [
+    "index",
+    "features",
+    "mobs",
+    "config",
+    "commands",
+    "guide",
+    "faq",
+    "developers",
+    "changelog"
+  ],
   "theme": {
     "accent": "#DC143C",
     "accentDark": "#8B0000",

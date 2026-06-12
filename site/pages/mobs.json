@@ -1,0 +1,302 @@
+{
+  "nav": "Mobs",
+  "metaTitle": "Mob Reference — Tribulation | Difficulty Overhaul for Minecraft",
+  "metaDescription": "Per-mob reference for all 21 scaled vanilla mobs: exact scaling rates and caps, tier-gated abilities with unlock levels, zombie variants, boss scaling, and modded mob fallback.",
+  "ogTitle": "Mob Reference — Tribulation",
+  "ogDescription": "Every scaled mob, its exact rates and caps, and the abilities it unlocks at each tier.",
+  "title": "Mob Reference",
+  "lede": "All 21 scaled vanilla mobs, what they gain per level, and the abilities they unlock at each tier. Every number below is the shipping default — all of it is tunable in <a href='/config.html' class='text-accent hover:text-accent2 underline'>config</a>.",
+  "width": "6xl",
+  "scale": "lg",
+  "sections": [
+    {
+      "id": "reading",
+      "title": "How to Read This Page",
+      "blocks": [
+        {
+          "type": "prose",
+          "html": [
+            "Each mob's stat line shows the <strong class='text-bone'>time-axis</strong> gain per player level and its cap, per attribute. Health, damage, and speed are percentages of the mob's base stat (a zombie at <em>+250% health</em> has 3.5× its vanilla 20 HP); armor and toughness are flat points. Distance and height bonuses stack on top of health, damage, armor, and toughness, and global stat caps (health 4.0×, damage 4.5×) bound the total — see <a href='/features.html#mob-scaling' class='text-accent hover:text-accent2 underline'>Features</a> for the axis math.",
+            "Abilities unlock at the five tier thresholds — levels <span class='text-bone'>50 / 100 / 150 / 200 / 250</span> by default — and stay with the mob for life: a mob's tier is frozen at spawn. Every ability has its own config toggle."
+          ]
+        },
+        {
+          "type": "note",
+          "html": "Follow range also scales for every listed mob (+1.0%/level, max +100%; +0.8%/level, max +80% for endermite, silverfish, and witch). Abilities that place or break blocks respect the <code class='text-accent2'>mobGriefing</code> gamerule."
+        }
+      ]
+    },
+    {
+      "id": "zombie-family",
+      "title": "Zombie Family",
+      "intro": "The four zombie-family mobs can also roll the Big (10%: +10 HP, +2 damage, 0.7× speed, 1.3× size) or Speed (10%: 1.3× speed, −10 HP) variant on top of normal scaling.",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "zombie",
+              "title": "Zombie",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.5%/lvl (max +375%) · Speed +0.12%/lvl (max +30%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 1 (lvl 50):</span> +10% chance to summon reinforcements when hurt (vanilla mechanic, boosted)",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> breaks down doors (vanilla hard-difficulty behavior, always on)",
+                "<span class='text-accent2 font-semibold'>Tier 5 (lvl 250):</span> sprints — +15% movement speed"
+              ]
+            },
+            {
+              "id": "husk",
+              "title": "Husk",
+              "html": ["<span class='text-smoke text-sm'>HP +1.1%/lvl (max +275%) · Damage +1.5%/lvl (max +375%) · Speed +0.12%/lvl (max +30%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> its hits inflict Hunger II instead of vanilla's Hunger I (same duration)"
+              ]
+            },
+            {
+              "id": "drowned",
+              "title": "Drowned",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> spawns holding a trident if it would otherwise be empty-handed"
+              ]
+            },
+            {
+              "id": "zombified-piglin",
+              "title": "Zombified Piglin",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.5%/lvl (max +375%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent2 font-semibold'>Tier 5 (lvl 250):</span> +50% follow range — the pack aggros from much further away"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skeleton-family",
+      "title": "Skeleton Family",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "skeleton",
+              "title": "Skeleton",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.2%/lvl (max +300%) · Speed +0.12%/lvl (max +30%) · Armor +0.020/lvl (max +5) · Toughness +0.015/lvl (max +4)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> trades its bow for a stone sword at spawn — a melee skirmisher instead of an archer",
+                "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> permanently aflame (with Fire Resistance), so every arrow is a flame arrow — vanilla's burning-skeleton mechanic"
+              ]
+            },
+            {
+              "id": "stray",
+              "title": "Stray",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.2%/lvl (max +300%) · Speed +0.12%/lvl (max +30%) · Armor +0.020/lvl (max +5) · Toughness +0.015/lvl (max +4)</span>"],
+              "bullets": ["Stat scaling only — keeps its vanilla Slowness arrows, now backed by a much deeper health pool"]
+            },
+            {
+              "id": "bogged",
+              "title": "Bogged",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.2%/lvl (max +300%) · Speed +0.12%/lvl (max +30%) · Armor +0.020/lvl (max +5) · Toughness +0.015/lvl (max +4)</span>"],
+              "bullets": ["Stat scaling only — its vanilla poison arrows need no help"]
+            },
+            {
+              "id": "wither-skeleton",
+              "title": "Wither Skeleton",
+              "html": ["<span class='text-smoke text-sm'>HP +1.2%/lvl (max +300%) · Damage +1.6%/lvl (max +400%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> sprints — +15% movement speed",
+                "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> its held weapon gains Fire Aspect I — Wither effect and fire in one hit"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arthropods",
+      "title": "Arthropods",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "spider",
+              "title": "Spider",
+              "html": ["<span class='text-smoke text-sm'>HP +0.8%/lvl (max +200%) · Damage +1.2%/lvl (max +300%) · Speed +0.2%/lvl (max +50%) · Armor +0.016/lvl (max +4) · Toughness +0.012/lvl (max +3)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> places a cobweb at your feet on a successful hit (only into air, respects <code class='text-accent2'>mobGriefing</code>)",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> tramples crops and farmland in a 3×3 area around its target on hit",
+                "<span class='text-accent2 font-semibold'>Tier 5 (lvl 250):</span> leap attack — +50% jump strength"
+              ]
+            },
+            {
+              "id": "cave-spider",
+              "title": "Cave Spider",
+              "html": ["<span class='text-smoke text-sm'>HP +0.6%/lvl (max +150%) · Damage +1.0%/lvl (max +250%) · Speed +0.2%/lvl (max +50%) · Armor +0.008/lvl (max +2) · Toughness +0.008/lvl (max +2)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> places a cobweb at your feet on hit — poison plus a snare"
+              ]
+            },
+            {
+              "id": "silverfish",
+              "title": "Silverfish",
+              "html": ["<span class='text-smoke text-sm'>HP +0.5%/lvl (max +125%) · Damage +0.8%/lvl (max +200%) · Speed +0.1%/lvl (max +25%) · no armor scaling</span>"],
+              "bullets": ["Stat scaling only — deliberately light; the swarm is the threat"]
+            },
+            {
+              "id": "endermite",
+              "title": "Endermite",
+              "html": ["<span class='text-smoke text-sm'>HP +0.5%/lvl (max +125%) · Damage +1.0%/lvl (max +250%) · Speed +0.24%/lvl (max +60%) · no armor scaling</span>"],
+              "bullets": ["Stat scaling only, with the fastest speed scaling in the roster"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "illagers",
+      "title": "Illagers &amp; Witch",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "pillager",
+              "title": "Pillager",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": ["Stat scaling only — crossbow damage rides the damage axis"]
+            },
+            {
+              "id": "vindicator",
+              "title": "Vindicator",
+              "html": ["<span class='text-smoke text-sm'>HP +1.2%/lvl (max +300%) · Damage +2.0%/lvl (max +500%) · Speed +0.12%/lvl (max +30%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
+              "bullets": [
+                "The steepest damage scaling in the roster — its axe was already vanilla's hardest-hitting weapon",
+                "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> permanent Resistance I — takes 20% less damage from everything"
+              ]
+            },
+            {
+              "id": "witch",
+              "title": "Witch",
+              "html": ["<span class='text-smoke text-sm'>HP +0.8%/lvl (max +200%) · Damage +0.8%/lvl (max +200%) · Speed +0.08%/lvl (max +20%) · Armor +0.016/lvl (max +4) · Toughness +0.012/lvl (max +3)</span>"],
+              "bullets": ["Stat scaling only, kept gentle on purpose — her vanilla potion kit is the threat"]
+            },
+            {
+              "id": "ravager",
+              "title": "Ravager",
+              "html": ["<span class='text-smoke text-sm'>HP +1.6%/lvl (max +400%) · Damage +1.4%/lvl (max +350%) · Speed +0.08%/lvl (max +20%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
+              "bullets": ["The biggest health scaling in the roster — a late-raid Ravager is a siege engine"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nether-ocean",
+      "title": "Nether &amp; Ocean",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "piglin",
+              "title": "Piglin",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> spawns holding a crossbow if it would otherwise be empty-handed"
+              ]
+            },
+            {
+              "id": "hoglin",
+              "title": "Hoglin",
+              "html": ["<span class='text-smoke text-sm'>HP +1.4%/lvl (max +350%) · Damage +1.6%/lvl (max +400%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 1 (lvl 50):</span> +0.5 knockback resistance — it keeps charging through your hits"
+              ]
+            },
+            {
+              "id": "zoglin",
+              "title": "Zoglin",
+              "html": ["<span class='text-smoke text-sm'>HP +1.4%/lvl (max +350%) · Damage +1.5%/lvl (max +375%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> permanent Fire Resistance — lava and flame won't save you"
+              ]
+            },
+            {
+              "id": "guardian",
+              "title": "Guardian",
+              "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.1%/lvl (max +25%) · Armor +0.020/lvl (max +5) · Toughness +0.020/lvl (max +5)</span>"],
+              "bullets": ["Stat scaling only — the beam damage rides the damage axis"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "creeper",
+      "title": "Creeper",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 1,
+          "leftAccent": true,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "creeper-card",
+              "title": "Creeper",
+              "html": ["<span class='text-smoke text-sm'>HP +0.8%/lvl (max +200%) · Damage +1.0%/lvl (max +250%) · Speed +0.12%/lvl (max +30%) · Armor +0.016/lvl (max +4) · Toughness +0.012/lvl (max +3)</span>"],
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 1 (lvl 50):</span> shorter fuse — 15 ticks (0.75s) instead of vanilla's 30 (1.5s)",
+                "<span class='text-accent2 font-semibold'>Tier 5 (lvl 250):</span> 25% chance to spawn charged, exactly as if struck by lightning"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beyond-the-list",
+      "title": "Beyond the List",
+      "blocks": [
+        {
+          "type": "cards",
+          "mdColumns": 2,
+          "titleSize": "base",
+          "items": [
+            {
+              "id": "modded-fallback",
+              "title": "Modded Hostile Mobs",
+              "html": ["Any modded mob extending <code class='text-accent2'>Monster</code> automatically gets the conservative fallback: zombie-equivalent health (+1.0%/lvl, max +250%) and damage (+1.5%/lvl, max +375%) only — no speed, armor, or AI changes, so the mod author's tuning is respected. Exclude namespaces or override individual entities in <a href='/config.html' class='text-accent hover:text-accent2 underline'>config</a>."]
+            },
+            {
+              "id": "bosses",
+              "title": "Bosses",
+              "html": ["The Ender Dragon, Wither, and anything tagged <code class='text-accent2'>c:bosses</code> use a separate, gentler formula: health and damage only, time and distance axes only (no height), capped at +300% total. No tier abilities — a boss fight stays a boss fight, just one that grows with you."]
+            }
+          ]
+        },
+        {
+          "type": "note",
+          "html": "Inspect any live mob's actual modifiers in-game with <code class='text-accent2'>/tribulation inspect</code>. Mod developers can read the same data through the <a href='/developers.html' class='text-accent hover:text-accent2 underline'>public API</a>."
+        }
+      ]
+    }
+  ]
+}

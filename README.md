@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Tribulation" width="800">
+  <img src="art/logo.png" alt="Tribulation" width="800">
 </p>
 
 <p align="center"><strong>Survive what comes next.</strong></p>

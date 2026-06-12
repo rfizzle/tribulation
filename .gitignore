@@ -8,6 +8,7 @@ classes/
 run/
 mods/
 logs/
+config/
 
 # IDE
 .idea/
@@ -27,6 +28,12 @@ Thumbs.db
 # generated website (built by concord template)
 _site/
 
-# local AI state (per concord REPO-LAYOUT standard gitignore)
+# local AI / planning state (per concord REPO-LAYOUT standard gitignore)
 .claude/settings.local.json
+.claude/projects/
 .claude/scheduled_tasks.lock
+.plan/
+
+# stray runtime artifacts
+replay_pid*.log
+hs_err_pid*.log

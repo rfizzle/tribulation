@@ -1,8 +1,10 @@
 package com.rfizzle.tribulation.api;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.data.TribulationAttachments;
+import com.rfizzle.tribulation.scaling.BossScalingEngine;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import com.rfizzle.tribulation.scaling.TierManager;
 import net.fabricmc.api.EnvType;
@@ -11,14 +13,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
  * Public API for Tribulation.
  * All methods are safe to call as a soft dependency.
  */
+@Stable
 public final class TribulationAPI {
 
     private TribulationAPI() {}
@@ -107,6 +112,63 @@ public final class TribulationAPI {
      */
     public static boolean wasScaledByTribulation(Entity entity) {
         return entity.hasAttached(TribulationAttachments.SCALED_TIER);
+    }
+
+    /**
+     * Check if an entity received boss-formula scaling (uniform health+damage
+     * rates over the time and distance axes) rather than the normal per-mob
+     * formula. Detected via the boss-axis attribute modifiers Tribulation
+     * attaches, so it is distinguishable from normal scaling and survives
+     * chunk reload. Server-side only.
+     *
+     * @param entity the entity
+     * @return true if the entity carries boss-formula scaling
+     */
+    public static boolean isBossScaled(Entity entity) {
+        return entity instanceof Mob mob && BossScalingEngine.hasAnyModifier(mob);
+    }
+
+    /**
+     * Get the configured level thresholds at which tiers 1-5 begin, in
+     * ascending tier order ({@code [tier1, tier2, tier3, tier4, tier5]};
+     * defaults 50/100/150/200/250). The threshold check is inclusive: a
+     * player at exactly the tier-1 threshold is tier 1. Consumers should
+     * read these instead of hardcoding the defaults — they are config-driven.
+     *
+     * @return a fresh array of the five tier thresholds
+     */
+    public static int[] getTierThresholds() {
+        TribulationConfig cfg = Tribulation.getConfig();
+        TribulationConfig.Tiers tiers = cfg != null && cfg.tiers != null
+                ? cfg.tiers
+                : new TribulationConfig.Tiers();
+        return new int[]{tiers.tier1, tiers.tier2, tiers.tier3, tiers.tier4, tiers.tier5};
+    }
+
+    /**
+     * Get a read-only summary of the scaling a mob received at spawn: its
+     * frozen tier, whether the boss formula was used, and the health/damage
+     * modifier sums currently attached. Cheap reads — the values come from the
+     * entity's attachment and persistent attribute modifiers, no recomputation.
+     * Empty if the entity was never scaled. Server-side only.
+     *
+     * @param entity the entity
+     * @return the scaling summary, or empty for unscaled entities
+     */
+    public static Optional<MobScalingSummary> getMobScalingSummary(Entity entity) {
+        if (!(entity instanceof Mob mob)) {
+            return Optional.empty();
+        }
+        Integer tier = entity.getAttached(TribulationAttachments.SCALED_TIER);
+        if (tier == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new MobScalingSummary(
+                tier,
+                BossScalingEngine.hasAnyModifier(mob),
+                ScalingEngine.readScalingFactor(mob, ScalingEngine.ATTR_HEALTH),
+                ScalingEngine.readScalingFactor(mob, ScalingEngine.ATTR_DAMAGE)
+        ));
     }
 
     private static volatile ArmorDropChanceProvider armorDropChanceProvider = (mob, tier, slot, stack, defaultChance) -> defaultChance;

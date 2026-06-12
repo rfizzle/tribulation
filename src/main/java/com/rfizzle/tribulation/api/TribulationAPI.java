@@ -91,6 +91,60 @@ public final class TribulationAPI {
     }
 
     /**
+     * Whether Tribulation's HUD element is currently visible on this client.
+     * Returns {@code false} when called server-side, when the HUD is disabled
+     * in config, or when any of the standard visibility rules currently hide
+     * it (F1/hideGui, an open screen, spectator mode, the death screen).
+     * Safe to call unconditionally from common code on either side.
+     *
+     * <p>Sibling mods use this with {@link #getHudHeight()} to stack their
+     * own HUD elements below Tribulation's slot without hardcoding its
+     * height (Concord HUD Standard coordination accessors).
+     *
+     * <p>Implementation note: Uses reflection to access the client-side
+     * overlay to avoid compile-time and runtime dependencies on client-only
+     * classes from the server-side API surface — same pattern as
+     * {@link #getClientLevel()}.
+     *
+     * @return true if the HUD element is being drawn right now
+     */
+    public static boolean isHudVisible() {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            try {
+                Class<?> clazz = Class.forName("com.rfizzle.tribulation.client.TribulationHudOverlay");
+                return (boolean) clazz.getMethod("isHudVisible").invoke(null);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the height contribution of Tribulation's HUD element in pixels —
+     * the standard 20px element plus the 2px stack gap (22) when visible,
+     * {@code 0} when hidden or when called server-side. Sibling mods sum
+     * this over higher-priority HUD slots each render pass to compute their
+     * own stacking offset. Safe to call unconditionally from common code.
+     *
+     * <p>Implementation note: reflection-backed, same pattern as
+     * {@link #getClientLevel()}.
+     *
+     * @return the element's stacking contribution in px, or 0 if not visible
+     */
+    public static int getHudHeight() {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            try {
+                Class<?> clazz = Class.forName("com.rfizzle.tribulation.client.TribulationHudOverlay");
+                return (int) clazz.getMethod("getHudHeightContribution").invoke(null);
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Get the Tribulation tier the entity was scaled to at spawn.
      * Empty if the entity was never scaled.
      * Server-side only.

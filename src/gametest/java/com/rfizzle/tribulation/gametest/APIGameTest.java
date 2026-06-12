@@ -213,4 +213,19 @@ public class APIGameTest implements FabricGameTest {
         helper.succeedWhen(() -> helper.assertTrue(TribulationAPI.isBossScaled(zombie),
                 "zombie with boss-axis modifiers must report boss scaling"));
     }
+
+    /**
+     * The HUD coordination accessors are reflection-backed client reads with
+     * documented sentinels. Gametests run on a dedicated server (EnvType
+     * SERVER), so calling them here must return the safe sentinels —
+     * false / 0 — without touching client classes or crashing.
+     */
+    @GameTest(template = "tribulation:empty_3x3")
+    public void api_hudAccessors_returnSafeSentinelsOnServer(GameTestHelper helper) {
+        helper.assertFalse(TribulationAPI.isHudVisible(),
+                "isHudVisible() must be false on the server");
+        helper.assertValueEqual(TribulationAPI.getHudHeight(), 0,
+                "getHudHeight() must be 0 on the server");
+        helper.succeed();
+    }
 }

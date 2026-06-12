@@ -13,8 +13,8 @@ opinionated, and grounded in what already exists.
 
 ## Required reading (read before writing anything)
 - `README.md` — feature summary and developer API surface
-- `docs/design/DESIGN.md` — brand identity, design tokens, shared-HUD standard, companion-mod context
-- `docs/features.html`, `docs/config.html`, `docs/commands.html` — full feature/config/command surface
+- `design/DESIGN.md` — brand identity, design tokens, shared-HUD standard, companion-mod context
+- `site/pages/features.json`, `site/pages/config.json`, `site/pages/commands.json` — full feature/config/command surface
 - `src/main/java/...` — skim the actual implementation to ground claims (scaling formulas,
   tier abilities, death penalties, the public `TribulationAPI`)
 - `CLAUDE.md` / `AGENTS.md` — conventions, source layout, lifecycle

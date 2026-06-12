@@ -58,11 +58,12 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 | Full Logo | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Logo.png` | ~6.6MB | Final |
 | Icon (large) | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Icon.png` | ~5.3MB | Final |
 | Icon (1024px) | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Icon-1024.png` | ~1.1MB | Final |
-| Repo Logo | `logo.png` (root) | — | Copied from above |
-| Docs Logo | `docs/logo.png` | — | Copied from above |
-| Docs Icon | `docs/icon.png` | — | Copied from above |
+| Logo master | `art/logo.png` | — | Copied from above |
+| Icon master | `art/icon-128.png` | 128×128 | Copy of the in-jar icon |
+| Site Logo | `site/assets/logo.png` | — | Web copy of the master |
+| Site Icon | `site/assets/icon.png` | — | Web copy of the master |
 | In-Game Icon | `src/main/resources/assets/tribulation/icon.png` | 128×128 | Final — pixel-art skull with red flame |
-| Website | `docs/` directory | — | Live at tribulation.rfizzle.com |
+| Website | `site/` content, built by the shared Concord template | — | Live at tribulation.rfizzle.com |
 
 ### Needed Assets
 
@@ -250,7 +251,7 @@ Colors: Each uses crimson (#DC143C) as base with mode-specific secondary:
 | Red glow style | Tribulation-Icon.png outer glow | Deep crimson radial, ominous |
 | Pixel density | `assets/tribulation/icon.png` | Skull + flame — sets in-game pixel style |
 | Ember particles | Tribulation-Logo.png background | Orange sparks among the blood and bone |
-| Website color scheme | `docs/css/style.css` | Crimson/ember gradient, existing design tokens |
+| Website color scheme | `site/site.json` theme (rendered by the shared Concord template) | Crimson/ember gradient, existing design tokens |
 
 ---
 
@@ -259,8 +260,9 @@ Colors: Each uses crimson (#DC143C) as base with mode-specific secondary:
 ### Domain & Hosting
 
 - **Domain:** `tribulation.rfizzle.com`
-- **Hosting:** GitHub Pages from `docs/` directory
-- **CNAME:** `docs/CNAME` → `tribulation.rfizzle.com`
+- **Hosting:** GitHub Pages (source: Actions) — `site/` content built and deployed by
+  concord's reusable `build-site.yml` via the repo's `site.yml` stub
+- **CNAME:** `site/site.json` `domain` field → `tribulation.rfizzle.com`
 
 ### Current Pages
 

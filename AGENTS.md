@@ -12,6 +12,17 @@ Loom 1.9. The feature surface is documented in [`README.md`](README.md) and
 [tribulation.rfizzle.com](https://tribulation.rfizzle.com). Work is tracked in GitHub Issues —
 see the [Development lifecycle](#development-lifecycle) section below.
 
+## Suite standards (Concord)
+
+This mod is a member of Concord, the Vanilla+ collection. Suite-wide standards live in
+the [concord repo](https://github.com/rfizzle/concord) — checked out at `../concord/`
+in the local workspace. Normative for this repo:
+
+- [API-STANDARD.md](https://github.com/rfizzle/concord/blob/master/API-STANDARD.md) — the `api` package conventions (v1 conformance lands in feat/api-standard-v1)
+- [HUD-STANDARD.md](https://github.com/rfizzle/concord/blob/master/HUD-STANDARD.md) — HUD slot, stacking, accessors (v1 conformance lands in feat/api-standard-v1)
+- [DESIGN-SYSTEM.md](https://github.com/rfizzle/concord/blob/master/design/DESIGN-SYSTEM.md) — palette, typography, logo rules
+- [REPO-LAYOUT.md](https://github.com/rfizzle/concord/blob/master/REPO-LAYOUT.md) — where non-code files live (conforms)
+
 ## Build commands
 
 ```bash

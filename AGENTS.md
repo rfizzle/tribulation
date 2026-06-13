@@ -99,23 +99,22 @@ Compat classes live under `com.rfizzle.tribulation.compat.<modid>`.
 | `.ai/skills/` | Domain skills — read these before working in their subject area. |
 | `.github/workflows/` | Thin trigger stubs — workflow logic, default CI prompts, and [review criteria](https://github.com/rfizzle/concord/blob/master/.ai/review-criteria.yml) live in [rfizzle/concord](https://github.com/rfizzle/concord). |
 
+<!-- concord:skills:start -->
 ## Working with domain skills
 
-Eight skills under `.ai/skills/` cover this codebase. Claude Code auto-loads
-them via the `.claude/skills` symlink; Jules and other agents should read the
-relevant `SKILL.md` directly before working in its subject area.
+The suite's `mc-*` domain skills live under `.ai/skills/`, vendored from concord
+and refreshed with `make sync-skills`. The full list — each skill's one-line
+summary and the situation that should make you pull it in — is the generated
+catalog at [`.ai/skills/CATALOG.md`](.ai/skills/CATALOG.md). It is always in step
+with the skills actually vendored here, so consult it rather than a hand-kept
+table.
 
-| When you're touching… | Read first |
-|---|---|
-| `*Registry.java`, `Registry.register()` calls, creative tabs, particles, sounds, commands | [`mc-registration`](.ai/skills/mc-registration/SKILL.md) |
-| Data generation providers (models, blockstates, recipes, tags, loot, advancements) | [`mc-datagen`](.ai/skills/mc-datagen/SKILL.md) |
-| Any test — JUnit, fabric-loader-junit, or Fabric gametest | [`mc-mod-testing`](.ai/skills/mc-mod-testing/SKILL.md) |
-| Mock players in gametests | [`mc-testing-mock`](.ai/skills/mc-testing-mock/SKILL.md) |
-| Custom packets, payload types, stream codecs, client/server sync | [`mc-networking`](.ai/skills/mc-networking/SKILL.md) |
-| Managers, caches, hot-reloadable registries, any shared mutable state | [`mc-shared-state`](.ai/skills/mc-shared-state/SKILL.md) |
-| Running `./gradlew` for tests/builds/gametests/datagen | [`mc-gradle-builds`](.ai/skills/mc-gradle-builds/SKILL.md) |
-| Mixins, accessors, invokers, access wideners | [`mc-mixin-craft`](.ai/skills/mc-mixin-craft/SKILL.md) |
+Claude Code auto-loads these via the `.claude/skills` symlink; Google Jules,
+OpenCode, and any other agent should read the relevant `SKILL.md` directly
+**before** working in its subject area.
+<!-- concord:skills:end -->
 
+<!-- concord:lifecycle:start -->
 ## Development lifecycle
 
 1. **Issue opened** using the feature or bug template under `.github/ISSUE_TEMPLATE/`.
@@ -136,10 +135,13 @@ relevant `SKILL.md` directly before working in its subject area.
 
 `@claude <message>` in any issue or PR comment also invokes Claude for ad-hoc
 help via `.github/workflows/claude.yml`.
+<!-- concord:lifecycle:end -->
 
+<!-- concord:version-scheme:start -->
 ## Version scheme
 
 Version is computed from git tags at build time (`build.gradle`,
 `computeModVersion()`). Base version is in `gradle.properties` as
 `mod_version`. Tagged commits produce clean versions; post-tag commits append
 `+<commits>.g<sha>`.
+<!-- concord:version-scheme:end -->

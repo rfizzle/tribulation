@@ -1,3 +1,5 @@
+# Canonical Concord issue template — propagated verbatim to every member repo
+# by concord's propagate.yml. Edit HERE, never in a mod repo.
 name: Bug report
 description: Something doesn't work the way it should.
 title: "bug: "
@@ -9,9 +11,9 @@ body:
       label: Reproduction
       description: Steps to make the bug happen. Be specific — the smaller and more deterministic, the better.
       placeholder: |
-        1. Set level to 100 via /tribulation set, kill a zombie, observe
-           no Shatter Shard drop after N attempts
-        2. …
+        1. Do X
+        2. Right-click with item Y
+        3. Observe …
     validations:
       required: true
 
@@ -42,8 +44,8 @@ body:
   - type: input
     id: mod_version
     attributes:
-      label: Tribulation version
-      description: Run `/tribulation info` in-game, or check the jar filename.
+      label: Mod version
+      description: Run the mod's version command in-game (`/<mod> version`), or check the jar filename.
     validations:
       required: true
 
@@ -51,7 +53,7 @@ body:
     id: other_mods
     attributes:
       label: Other mods present
-      description: Just the relevant ones (Fabric API is assumed). Mention any of: Mod Menu, Cloth Config, Jade, WTHIT, EMI, REI, JEI.
+      description: "Just the relevant ones (Fabric API is assumed). Mention any of: Mod Menu, Cloth Config, Jade, WTHIT, EMI, REI, JEI."
 
   - type: markdown
     attributes:

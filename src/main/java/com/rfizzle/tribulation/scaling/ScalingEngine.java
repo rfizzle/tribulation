@@ -16,7 +16,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -295,42 +294,40 @@ public final class ScalingEngine {
             return 0;
         }
 
-        // AVERAGE or MAX: collect all players in range. Exclude creative and
-        // spectator players to match the NEAREST path, whose default predicate
-        // is EntitySelector.NO_CREATIVE_OR_SPECTATOR — otherwise an admin flying
-        // in creative or spectating would skew the mean (AVERAGE) or max out the
-        // spawn (MAX).
+        // AVERAGE or MAX: collect all players in range.
         double rangeSq = range * range;
-        List<ServerPlayer> inRange = world.getPlayers(p ->
-                EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(p) && p.distanceToSqr(entity) <= rangeSq);
-        if (inRange.isEmpty()) return 0;
+        int max = 0;
+        long sum = 0;
+        int count = 0;
 
-        List<Integer> levels = new ArrayList<>(inRange.size());
-        for (ServerPlayer sp : inRange) {
-            levels.add(state.getLevel(sp.getUUID()));
+        for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
+            if (sp.level() == world && sp.distanceToSqr(entity) <= rangeSq) {
+                int level = state.getLevel(sp.getUUID());
+                max = Math.max(max, level);
+                sum += level;
+                count++;
+            }
         }
-        return foldLevels(mode, levels);
+
+        if (count == 0) return 0;
+        if (mode == TribulationConfig.ScalingMode.MAX) return max;
+        return (int) (sum / count);
     }
 
     /**
      * Internal helper to fold a list of player levels into a single effective
-     * level based on the scaling mode.
+     * level based on the scaling mode. Used for unit tests.
      */
     public static int foldLevels(TribulationConfig.ScalingMode mode, List<Integer> levels) {
         if (levels.isEmpty()) return 0;
-        if (mode == TribulationConfig.ScalingMode.MAX) {
-            int max = 0;
-            for (int l : levels) {
-                max = Math.max(max, l);
-            }
-            return max;
-        } else if (mode == TribulationConfig.ScalingMode.AVERAGE) {
-            long sum = 0;
-            for (int l : levels) {
-                sum += l;
-            }
-            return (int) (sum / levels.size());
+        int max = 0;
+        long sum = 0;
+        for (int l : levels) {
+            max = Math.max(max, l);
+            sum += l;
         }
+        if (mode == TribulationConfig.ScalingMode.MAX) return max;
+        if (mode == TribulationConfig.ScalingMode.AVERAGE) return (int) (sum / levels.size());
         return levels.get(0);
     }
 

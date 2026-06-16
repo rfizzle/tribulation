@@ -81,9 +81,9 @@ public class MobScalingGameTest implements FabricGameTest {
 
         ServerPlayer p1 = helper.makeMockServerPlayerInLevel();
         ServerPlayer p2 = helper.makeMockServerPlayerInLevel();
-        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
-        p1.teleportTo(pos.getX(), pos.getY(), pos.getZ());
-        p2.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+        BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
+        p1.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
+        p2.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
 
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
         state.setLevel(p1.getUUID(), 50, cfg.general.maxLevel);
@@ -119,9 +119,9 @@ public class MobScalingGameTest implements FabricGameTest {
 
         ServerPlayer p1 = helper.makeMockServerPlayerInLevel();
         ServerPlayer p2 = helper.makeMockServerPlayerInLevel();
-        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
-        p1.teleportTo(pos.getX(), pos.getY(), pos.getZ());
-        p2.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+        BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
+        p1.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
+        p2.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
 
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
         state.setLevel(p1.getUUID(), 50, cfg.general.maxLevel);
@@ -138,6 +138,9 @@ public class MobScalingGameTest implements FabricGameTest {
             Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
             // Average of 50 and 200 = 125.
             // Level 125 zombie = 45 HP (20 * (1 + min(125*0.01, 2.5)) = 20 * (1 + 1.25) = 45)
+            // Gametests are spawned far from (0,0,0) and typically at Y=-60.
+            // If distance/height scaling were enabled, it would add to the HP.
+            // We disabled them above.
             helper.assertValueEqual(zombie.getMaxHealth(), 45.0f, "AVERAGE mode health");
         } finally {
             cfg.general.scalingMode = savedMode;

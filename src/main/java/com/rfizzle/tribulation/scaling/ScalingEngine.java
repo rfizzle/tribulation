@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -294,14 +295,21 @@ public final class ScalingEngine {
             return 0;
         }
 
-        // AVERAGE or MAX: collect all players in range.
+        // AVERAGE or MAX: fold over every player in range, excluding spectators so
+        // an admin spectating near a base can't skew the result. This matches the
+        // NEAREST path, whose world.getNearestPlayer(entity, range) applies the
+        // same NO_SPECTATORS predicate — creative players still count in all three
+        // modes. Iterate this level's own player list (already dimension-scoped,
+        // backing list — no allocation) rather than the whole-server list, since
+        // this runs on every spawn.
         double rangeSq = range * range;
         int max = 0;
         long sum = 0;
         int count = 0;
 
-        for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
-            if (sp.level() == world && sp.distanceToSqr(entity) <= rangeSq) {
+        for (ServerPlayer sp : world.players()) {
+            if (EntitySelector.NO_SPECTATORS.test(sp)
+                    && sp.distanceToSqr(entity) <= rangeSq) {
                 int level = state.getLevel(sp.getUUID());
                 max = Math.max(max, level);
                 sum += level;
@@ -315,8 +323,11 @@ public final class ScalingEngine {
     }
 
     /**
-     * Internal helper to fold a list of player levels into a single effective
-     * level based on the scaling mode. Used for unit tests.
+     * Fold a list of player levels into a single effective level for the given
+     * mode (MAX → highest, AVERAGE → floored mean, NEAREST → first). This is the
+     * pure-math twin of the player-list loop in {@link #getEffectiveLevel}, which
+     * inlines the same fold to stay allocation-free on the spawn hot path; keep
+     * the two in sync. Exposed for fast unit coverage of the fold arithmetic.
      */
     public static int foldLevels(TribulationConfig.ScalingMode mode, List<Integer> levels) {
         if (levels.isEmpty()) return 0;

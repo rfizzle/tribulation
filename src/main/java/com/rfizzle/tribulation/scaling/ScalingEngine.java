@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -270,9 +271,10 @@ public final class ScalingEngine {
     // ---- World-aware ----
 
     /**
-     * Resolve the effective Tribulation level for an entity based on the nearest
-     * player within the configured detection range. Returns 0 if no player is
-     * nearby or if the range is disabled.
+     * Resolve the effective Tribulation level for an entity based on the
+     * configured {@link com.rfizzle.tribulation.config.TribulationConfig.ScalingMode}
+     * and players within the detection range. Returns 0 if no player is nearby
+     * or if the range is disabled.
      */
     public static int getEffectiveLevel(Entity entity, ServerLevel world) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -280,14 +282,64 @@ public final class ScalingEngine {
         double range = cfg.general.mobDetectionRange;
         if (range <= 0) return 0;
 
-        Player nearest = world.getNearestPlayer(entity, range);
-        if (!(nearest instanceof ServerPlayer sp)) return 0;
-
         MinecraftServer server = world.getServer();
         if (server == null) return 0;
-
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-        return state.getLevel(sp.getUUID());
+
+        TribulationConfig.ScalingMode mode = cfg.general.scalingMode;
+        if (mode == TribulationConfig.ScalingMode.NEAREST) {
+            Player nearest = world.getNearestPlayer(entity, range);
+            if (nearest instanceof ServerPlayer sp) {
+                return state.getLevel(sp.getUUID());
+            }
+            return 0;
+        }
+
+        // AVERAGE or MAX: fold over every player in range, excluding spectators so
+        // an admin spectating near a base can't skew the result. This matches the
+        // NEAREST path, whose world.getNearestPlayer(entity, range) applies the
+        // same NO_SPECTATORS predicate — creative players still count in all three
+        // modes. Iterate this level's own player list (already dimension-scoped,
+        // backing list — no allocation) rather than the whole-server list, since
+        // this runs on every spawn.
+        double rangeSq = range * range;
+        int max = 0;
+        long sum = 0;
+        int count = 0;
+
+        for (ServerPlayer sp : world.players()) {
+            if (EntitySelector.NO_SPECTATORS.test(sp)
+                    && sp.distanceToSqr(entity) <= rangeSq) {
+                int level = state.getLevel(sp.getUUID());
+                max = Math.max(max, level);
+                sum += level;
+                count++;
+            }
+        }
+
+        if (count == 0) return 0;
+        if (mode == TribulationConfig.ScalingMode.MAX) return max;
+        return (int) (sum / count);
+    }
+
+    /**
+     * Fold a list of player levels into a single effective level for the given
+     * mode (MAX → highest, AVERAGE → floored mean, NEAREST → first). This is the
+     * pure-math twin of the player-list loop in {@link #getEffectiveLevel}, which
+     * inlines the same fold to stay allocation-free on the spawn hot path; keep
+     * the two in sync. Exposed for fast unit coverage of the fold arithmetic.
+     */
+    public static int foldLevels(TribulationConfig.ScalingMode mode, List<Integer> levels) {
+        if (levels.isEmpty()) return 0;
+        int max = 0;
+        long sum = 0;
+        for (int l : levels) {
+            max = Math.max(max, l);
+            sum += l;
+        }
+        if (mode == TribulationConfig.ScalingMode.MAX) return max;
+        if (mode == TribulationConfig.ScalingMode.AVERAGE) return (int) (sum / levels.size());
+        return levels.get(0);
     }
 
     /** 2D horizontal distance from world spawn (Y is excluded by design). */

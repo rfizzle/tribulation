@@ -45,12 +45,18 @@ public class StatisticsGameTest implements FabricGameTest {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
         state.setLevel(player.getUUID(), 20, Tribulation.getConfig().general.maxLevel);
+        int before = state.getLevel(player.getUUID());
 
         // Simulate death relief via direct event call
         com.rfizzle.tribulation.event.DeathReliefHandler.onAfterDeath(player, player.damageSources().generic());
 
+        int after = state.getLevel(player.getUUID());
+        int expectedDelta = before - after;
+        helper.assertTrue(expectedDelta > 0, "death relief should have reduced the level, delta was " + expectedDelta);
+
         int statVal = player.getStats().getValue(Stats.CUSTOM.get(TribulationStats.LEVELS_LOST_TO_DEATH_RELIEF));
-        helper.assertTrue(statVal > 0, "stat should have increased, was " + statVal);
+        helper.assertTrue(statVal == expectedDelta,
+                "stat should equal the level delta " + expectedDelta + ", was " + statVal);
 
         helper.succeed();
     }

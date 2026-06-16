@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -294,9 +295,14 @@ public final class ScalingEngine {
             return 0;
         }
 
-        // AVERAGE or MAX: collect all players in range.
+        // AVERAGE or MAX: collect all players in range. Exclude creative and
+        // spectator players to match the NEAREST path, whose default predicate
+        // is EntitySelector.NO_CREATIVE_OR_SPECTATOR — otherwise an admin flying
+        // in creative or spectating would skew the mean (AVERAGE) or max out the
+        // spawn (MAX).
         double rangeSq = range * range;
-        List<ServerPlayer> inRange = world.getPlayers(p -> p.distanceToSqr(entity) <= rangeSq);
+        List<ServerPlayer> inRange = world.getPlayers(p ->
+                EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(p) && p.distanceToSqr(entity) <= rangeSq);
         if (inRange.isEmpty()) return 0;
 
         List<Integer> levels = new ArrayList<>(inRange.size());

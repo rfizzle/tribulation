@@ -103,6 +103,68 @@ public class TotemGameTest implements FabricGameTest {
 
     @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
+    public void countsAsDeathRelief_parentDisabled_noLevelChange(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        MinecraftServer server = helper.getLevel().getServer();
+        TribulationConfig cfg = Tribulation.getConfig();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+
+        boolean savedTotemRelief = cfg.totems.countsAsDeathRelief;
+        boolean savedReliefEnabled = cfg.deathRelief.enabled;
+        // Self-contradictory config: opted into totem relief, but the system is off.
+        cfg.totems.countsAsDeathRelief = true;
+        cfg.deathRelief.enabled = false;
+
+        try {
+            state.setLevel(player.getUUID(), 100, 250);
+            int levelBefore = state.getLevel(player.getUUID());
+
+            TotemPenaltyHandler.onTotemUsed(player);
+
+            int levelAfter = state.getLevel(player.getUUID());
+            helper.assertValueEqual(levelAfter, levelBefore, "Level should not change when deathRelief is disabled");
+        } finally {
+            cfg.totems.countsAsDeathRelief = savedTotemRelief;
+            cfg.deathRelief.enabled = savedReliefEnabled;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void protectsHearts_parentDisabled_noHeartsLost(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        MinecraftServer server = helper.getLevel().getServer();
+        TribulationConfig cfg = Tribulation.getConfig();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+
+        boolean savedHeartsEnabled = cfg.hardcoreHearts.enabled;
+        boolean savedProtect = cfg.totems.protectsHearts;
+        // Self-contradictory config: opted out of heart protection, but the system is off.
+        cfg.hardcoreHearts.enabled = false;
+        cfg.totems.protectsHearts = false;
+
+        try {
+            state.resetHearts(player.getUUID());
+            HardcoreHeartsHandler.applyModifier(player);
+
+            int heartsBefore = state.getHeartsLost(player.getUUID());
+
+            TotemPenaltyHandler.onTotemUsed(player);
+
+            int heartsAfter = state.getHeartsLost(player.getUUID());
+            helper.assertValueEqual(heartsAfter, heartsBefore, "Hearts lost counter should not increment when hardcoreHearts is disabled");
+        } finally {
+            cfg.hardcoreHearts.enabled = savedHeartsEnabled;
+            cfg.totems.protectsHearts = savedProtect;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
     public void defaultBehavior_protectsHearts_true_noHeartsLost(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         MinecraftServer server = helper.getLevel().getServer();

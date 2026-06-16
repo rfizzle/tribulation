@@ -12,11 +12,11 @@ public final class TotemPenaltyHandler {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) return;
 
-        if (cfg.totems.countsAsDeathRelief) {
+        if (cfg.deathRelief.enabled && cfg.totems.countsAsDeathRelief) {
             DeathReliefHandler.applyPenalty(player);
         }
 
-        if (!cfg.totems.protectsHearts) {
+        if (cfg.hardcoreHearts.enabled && !cfg.totems.protectsHearts) {
             HardcoreHeartsHandler.applyPenalty(player);
         }
     }

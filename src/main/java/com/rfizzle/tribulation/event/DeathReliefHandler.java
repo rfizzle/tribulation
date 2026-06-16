@@ -33,6 +33,13 @@ public final class DeathReliefHandler {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null || !cfg.deathRelief.enabled) return;
 
+        applyPenalty(player);
+    }
+
+    public static void applyPenalty(ServerPlayer player) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg == null) return;
+
         MinecraftServer server = player.getServer();
         if (server == null) return;
 

@@ -37,6 +37,13 @@ public final class HardcoreHeartsHandler {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null || !cfg.hardcoreHearts.enabled) return;
 
+        applyPenalty(player);
+    }
+
+    public static void applyPenalty(ServerPlayer player) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg == null) return;
+
         MinecraftServer server = player.getServer();
         if (server == null) return;
 
@@ -61,6 +68,7 @@ public final class HardcoreHeartsHandler {
                                     currentMax / 2, 10)
                                     .withStyle(ChatFormatting.RED));
                 }
+                applyModifier(player);
             }
         } catch (Exception e) {
             Tribulation.LOGGER.error("Failed to apply hardcore hearts penalty for {}", player, e);

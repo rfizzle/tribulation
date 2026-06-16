@@ -41,6 +41,7 @@ public class TribulationConfig {
     public DistanceScaling distanceScaling = new DistanceScaling();
     public HeightScaling heightScaling = new HeightScaling();
     public StatCaps statCaps = new StatCaps();
+    public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
     public Shards shards = new Shards();
     public HardcoreHearts hardcoreHearts = new HardcoreHearts();
@@ -205,6 +206,7 @@ public class TribulationConfig {
         if (distanceScaling == null) distanceScaling = new DistanceScaling();
         if (heightScaling == null) heightScaling = new HeightScaling();
         if (statCaps == null) statCaps = new StatCaps();
+        if (totems == null) totems = new Totems();
         if (deathRelief == null) deathRelief = new DeathRelief();
         if (shards == null) shards = new Shards();
         if (hardcoreHearts == null) hardcoreHearts = new HardcoreHearts();
@@ -572,6 +574,11 @@ public class TribulationConfig {
         public double maxFactorSpeed = 0.5;
         public double maxFactorProtection = 2.0;
         public double maxFactorFollowRange = 1.5;
+    }
+
+    public static class Totems {
+        public boolean countsAsDeathRelief = false;
+        public boolean protectsHearts = true;
     }
 
     public static class DeathRelief {

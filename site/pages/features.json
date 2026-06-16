@@ -229,6 +229,7 @@
                 "Default reduction: 2 levels per death",
                 "Cooldown: 6,000 ticks (5 min) between reductions",
                 "Will not reduce below <code class='text-accent2'>minimumLevel</code> (default 0)",
+                "Totem pop: optional level loss via <code class='text-accent2'>totems.countsAsDeathRelief</code> (default false)",
                 "Can be disabled entirely"
               ]
             },
@@ -240,6 +241,7 @@
                 "Drop chance: 0.5% per scaled-mob kill",
                 "Only drop at player level 25+ (configurable)",
                 "Consuming a shard reduces your level by 5",
+                "Totem pop: no interaction (voluntary drop only)",
                 "Applies mild debuffs: Slowness II, Mining Fatigue II, Weakness II (10s)"
               ]
             },
@@ -251,6 +253,7 @@
               "bullets": [
                 "Lose 2 half-hearts per death (configurable 1–20)",
                 "Minimum floor: 2 half-hearts (1 heart)",
+                "Totem pop: optional loss via <code class='text-accent2'>totems.protectsHearts=false</code> (default true)",
                 "Restore with <strong class='text-bone'>Heart Fragment</strong> items (+2 half-hearts each)",
                 "Crafted from 4 Shatter Shards + 1 Golden Apple",
                 "Admin command to restore or reset hearts"
@@ -265,6 +268,7 @@
                 "Enchantment ID: <code class='text-accent2'>tribulation:soulbound</code>",
                 "Configurable to use any external enchantment ID",
                 "Option to also destroy XP on death",
+                "Totem pop: never triggered (inventory is safe)",
                 "Respects the vanilla <code class='text-accent2'>keepInventory</code> gamerule when configured"
               ]
             }

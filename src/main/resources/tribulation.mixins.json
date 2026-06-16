@@ -7,6 +7,7 @@
         "CreeperAccessor",
         "HuskAbilityMixin",
         "LivingEntityExperienceMixin",
+        "LivingEntityTotemMixin",
         "MobAbilityMixin",
         "SoulInventoryMixin"
     ],

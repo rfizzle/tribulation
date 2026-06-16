@@ -11,6 +11,7 @@ import com.rfizzle.tribulation.event.ShardDropHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
 import com.rfizzle.tribulation.event.XpLootHandler;
 import com.rfizzle.tribulation.item.TribulationItems;
+import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.scaling.TierManager;
 import net.minecraft.resources.ResourceLocation;
@@ -39,6 +40,7 @@ public class Tribulation implements ModInitializer {
         com.rfizzle.tribulation.data.TribulationAttachments.register();
         TribulationNetworking.register();
         TribulationItems.register();
+        TribulationStats.register();
         registerTickHandler();
         MobScalingHandler.register();
         DeathReliefHandler.register();

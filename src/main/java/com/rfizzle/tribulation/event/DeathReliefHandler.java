@@ -4,6 +4,7 @@ import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.server.MinecraftServer;
@@ -27,7 +28,7 @@ public final class DeathReliefHandler {
         ServerLivingEntityEvents.AFTER_DEATH.register(DeathReliefHandler::onAfterDeath);
     }
 
-    static void onAfterDeath(LivingEntity entity, DamageSource damageSource) {
+    public static void onAfterDeath(LivingEntity entity, DamageSource damageSource) {
         if (!(entity instanceof ServerPlayer player)) return;
 
         TribulationConfig cfg = Tribulation.getConfig();
@@ -57,6 +58,7 @@ public final class DeathReliefHandler {
             int after = state.getLevel(player.getUUID());
             TribulationNetworking.syncLevel(player);
             if (before != after) {
+                player.awardStat(TribulationStats.LEVELS_LOST_TO_DEATH_RELIEF, before - after);
                 TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, before, after);
                 Tribulation.LOGGER.debug(
                         "Death relief: {} reduced from level {} to {}",

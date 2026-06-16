@@ -4,6 +4,7 @@ import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
+import com.rfizzle.tribulation.stat.TribulationStats;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -73,6 +74,7 @@ public class HeartFragmentItem extends Item {
                     cfg.hardcoreHearts.heartsRestoredPerFragment
             );
 
+            serverPlayer.awardStat(TribulationStats.HEARTS_RESTORED, before - after);
             HardcoreHeartsHandler.applyModifier(serverPlayer);
             stack.consume(1, serverPlayer);
 

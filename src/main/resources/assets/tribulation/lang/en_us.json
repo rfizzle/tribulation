@@ -164,5 +164,12 @@
     "enchantment.tribulation.soulbound.desc": "Item is kept on death when Soul Inventory is active.",
 
     "message.tribulation.heart_lost": "You lost a heart. (%s/%s remaining)",
-    "message.tribulation.heart_lost_floor": "You are at minimum hearts."
+    "message.tribulation.heart_lost_floor": "You are at minimum hearts.",
+
+    "stat.tribulation.highest_level_reached": "Highest level reached",
+    "stat.tribulation.levels_lost_to_death_relief": "Levels lost to death relief",
+    "stat.tribulation.shatter_shards_used": "Shatter Shards used",
+    "stat.tribulation.hearts_lost": "Half-hearts lost",
+    "stat.tribulation.hearts_restored": "Half-hearts restored",
+    "stat.tribulation.tier_5_mobs_killed": "Tier-5 scaled mobs killed"
 }

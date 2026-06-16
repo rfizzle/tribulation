@@ -81,7 +81,7 @@ public final class ShardDropHandler {
      * {@link LivingEntity#getKillCredit()} (handles arrow/trident kills) and
      * falls back to the direct damager for edge cases.
      */
-    static ServerPlayer resolveKiller(Mob mob, DamageSource source) {
+    public static ServerPlayer resolveKiller(Mob mob, DamageSource source) {
         LivingEntity credit = mob.getKillCredit();
         if (credit instanceof ServerPlayer sp) {
             return sp;

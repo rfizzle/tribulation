@@ -3,6 +3,7 @@ package com.rfizzle.tribulation.event;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.stat.TribulationStats;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -49,6 +50,7 @@ public final class HardcoreHeartsHandler {
                     cfg.hardcoreHearts.minimumHearts
             );
             if (after > before) {
+                player.awardStat(TribulationStats.HEARTS_LOST, after - before);
                 int currentMax = 20 - after;
                 int maxPenalty = 20 - cfg.hardcoreHearts.minimumHearts;
                 if (after >= maxPenalty) {

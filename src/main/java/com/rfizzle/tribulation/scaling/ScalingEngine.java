@@ -270,9 +270,10 @@ public final class ScalingEngine {
     // ---- World-aware ----
 
     /**
-     * Resolve the effective Tribulation level for an entity based on the nearest
-     * player within the configured detection range. Returns 0 if no player is
-     * nearby or if the range is disabled.
+     * Resolve the effective Tribulation level for an entity based on the
+     * configured {@link com.rfizzle.tribulation.config.TribulationConfig.ScalingMode}
+     * and players within the detection range. Returns 0 if no player is nearby
+     * or if the range is disabled.
      */
     public static int getEffectiveLevel(Entity entity, ServerLevel world) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -280,14 +281,51 @@ public final class ScalingEngine {
         double range = cfg.general.mobDetectionRange;
         if (range <= 0) return 0;
 
-        Player nearest = world.getNearestPlayer(entity, range);
-        if (!(nearest instanceof ServerPlayer sp)) return 0;
-
         MinecraftServer server = world.getServer();
         if (server == null) return 0;
-
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-        return state.getLevel(sp.getUUID());
+
+        TribulationConfig.ScalingMode mode = cfg.general.scalingMode;
+        if (mode == TribulationConfig.ScalingMode.NEAREST) {
+            Player nearest = world.getNearestPlayer(entity, range);
+            if (nearest instanceof ServerPlayer sp) {
+                return state.getLevel(sp.getUUID());
+            }
+            return 0;
+        }
+
+        // AVERAGE or MAX: collect all players in range.
+        double rangeSq = range * range;
+        List<ServerPlayer> inRange = world.getPlayers(p -> p.distanceToSqr(entity) <= rangeSq);
+        if (inRange.isEmpty()) return 0;
+
+        List<Integer> levels = new ArrayList<>(inRange.size());
+        for (ServerPlayer sp : inRange) {
+            levels.add(state.getLevel(sp.getUUID()));
+        }
+        return foldLevels(mode, levels);
+    }
+
+    /**
+     * Internal helper to fold a list of player levels into a single effective
+     * level based on the scaling mode.
+     */
+    public static int foldLevels(TribulationConfig.ScalingMode mode, List<Integer> levels) {
+        if (levels.isEmpty()) return 0;
+        if (mode == TribulationConfig.ScalingMode.MAX) {
+            int max = 0;
+            for (int l : levels) {
+                max = Math.max(max, l);
+            }
+            return max;
+        } else if (mode == TribulationConfig.ScalingMode.AVERAGE) {
+            long sum = 0;
+            for (int l : levels) {
+                sum += l;
+            }
+            return (int) (sum / levels.size());
+        }
+        return levels.get(0);
     }
 
     /** 2D horizontal distance from world spawn (Y is excluded by design). */

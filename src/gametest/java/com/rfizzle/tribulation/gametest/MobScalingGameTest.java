@@ -73,6 +73,83 @@ public class MobScalingGameTest implements FabricGameTest {
         assertTimeAxisHp(helper, 250, 70.0f);
     }
 
+    @GameTest(template = "tribulation:empty_3x3")
+    public void multiplayerScaling_MAX_reachesHighestLevel(GameTestHelper helper) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        TribulationConfig.ScalingMode savedMode = cfg.general.scalingMode;
+        cfg.general.scalingMode = TribulationConfig.ScalingMode.MAX;
+
+        ServerPlayer p1 = helper.makeMockServerPlayerInLevel();
+        ServerPlayer p2 = helper.makeMockServerPlayerInLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        p1.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+        p2.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
+        state.setLevel(p1.getUUID(), 50, cfg.general.maxLevel);
+        state.setLevel(p2.getUUID(), 200, cfg.general.maxLevel);
+
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+
+        try {
+            Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+            // Level 200 zombie = 60 HP (20 * (1 + min(200*0.01, 2.5)) = 20 * (1 + 2.0) = 60)
+            helper.assertValueEqual(zombie.getMaxHealth(), 60.0f, "MAX mode health");
+        } finally {
+            cfg.general.scalingMode = savedMode;
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            p1.discard();
+            p2.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void multiplayerScaling_AVERAGE_reachesMeanLevel(GameTestHelper helper) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        TribulationConfig.ScalingMode savedMode = cfg.general.scalingMode;
+        cfg.general.scalingMode = TribulationConfig.ScalingMode.AVERAGE;
+
+        ServerPlayer p1 = helper.makeMockServerPlayerInLevel();
+        ServerPlayer p2 = helper.makeMockServerPlayerInLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        p1.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+        p2.teleportTo(pos.getX(), pos.getY(), pos.getZ());
+
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
+        state.setLevel(p1.getUUID(), 50, cfg.general.maxLevel);
+        state.setLevel(p2.getUUID(), 200, cfg.general.maxLevel);
+
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+
+        try {
+            Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+            // Average of 50 and 200 = 125.
+            // Level 125 zombie = 45 HP (20 * (1 + min(125*0.01, 2.5)) = 20 * (1 + 1.25) = 45)
+            helper.assertValueEqual(zombie.getMaxHealth(), 45.0f, "AVERAGE mode health");
+        } finally {
+            cfg.general.scalingMode = savedMode;
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            p1.discard();
+            p2.discard();
+        }
+        helper.succeed();
+    }
+
     /**
      * Shared recipe for a time-axis-only scaling gametest. Seats a ServerPlayer at
      * {@code playerLevel}, spawns a zombie within {@code mobDetectionRange}, and

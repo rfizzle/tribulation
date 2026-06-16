@@ -238,6 +238,7 @@ public final class TribulationCommand {
 
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
         int level = state.getLevel(target.getUUID());
+        int effectiveLevel = ScalingEngine.getEffectiveLevel(target, world);
 
         // Reference-mob scaling ("zombie") gives a stable apples-to-apples time
         // breakdown across calls. Per-mob debug is covered by /inspect.
@@ -251,7 +252,7 @@ public final class TribulationCommand {
                 ? ScalingEngine.computeHeightFactor(target.getY(), cfg.heightScaling)
                 : 0.0;
 
-        for (String line : formatDebug(target, world, cfg, level, refScaling, horizDist, rawDistFactor, rawHeightFactor)) {
+        for (String line : formatDebug(target, world, cfg, level, effectiveLevel, refScaling, horizDist, rawDistFactor, rawHeightFactor)) {
             src.sendSuccess(() -> Component.literal(line), false);
         }
         return Command.SINGLE_SUCCESS;
@@ -469,6 +470,7 @@ public final class TribulationCommand {
             ServerLevel world,
             TribulationConfig cfg,
             int playerLevel,
+            int effectiveLevel,
             MobScaling refScaling,
             double horizontalDistance,
             double rawDistanceFactor,
@@ -483,6 +485,9 @@ public final class TribulationCommand {
         lines.add(String.format(Locale.ROOT,
                 "Player level: %d  Tier: %d",
                 playerLevel, TierManager.getTier(playerLevel, cfg.tiers)));
+        lines.add(String.format(Locale.ROOT,
+                "Scaling mode: %s  Effective level: %d",
+                cfg.general.scalingMode, effectiveLevel));
         lines.add(String.format(Locale.ROOT,
                 "Distance from spawn: %.1f blocks  →  factor %+.3f",
                 horizontalDistance, rawDistanceFactor));

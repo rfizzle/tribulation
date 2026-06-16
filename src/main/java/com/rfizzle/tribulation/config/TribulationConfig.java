@@ -200,6 +200,7 @@ public class TribulationConfig {
 
     private void fillDefaults() {
         if (general == null) general = new General();
+        if (general.scalingMode == null) general.scalingMode = ScalingMode.NEAREST;
         if (general.excludedEntities == null) general.excludedEntities = new ArrayList<>();
         if (timeScaling == null) timeScaling = new TimeScaling();
         if (distanceScaling == null) distanceScaling = new DistanceScaling();
@@ -535,6 +536,7 @@ public class TribulationConfig {
         public int maxLevel = 250;
         public int levelUpTicks = 72000;
         public double mobDetectionRange = 32.0;
+        public ScalingMode scalingMode = ScalingMode.NEAREST;
         public List<String> excludedEntities = new ArrayList<>(List.of(
                 "the_bumblezone:cosmic_crystal_entity"
         ));
@@ -710,6 +712,10 @@ public class TribulationConfig {
 
     public enum Anchor {
         TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+    }
+
+    public enum ScalingMode {
+        NEAREST, AVERAGE, MAX
     }
 
     public static class ArmorEquipment {

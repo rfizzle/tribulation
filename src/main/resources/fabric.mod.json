@@ -18,6 +18,7 @@
             "com.rfizzle.tribulation.gametest.TotemGameTest",
             "com.rfizzle.tribulation.gametest.APIGameTest",
             "com.rfizzle.tribulation.gametest.ArmorEquipmentGameTest",
+            "com.rfizzle.tribulation.gametest.StatisticsGameTest",
             "com.rfizzle.tribulation.gametest.WeaponEquipmentGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],

@@ -4,6 +4,7 @@ import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -78,6 +79,7 @@ public class ShatterShardItem extends Item {
                 applySideEffects(serverPlayer);
             }
 
+            serverPlayer.awardStat(TribulationStats.SHATTER_SHARDS_USED);
             stack.consume(1, serverPlayer);
 
             level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),

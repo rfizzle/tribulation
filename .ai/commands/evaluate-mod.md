@@ -1,4 +1,4 @@
-Evaluate the quality of the Tribulation mod in this repository.
+Evaluate the quality of the Concord member mod in this repository.
 
 Launch 4 parallel evaluation agents examining different quality dimensions, then compile the results into a unified grade report.
 

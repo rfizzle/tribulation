@@ -49,35 +49,11 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 
 ---
 
-## 2. Asset Inventory
+## 2. Assets
 
-### Existing Assets
-
-| Asset | Location | Size | Status |
-|-------|----------|------|--------|
-| Logo master | `art/logo.png` | 2760×1504 | Final — stone-framed hourglass, heart-to-skulls motif |
-| Icon master | `art/icon-128.png` | 128×128 | Final — pixel-art skull with red flame |
-| Site Logo | `site/assets/logo.png` | 1280×698 | Web copy of the master |
-| Site Icon | `site/assets/icon.png` | 256×256 | Web copy of the master |
-| In-Game Icon | `src/main/resources/assets/tribulation/icon.png` | 128×128 | Final — pixel-art skull with red flame |
-| HUD difficulty icon | `src/main/resources/assets/tribulation/textures/gui/hud_icon.png` | 32×32 | Final — tier-tinted skull, blitted at 16×16 in the HUD overlay |
-| Heart Fragment item texture | `src/main/resources/assets/tribulation/textures/item/heart_fragment.png` | 16×16 | Final — ships with model `models/item/heart_fragment.json` (+ kintsugi overlay) |
-| Website | `site/` content, built by the shared Concord template | — | Live at tribulation.rfizzle.com |
-
-### Needed Assets
-
-| Asset | Generator | Priority | Spec |
-|-------|-----------|----------|------|
-| Shatter Shard item texture | `/glyph` | High | 16×16 crystalline shard, crimson/purple — replaces the vanilla `prismarine_shard` placeholder the model currently points at |
-| Recipe browser icon (EMI/REI/JEI tab) | `/glyph` | High | 16×16 or 32×32, skull or hourglass motif, red/crimson palette |
-| Tier threshold icons (set of 5) | `/glyph` | Medium | 16×16 icons for tiers 1–5 showing escalating danger |
-| Death penalty icons (set of 4) | `/glyph` | Medium | 16×16 icons for Death Relief, Shatter, Hardcore Hearts, Soul Inventory |
-| Website hero background | Gemini | Medium | 1920×600 — dark brickwork with blood splatter and bone accents |
-| Open Graph image | Gemini | Medium | 1200×630, logo centered on dark background |
-| CurseForge gallery screenshots | Screenshot | High | 1920×1080, showing scaled mobs, tier abilities, death penalties |
-| Favicon (`.ico` / `.svg`) | Derived | Low | 32×32 / 16×16 from icon |
-| Apple Touch Icon | Derived | Low | 180×180 from icon |
-| Discord embed banner | Gemini | Low | 1280×640, logo on dark background |
+The full asset manifest — every `.glyph` source under `art/`, the final
+resource/site path it ships as, and what is still `MISSING` a glyph source —
+lives in [`ASSETS.md`](ASSETS.md).
 
 ---
 

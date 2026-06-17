@@ -75,12 +75,19 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 | Command | Perm | Description |
 |---------|------|-------------|
-| `/tribulation info` | 0 | Your level, tier, and progress |
-| `/tribulation hearts` | 0 | Your heart penalty status |
-| `/tribulation set <player> <level>` | 2 | Set a player's level |
-| `/tribulation reload` | 2 | Hot-reload config |
-| `/tribulation debug <player>` | 2 | Full scaling breakdown |
-| `/tribulation inspect` | 2 | Inspect the mob you're looking at |
+| `/tribulation info` | 0 | Show your own level, tier, and progress to next level |
+| `/tribulation hearts` | 0 | Show your own heart penalty (Hardcore Hearts) |
+| `/tribulation level <player>` | 2 | View another player's level and time to next |
+| `/tribulation set <player> <level>` | 2 | Set a player's difficulty level (clamped to maxLevel) |
+| `/tribulation reset <player>` | 2 | Reset a player to level 0 |
+| `/tribulation reload` | 2 | Hot-reload the config file without restarting |
+| `/tribulation config` | 2 | Print a summary of the current configuration |
+| `/tribulation debug <player>` | 2 | Show detailed scaling breakdown for a player's position |
+| `/tribulation inspect` | 2 | Inspect the mob you're looking at (within 10 blocks) |
+| `/tribulation hearts <player>` | 2 | View another player's heart penalty |
+| `/tribulation hearts <player> restore <n>` | 2 | Restore lost half-hearts for a player |
+| `/tribulation hearts <player> reset` | 2 | Clear all heart penalties for a player |
+| `/tribulation inventory <player>` | 2 | Count soulbound items in a player's inventory |
 
 [Full command reference →](https://tribulation.rfizzle.com/commands.html)
 

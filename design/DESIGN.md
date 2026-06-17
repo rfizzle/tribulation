@@ -16,9 +16,9 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 
 ### Logo Description
 
-**Full Logo (`Tribulation-Logo.png`):** A stone-framed hourglass sits within a cracked circular stone border wrapped with dark, thorny vines. The upper chamber holds a glowing red pixel heart; the lower chamber is filled with fallen hearts, skulls, and bones — life draining away. A crimson-red glow emanates from behind the hourglass. The background is dark red-brown brickwork splattered with blood, scattered with bones and skeletal remains. Below, "TRIBULATION" in a blocky pixel font on a stone tablet, with "MINECRAFT DIFFICULTY OVERHAUL" subtitle.
+**Full Logo (`art/logo.png`):** A stone-framed hourglass sits within a cracked circular stone border wrapped with dark, thorny vines. The upper chamber holds a glowing red pixel heart; the lower chamber is filled with fallen hearts, skulls, and bones — life draining away. A crimson-red glow emanates from behind the hourglass. The background is dark red-brown brickwork splattered with blood, scattered with bones and skeletal remains. Below, "TRIBULATION" in a blocky pixel font on a stone tablet, with "MINECRAFT DIFFICULTY OVERHAUL" subtitle.
 
-**Icon (`Tribulation-Icon.png`):** The hourglass and stone frame isolated. The heart-to-skulls motif is clearly visible. Dark red glow radiating outward. Thorny vines wrap the stone border. No text.
+**Icon (`art/icon-128.png`):** The hourglass and stone frame isolated. The heart-to-skulls motif is clearly visible. Dark red glow radiating outward. Thorny vines wrap the stone border. No text.
 
 **In-Game Icon (`assets/tribulation/icon.png`):** A pixel-art skull with a red upward-pointing flame/arrow behind it — white skull, crimson backdrop, suggesting danger and escalation.
 
@@ -55,26 +55,23 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 
 | Asset | Location | Size | Status |
 |-------|----------|------|--------|
-| Full Logo | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Logo.png` | ~6.6MB | Final |
-| Icon (large) | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Icon.png` | ~5.3MB | Final |
-| Icon (1024px) | `/mnt/c/Users/colet/Downloads/Final-Minecraft-Mod-Logos/Tribulation-Icon-1024.png` | ~1.1MB | Final |
-| Logo master | `art/logo.png` | — | Copied from above |
-| Icon master | `art/icon-128.png` | 128×128 | Copy of the in-jar icon |
-| Site Logo | `site/assets/logo.png` | — | Web copy of the master |
-| Site Icon | `site/assets/icon.png` | — | Web copy of the master |
+| Logo master | `art/logo.png` | 2760×1504 | Final — stone-framed hourglass, heart-to-skulls motif |
+| Icon master | `art/icon-128.png` | 128×128 | Final — pixel-art skull with red flame |
+| Site Logo | `site/assets/logo.png` | 1280×698 | Web copy of the master |
+| Site Icon | `site/assets/icon.png` | 256×256 | Web copy of the master |
 | In-Game Icon | `src/main/resources/assets/tribulation/icon.png` | 128×128 | Final — pixel-art skull with red flame |
+| HUD difficulty icon | `src/main/resources/assets/tribulation/textures/gui/hud_icon.png` | 32×32 | Final — tier-tinted skull, blitted at 16×16 in the HUD overlay |
+| Heart Fragment item texture | `src/main/resources/assets/tribulation/textures/item/heart_fragment.png` | 16×16 | Final — ships with model `models/item/heart_fragment.json` (+ kintsugi overlay) |
 | Website | `site/` content, built by the shared Concord template | — | Live at tribulation.rfizzle.com |
 
 ### Needed Assets
 
 | Asset | Generator | Priority | Spec |
 |-------|-----------|----------|------|
-| Recipe browser icon (EMI/REI/JEI tab) | PixelLab | High | 16×16 or 32×32, skull or hourglass motif, red/crimson palette |
-| HUD difficulty level indicator | PixelLab | High | 16×16 icon + compact text — single persistent HUD element showing current difficulty level/tier |
-| Tier threshold icons (set of 5) | PixelLab | Medium | 16×16 icons for tiers 1–5 showing escalating danger |
-| Shatter Shard item texture | PixelLab | High | 16×16 Minecraft item texture — crystalline shard, red/purple |
-| Heart Fragment item texture | PixelLab | High | 16×16 Minecraft item texture — partial heart, glowing red |
-| Death penalty icons (set of 4) | PixelLab | Medium | 16×16 icons for Death Relief, Shatter, Hardcore Hearts, Soul Inventory |
+| Shatter Shard item texture | `/glyph` | High | 16×16 crystalline shard, crimson/purple — replaces the vanilla `prismarine_shard` placeholder the model currently points at |
+| Recipe browser icon (EMI/REI/JEI tab) | `/glyph` | High | 16×16 or 32×32, skull or hourglass motif, red/crimson palette |
+| Tier threshold icons (set of 5) | `/glyph` | Medium | 16×16 icons for tiers 1–5 showing escalating danger |
+| Death penalty icons (set of 4) | `/glyph` | Medium | 16×16 icons for Death Relief, Shatter, Hardcore Hearts, Soul Inventory |
 | Website hero background | Gemini | Medium | 1920×600 — dark brickwork with blood splatter and bone accents |
 | Open Graph image | Gemini | Medium | 1200×630, logo centered on dark background |
 | CurseForge gallery screenshots | Screenshot | High | 1920×1080, showing scaled mobs, tier abilities, death penalties |
@@ -116,7 +113,17 @@ Ember particles rising. "Tribulation" in crimson-red pixel font below the
 icon. "Difficulty Overhaul" subtitle in lighter text. Clean, minimal.
 ```
 
-### PixelLab Prompts (Pixel Art)
+### Glyph Specs (In-Game Pixel Art)
+
+In-game pixel art — HUD/UI glyphs, recipe-browser icons, item textures, and
+tier-icon sets — is authored through Concord's glyph pipeline: write the
+ASCII-grid `.glyph` spec, then render it deterministically with `/glyph` (the
+`mc-textures` skill is the craft reference). Every PNG master commits its
+`.glyph` source beside it in `art/glyphs/`, so each texture re-renders from its
+spec rather than being hand-patched. Design at the target size with hard pixels,
+a limited palette, and an `ink` (#0a0a0a) 1px outline so the glyph reads against
+any background. The normative spec is concord's `design/DESIGN-SYSTEM.md` §8.
+The specs below seed that work.
 
 **Recipe Browser Icon (EMI/REI/JEI Tab):**
 ```
@@ -145,43 +152,9 @@ Notes: Sits inside the shared semi-transparent HUD box alongside a text
        shared HUD box provides the container.
 ```
 
-### Shared HUD Element Standard
+### HUD
 
-All mods in the rfizzle suite that display a persistent HUD element follow a single
-shared design pattern to ensure visual consistency when multiple mods are installed:
-
-**Layout:** Simple semi-transparent dark box (`#000000` at ~50-60% opacity, 2px rounded
-corners) containing a 16×16 mod-themed icon on the left and short informational text
-on the right (e.g., "Lv. 42", "Trusted", "Frontier"). Text uses the vanilla Minecraft
-font, white with a standard drop shadow.
-
-**Position:** Top-left corner of the screen, below the vanilla debug/coordinates area.
-Elements stack vertically in a fixed priority order:
-
-| Priority | Mod | HUD Element | Example Display |
-|----------|-----|-------------|-----------------|
-| 1 | Tribulation | Difficulty level + tier | `[skull] Lv. 127 · T3` |
-| 2 | Mercantile | Reputation tier | `[emerald] Trusted` |
-| 3 | Prosperity | Loot distance tier | `[chest] Frontier` |
-
-Each element is independently togglable via its mod's config. Elements shift up to
-fill gaps when a mod above them is absent or its HUD is disabled. Small vertical
-padding (2px) between stacked elements.
-
-**Implementation notes:**
-- Each mod renders its own element at the correct offset based on how many higher-priority
-  mods are present and have their HUD enabled. Check via `FabricLoader.getInstance().isModLoaded()`.
-- The semi-transparent box auto-sizes to fit the icon + text content.
-- No custom fonts, no ornate frames, no animations. Must blend with vanilla HUD.
-- Hide during F1 (HUD hidden), during screen/GUI open, and during death screen.
-
-### Tribulation HUD
-
-Tribulation occupies **priority 1** (topmost position) in the shared HUD strip.
-Displays difficulty level and tier (e.g., `Lv. 127 · T3`). All detailed mob scaling
-info (stat breakdown, tier abilities, scaling axes) is surfaced through Jade/WTHIT
-overlays when looking at mobs, and via the `/tribulation info` and `/tribulation debug`
-commands.
+Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `hud.enabled` client config option.
 
 **Tier Threshold Icons (set of 5):**
 ```
@@ -325,8 +298,8 @@ Part of the rfizzle mod suite:
 2. One-paragraph summary
 3. Feature list with headers (Three-Axis Scaling, Tier Abilities, Zombie Variants, Boss Scaling, Death Penalties, Rewards)
 4. Screenshot gallery (3–5 images)
-5. Requirements section (Fabric Loader, Fabric API, Cloth Config)
-6. Optional dependencies (Jade/WTHIT)
+5. Requirements section (Fabric Loader, Fabric API — no other required dependencies)
+6. Optional integrations (ModMenu, Jade/WTHIT, EMI/REI/JEI)
 7. Links to companion mods
 
 **Screenshot Standards:**
@@ -376,4 +349,4 @@ All four share:
 - Pixel art logo style (Gemini-generated)
 - Same website structural pattern (hero → features → config → commands)
 - MIT license
-- Optional Jade/WTHIT, EMI/REI/JEI, ModMenu, Cloth Config integrations
+- Optional Jade/WTHIT, EMI/REI/JEI, ModMenu integrations

@@ -37,3 +37,9 @@ _site/
 # stray runtime artifacts
 replay_pid*.log
 hs_err_pid*.log
+
+# glyph render output — the .glyph source is committed in art/glyphs/, but the
+# master PNG ships in the asset resource tree, so any PNG rendered into
+# art/glyphs/ is throwaway (previews land in /tmp).
+art/glyphs/*.png
+art/glyphs/*.png.mcmeta

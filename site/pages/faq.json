@@ -23,7 +23,7 @@
             },
             {
               "q": "How does scaling work with multiple players nearby?",
-              "a": "Each mob scales off the <strong class='text-bone'>nearest player</strong> at spawn time. Difficulty level is per-player and tracked individually, so a veteran with hundreds of hours doesn't drag a brand-new player's nearby mobs up to level 250 unless that veteran is the closest player when the mob spawns. Distance-from-spawn and height bonuses are computed from the mob's own location, independent of who's nearby."
+              "a": "It depends on <code class='text-accent2'>general.scalingMode</code>. The default <strong class='text-bone'>NEAREST</strong> scales each mob off the closest player at spawn time, so a veteran with hundreds of hours doesn't drag a brand-new player's nearby mobs up to level 250 unless that veteran is the closest player when the mob spawns. <strong class='text-bone'>AVERAGE</strong> uses the mean level of every player in range, and <strong class='text-bone'>MAX</strong> uses the highest — both better suited to co-op groups that want a shared difficulty. Difficulty level is per-player and tracked individually; distance-from-spawn and height bonuses are always computed from the mob's own location, independent of who's nearby."
             },
             {
               "q": "Does Tribulation scale modded mobs?",

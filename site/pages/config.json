@@ -31,13 +31,14 @@
           "rows": [
             ["<code class='text-accent2 whitespace-nowrap'>maxLevel</code>", "int", "250", "Maximum player difficulty level"],
             ["<code class='text-accent2 whitespace-nowrap'>levelUpTicks</code>", "int", "72000", "Ticks of playtime per level (72000 = 1 hour)"],
-            ["<code class='text-accent2 whitespace-nowrap'>mobDetectionRange</code>", "double", "32.0", "Range (blocks) to find nearest player for scaling"],
-            ["<code class='text-accent2 whitespace-nowrap'>excludedEntities</code>", "string[]", "[]", "Entity IDs exempt from all scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>mobDetectionRange</code>", "double", "32.0", "Range (blocks) to find the player(s) that drive a mob's scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>scalingMode</code>", "enum", "NEAREST", "Which player level drives a mob when several are in range: <code class='text-accent2'>NEAREST</code>, <code class='text-accent2'>AVERAGE</code>, or <code class='text-accent2'>MAX</code>"],
+            ["<code class='text-accent2 whitespace-nowrap'>excludedEntities</code>", "string[]", "[\"the_bumblezone:cosmic_crystal_entity\"]", "Entity IDs exempt from all scaling"],
             ["<code class='text-accent2 whitespace-nowrap'>notifyLevelUp</code>", "boolean", "true", "Show chat message on level up"],
             ["<code class='text-accent2 whitespace-nowrap'>notifyLevelUpShowTier</code>", "boolean", "true", "Include tier info in level-up notification"]
           ]
         },
-        { "type": "code", "small": true, "code": "{\n  \"general\": {\n    \"maxLevel\": 250,\n    \"levelUpTicks\": 72000,\n    \"mobDetectionRange\": 32.0,\n    \"excludedEntities\": [],\n    \"notifyLevelUp\": true,\n    \"notifyLevelUpShowTier\": true\n  }\n}" }
+        { "type": "code", "small": true, "code": "{\n  \"general\": {\n    \"maxLevel\": 250,\n    \"levelUpTicks\": 72000,\n    \"mobDetectionRange\": 32.0,\n    \"scalingMode\": \"NEAREST\",\n    \"excludedEntities\": [\"the_bumblezone:cosmic_crystal_entity\"],\n    \"notifyLevelUp\": true,\n    \"notifyLevelUpShowTier\": true\n  }\n}" }
       ]
     },
     {
@@ -181,6 +182,21 @@
             ["<code class='text-accent2 whitespace-nowrap'>soulboundEnchantment</code>", "string", "\"tribulation:soulbound\"", "Enchantment ID that protects items"],
             ["<code class='text-accent2 whitespace-nowrap'>destroyXp</code>", "boolean", "false", "Also destroy XP on death"],
             ["<code class='text-accent2 whitespace-nowrap'>respectKeepInventory</code>", "boolean", "true", "Skip destruction if keepInventory is on"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "totems",
+      "title": "totems",
+      "intro": "How a Totem of Undying interacts with the death penalties. By default a totem fully shields you from both.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>countsAsDeathRelief</code>", "boolean", "false", "Apply Death Relief level loss when a totem saves you"],
+            ["<code class='text-accent2 whitespace-nowrap'>protectsHearts</code>", "boolean", "true", "Shield Hardcore Hearts loss when a totem saves you; set false to take the penalty anyway"]
           ]
         }
       ]

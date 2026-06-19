@@ -20,6 +20,7 @@
     "config.tribulation.general.max_level": "Max Level",
     "config.tribulation.general.level_up_ticks": "Level Up Ticks",
     "config.tribulation.general.mob_detection_range": "Mob Detection Range",
+    "config.tribulation.general.scaling_mode": "Multiplayer Scaling Mode",
     "config.tribulation.general.notify_level_up": "Notify on Level Up",
     "config.tribulation.general.notify_level_up_show_tier": "Show Tier in Level Up Message",
 
@@ -147,6 +148,10 @@
     "config.tribulation.soul_inventory.soulbound_enchantment": "Soulbound Enchantment ID",
     "config.tribulation.soul_inventory.destroy_xp": "Destroy XP on Death",
     "config.tribulation.soul_inventory.respect_keep_inventory": "Respect keepInventory Gamerule",
+
+    "config.tribulation.category.totems": "Totems",
+    "config.tribulation.totems.counts_as_death_relief": "Totem Pop Counts as Death Relief",
+    "config.tribulation.totems.protects_hearts": "Totem Protects Hardcore Hearts",
 
     "config.tribulation.category.armor": "Armor Equipment",
     "config.tribulation.armor.enabled": "Enabled",

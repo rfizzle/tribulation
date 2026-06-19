@@ -35,6 +35,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addShards(builder, entry, current);
             addHardcoreHearts(builder, entry, current);
             addSoulInventory(builder, entry, current);
+            addTotems(builder, entry, current);
             addArmorEquipment(builder, entry, current);
             addSpecialZombies(builder, entry, current);
             addBosses(builder, entry, current);
@@ -69,6 +70,13 @@ public final class ModMenuIntegration implements ModMenuApi {
                         config.general.mobDetectionRange)
                 .setDefaultValue(32.0).setMin(0.0)
                 .setSaveConsumer(v -> config.general.mobDetectionRange = v)
+                .build());
+        cat.addEntry(entry.startSelector(
+                        Component.translatable("config.tribulation.general.scaling_mode"),
+                        TribulationConfig.ScalingMode.values(),
+                        config.general.scalingMode)
+                .setDefaultValue(TribulationConfig.ScalingMode.NEAREST)
+                .setSaveConsumer(v -> config.general.scalingMode = v)
                 .build());
         cat.addEntry(entry.startBooleanToggle(
                         Component.translatable("config.tribulation.general.notify_level_up"),
@@ -465,6 +473,24 @@ public final class ModMenuIntegration implements ModMenuApi {
                         si.respectKeepInventory)
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> si.respectKeepInventory = v)
+                .build());
+    }
+
+    private static void addTotems(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.totems"));
+        TribulationConfig.Totems totems = config.totems;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.totems.counts_as_death_relief"),
+                        totems.countsAsDeathRelief)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> totems.countsAsDeathRelief = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.totems.protects_hearts"),
+                        totems.protectsHearts)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> totems.protectsHearts = v)
                 .build());
     }
 

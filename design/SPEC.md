@@ -2,7 +2,7 @@
 
 Minecraft 1.21.1 Fabric mod. Difficulty overhaul: formula-driven mob scaling and opt-in death penalties.
 
-**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. Only the genuinely mod-specific visuals are custom pixel art, authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept beside the masters in `art/glyphs/`): the `heart_fragment`/`heart_fragment_overlay` item texture and the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier). The `shatter_shard` item currently reuses the vanilla `minecraft:item/prismarine_shard` texture as a placeholder; a bespoke `/glyph` shard texture is planned. The mod registers no custom blocks and no custom `SoundEvent`s — every cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shard, player level-up for the fragment), because synthesizing a bespoke sound would only make these one-shot feedbacks feel artificial. Custom synthesized cues via `/sfx` (concord `design/DESIGN-SYSTEM.md` §9) would be added only where a sound benefits from its own identity; nothing in the shipped feature set crosses that bar. Scaled-mob visual identity (Big/Speed zombies) reuses vanilla rendering: Big zombies drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
+**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. Only the genuinely mod-specific visuals are custom pixel art, authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept in `art/glyphs/`): the `heart_fragment` and `shatter_shard` item textures and the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier). The mod registers no custom blocks and no custom `SoundEvent`s — every cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shard, player level-up for the fragment), because synthesizing a bespoke sound would only make these one-shot feedbacks feel artificial. Custom synthesized cues via `/sfx` (concord `design/DESIGN-SYSTEM.md` §9) would be added only where a sound benefits from its own identity; nothing in the shipped feature set crosses that bar. Scaled-mob visual identity (Big/Speed zombies) reuses vanilla rendering: Big zombies drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
 
 ---
 
@@ -333,7 +333,7 @@ A rare mob drop that voluntarily lowers difficulty.
 
 ### Item
 
-`tribulation:shatter_shard` — stacks to 16, Uncommon rarity, enchantment-glint override on. Currently reuses the vanilla `minecraft:item/prismarine_shard` texture as a placeholder; a bespoke 16×16 `/glyph` texture with its `.glyph` source under `art/glyphs/` is planned. No custom model layering.
+`tribulation:shatter_shard` — stacks to 16, Uncommon rarity, enchantment-glint override on. Custom 16×16 texture (`textures/item/shatter_shard.png`) with its `.glyph` source at `art/glyphs/shatter-shard-32.glyph`. Flat `item/generated` model, no custom layering.
 
 ### Scope
 
@@ -353,7 +353,7 @@ Permanent max-health loss on death, recoverable with Heart Fragments.
 
 ### Item & Recipe
 
-`tribulation:heart_fragment` — stacks to 16, Rare rarity, glint override on. Custom texture with an overlay layer (`heart_fragment.png` + `heart_fragment_overlay.png`; both a flat and a layered model exist). Crafted from a plus-shape of 4 Shatter Shards around a central golden apple:
+`tribulation:heart_fragment` — stacks to 16, Rare rarity, glint override on. Custom 16×16 texture (`textures/item/heart_fragment.png`) with its `.glyph` source at `art/glyphs/heart-fragment-32.glyph`. Flat `item/generated` model. Crafted from a plus-shape of 4 Shatter Shards around a central golden apple:
 ```
  S
 SAS     S = tribulation:shatter_shard, A = minecraft:golden_apple → 1 heart_fragment

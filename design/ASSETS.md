@@ -21,16 +21,14 @@
 
 | Asset | `.glyph` source | Final asset |
 |---|---|---|
-| HUD difficulty badge (tier-tinted skull) | **MISSING** | `assets/tribulation/textures/gui/hud_icon.png` (32×32, blitted at 16×16) |
-| Heart Fragment item | **MISSING** | `assets/tribulation/textures/item/heart_fragment.png` |
-| Heart Fragment overlay | **MISSING** | `assets/tribulation/textures/item/heart_fragment_overlay.png` |
-| Shatter Shard item | **MISSING** | none — model reuses vanilla `minecraft:item/prismarine_shard` (placeholder; bespoke texture to be created) |
+| HUD difficulty badge (tier-tinted skull) | `art/glyphs/hud-skull-32.glyph` | `assets/tribulation/textures/gui/hud_icon.png` (32×32, blitted at 16×16) |
+| Heart Fragment item | `art/glyphs/heart-fragment-32.glyph` | `assets/tribulation/textures/item/heart_fragment.png` |
+| Shatter Shard item | `art/glyphs/shatter-shard-32.glyph` | `assets/tribulation/textures/item/shatter_shard.png` |
 
 ## Not yet created
 
 | Asset | Source | Final asset |
 |---|---|---|
-| Shatter Shard item texture | `/glyph` | — (replaces the vanilla `prismarine_shard` placeholder) |
 | Recipe browser icon (EMI/REI/JEI tab) | `/glyph` | — (planned) |
 | Tier threshold icons (set of 5) | `/glyph` | — (planned) |
 | Death penalty icons (set of 4) | `/glyph` | — (planned) |

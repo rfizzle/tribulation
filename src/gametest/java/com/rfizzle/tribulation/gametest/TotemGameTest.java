@@ -12,8 +12,12 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -219,6 +223,30 @@ public class TotemGameTest implements FabricGameTest {
             cfg.totems.protectsHearts = savedProtect;
             player.discard();
         }
+    }
+
+    /**
+     * Regression for the totem mixin {@code ClassCastException}: {@code checkTotemDeathProtection}
+     * returns a primitive {@code boolean} in 1.21.1, and it runs for every {@link
+     * net.minecraft.world.entity.LivingEntity}, not just players. A non-player mob popping a totem
+     * must route through the mixin's {@code RETURN} injection without crashing.
+     */
+    @GameTest(template = "tribulation:empty_3x3")
+    public void totemPop_onNonPlayerEntity_doesNotCrash(GameTestHelper helper) {
+        Zombie zombie = helper.spawn(EntityType.ZOMBIE, BlockPos.ZERO);
+        zombie.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.TOTEM_OF_UNDYING));
+
+        DamageSource lethal = zombie.damageSources().generic();
+        // Enough to be lethal; the totem should intercept and the mixin RETURN handler must not throw.
+        boolean survived = zombie.hurt(lethal, 1000.0f);
+
+        helper.assertTrue(survived, "Lethal hit should register as damage taken");
+        helper.assertTrue(zombie.isAlive(), "Zombie should survive via totem pop");
+        helper.assertTrue(
+                zombie.getItemInHand(InteractionHand.OFF_HAND).isEmpty(),
+                "Totem should have been consumed");
+        zombie.discard();
+        helper.succeed();
     }
 
     @SuppressWarnings("removal")

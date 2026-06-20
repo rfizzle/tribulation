@@ -295,6 +295,27 @@
               "note": "Client config: <code class='text-accent2'>hud.enabled</code>, <code class='text-accent2'>hud.anchor</code>, <code class='text-accent2'>hud.offsetX</code>, <code class='text-accent2'>hud.offsetY</code>"
             }
           ]
+        },
+        {
+          "type": "sub",
+          "id": "statistics",
+          "title": "Statistics",
+          "intro": "Tribulation registers six custom statistics that track your difficulty milestones. They are stored with vanilla's player statistics and are viewable in-game from the <span class='text-bone'>Statistics</span> screen (Esc → Statistics → Custom), so progress survives across sessions just like any vanilla stat.",
+          "blocks": [
+            {
+              "type": "table",
+              "nowrapHeaders": true,
+              "headers": ["Statistic", "Description"],
+              "rows": [
+                ["<span class='text-bone'>Highest level reached</span>", "The highest Tribulation level you have ever reached (monotonic — never decreases, even after death relief or shatter shards)"],
+                ["<span class='text-bone'>Levels lost to death relief</span>", "Total levels removed by the Death Relief penalty on death"],
+                ["<span class='text-bone'>Shatter Shards used</span>", "Number of Shatter Shards you have consumed to lower your level"],
+                ["<span class='text-bone'>Half-hearts lost</span>", "Total half-hearts removed by the Hardcore Hearts penalty"],
+                ["<span class='text-bone'>Half-hearts restored</span>", "Total half-hearts recovered with Heart Fragments"],
+                ["<span class='text-bone'>Tier-5 scaled mobs killed</span>", "Number of mobs you have killed while they were scaled to the maximum tier"]
+              ]
+            }
+          ]
         }
       ]
     }

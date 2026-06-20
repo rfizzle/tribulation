@@ -52,6 +52,11 @@ At 5 level thresholds (50/100/150/200/250), mobs unlock special behaviors:
 - **Shatter Shards** — Rare mob drops (0.5%) that reduce your level by 5 on use
 - **Hardcore Hearts** *(opt-in)* — Permanently lose max health on each death; restore with Heart Fragments
 - **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment
+- **Totem interaction** — Configure how a popped Totem of Undying interacts with the penalties via the `totems` section: `countsAsDeathRelief` (whether a totem pop still applies the Death Relief level loss) and `protectsHearts` (whether a totem pop shields you from the Hardcore Hearts loss)
+
+### Statistics
+
+Tribulation registers six custom statistics (highest level reached, levels lost to death relief, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
 
 ### Additional Features
 
@@ -95,7 +100,7 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `statCaps`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `bosses`, `tiers`, `abilities`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `hud`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

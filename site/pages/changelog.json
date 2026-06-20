@@ -9,6 +9,27 @@
   "width": "4xl",
   "sections": [
     {
+      "id": "unreleased",
+      "title": "Unreleased",
+      "blocks": [
+        {
+          "type": "prose",
+          "html": ["Changes merged since v0.1.1 and not yet cut into a tagged release. The next release will gather these under its version heading."]
+        },
+        {
+          "type": "list",
+          "items": [
+            "<span class='text-bone'>Tier-driven mob armor</span> — scaled mobs equip tier-appropriate armor, with a loot-mod opt-in API for drops (<a href='https://github.com/rfizzle/tribulation/pull/37' class='text-accent hover:text-accent2 underline'>#37</a>)",
+            "<span class='text-bone'>Tier-driven mob weapons</span> — scaled mobs equip tier-appropriate weapons and enchantments, configured via the <code class='text-accent2'>weaponEquipment</code> section (<a href='https://github.com/rfizzle/tribulation/pull/40' class='text-accent hover:text-accent2 underline'>#40</a>)",
+            "<span class='text-bone'>Custom statistics</span> — six difficulty-milestone stats (highest level reached, levels lost to death relief, Shatter Shards used, half-hearts lost, half-hearts restored, Tier-5 mobs killed) viewable in the vanilla Statistics screen (<a href='https://github.com/rfizzle/tribulation/pull/69' class='text-accent hover:text-accent2 underline'>#69</a>)",
+            "<span class='text-bone'>Totem death-penalty hooks</span> — a popped Totem of Undying can now optionally count as death relief and/or protect Hardcore Hearts via the <code class='text-accent2'>totems</code> config (<a href='https://github.com/rfizzle/tribulation/pull/68' class='text-accent hover:text-accent2 underline'>#68</a>)",
+            "<span class='text-bone'>Multiplayer scaling modes</span> — <code class='text-accent2'>AVERAGE</code> and <code class='text-accent2'>MAX</code> join <code class='text-accent2'>NEAREST</code> for choosing which player level drives a mob when several are in range (<a href='https://github.com/rfizzle/tribulation/pull/70' class='text-accent hover:text-accent2 underline'>#70</a>)",
+            "<span class='text-bone'>Public API Standard v1</span> — a stable read-only API surface (<code class='text-accent2'>com.rfizzle.tribulation.api</code>) plus HUD coordination accessors for suite integration (<a href='https://github.com/rfizzle/tribulation/pull/62' class='text-accent hover:text-accent2 underline'>#62</a>)"
+          ]
+        }
+      ]
+    },
+    {
       "id": "v0-1-1",
       "title": "v0.1.1 <span class='text-smoke text-base font-normal'>— May 17, 2026</span>",
       "blocks": [

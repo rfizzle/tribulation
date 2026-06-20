@@ -37,6 +37,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addSoulInventory(builder, entry, current);
             addTotems(builder, entry, current);
             addArmorEquipment(builder, entry, current);
+            addWeaponEquipment(builder, entry, current);
             addSpecialZombies(builder, entry, current);
             addBosses(builder, entry, current);
             addXpAndLoot(builder, entry, current);
@@ -653,6 +654,31 @@ public final class ModMenuIntegration implements ModMenuApi {
                         ae.toughnessCeiling)
                 .setDefaultValue(15.0).setMin(0.0)
                 .setSaveConsumer(v -> ae.toughnessCeiling = v)
+                .build());
+    }
+
+    private static void addWeaponEquipment(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.weapon"));
+        TribulationConfig.WeaponEquipment we = config.weaponEquipment;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.weapon.enabled"),
+                        we.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> we.enabled = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.weapon.drop_chance"),
+                        we.weaponDropChance)
+                .setDefaultValue(0.0).setMin(0.0).setMax(2.0)
+                .setSaveConsumer(v -> we.weaponDropChance = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.weapon.damage_ceiling"),
+                        we.damageCeiling)
+                .setDefaultValue(20.0).setMin(0.0)
+                .setSaveConsumer(v -> we.damageCeiling = v)
                 .build());
     }
 }

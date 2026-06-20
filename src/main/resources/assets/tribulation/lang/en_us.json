@@ -160,6 +160,11 @@
     "config.tribulation.armor.armor_ceiling": "Max Combined Armor",
     "config.tribulation.armor.toughness_ceiling": "Max Combined Toughness",
 
+    "config.tribulation.category.weapon": "Weapon Equipment",
+    "config.tribulation.weapon.enabled": "Enabled",
+    "config.tribulation.weapon.drop_chance": "Weapon Drop Chance",
+    "config.tribulation.weapon.damage_ceiling": "Max Weapon Damage",
+
     "item.tribulation.heart_fragment": "Heart Fragment",
     "item.tribulation.heart_fragment.tooltip": "Right-click to restore a lost heart.",
     "item.tribulation.heart_fragment.used": "Restored %s hearts (%s/%s max HP)",

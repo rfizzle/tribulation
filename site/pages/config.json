@@ -217,8 +217,12 @@
             ["<code class='text-accent2 whitespace-nowrap'>damageCap</code>", "double", "3.75", "Max time-axis damage factor"],
             ["<code class='text-accent2 whitespace-nowrap'>speedRate</code>", "double", "0.0012", "Speed factor per level"],
             ["<code class='text-accent2 whitespace-nowrap'>speedCap</code>", "double", "0.30", "Max time-axis speed factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>followRangeRate</code>", "double", "0.010", "Follow range factor per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>followRangeCap</code>", "double", "1.0", "Max time-axis follow range factor"],
             ["<code class='text-accent2 whitespace-nowrap'>armorRate</code>", "double", "0.032", "Armor factor per level"],
-            ["<code class='text-accent2 whitespace-nowrap'>armorCap</code>", "double", "8.0", "Max armor factor"]
+            ["<code class='text-accent2 whitespace-nowrap'>armorCap</code>", "double", "8.0", "Max armor factor"],
+            ["<code class='text-accent2 whitespace-nowrap'>toughnessRate</code>", "double", "0.024", "Toughness factor per level"],
+            ["<code class='text-accent2 whitespace-nowrap'>toughnessCap</code>", "double", "6.0", "Max toughness factor"]
           ]
         },
         { "type": "code", "small": true, "code": "{\n  \"scaling\": {\n    \"zombie\": {\n      \"healthRate\": 0.010, \"healthCap\": 2.50,\n      \"damageRate\": 0.015, \"damageCap\": 3.75,\n      \"speedRate\": 0.0012, \"speedCap\": 0.30,\n      \"armorRate\": 0.032, \"armorCap\": 8.0\n    }\n  }\n}" }

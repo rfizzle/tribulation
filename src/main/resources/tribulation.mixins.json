@@ -9,7 +9,10 @@
         "LivingEntityExperienceMixin",
         "LivingEntityTotemMixin",
         "MobAbilityMixin",
-        "SoulInventoryMixin"
+        "SoulInventoryMixin",
+        "TrialSpawnerAccessor",
+        "TrialSpawnerDataAccessor",
+        "TrialSpawnerMixin"
     ],
     "injectors": {
         "defaultRequire": 1

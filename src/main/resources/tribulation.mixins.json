@@ -10,8 +10,8 @@
         "LivingEntityTotemMixin",
         "MobAbilityMixin",
         "SoulInventoryMixin",
-        "TrialSpawnerAccessor",
         "TrialSpawnerDataAccessor",
+        "TrialSpawnerDataMixin",
         "TrialSpawnerMixin"
     ],
     "injectors": {

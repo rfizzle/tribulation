@@ -674,4 +674,90 @@ class TribulationConfigTest {
         assertEquals("meridian:tether", reloaded.soulInventory.soulboundEnchantment);
         assertTrue(reloaded.soulInventory.destroyXp);
     }
+
+    @Test
+    void defaultConfig_trialSpawnerHasValidDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertNotNull(cfg.trialSpawner);
+        // Scaling on by default so trial chambers participate; ominous upgrade off
+        // so vanilla ominous behaviour is unchanged unless opted in.
+        assertTrue(cfg.trialSpawner.enabled);
+        assertNotNull(cfg.trialSpawner.ominousUpgrade);
+        assertFalse(cfg.trialSpawner.ominousUpgrade.enabled);
+        assertEquals(0.10f, cfg.trialSpawner.ominousUpgrade.chance);
+        assertEquals(3, cfg.trialSpawner.ominousUpgrade.minimumTier);
+    }
+
+    @Test
+    void load_missingTrialSpawner_fillsDefaults(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, "{}");
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertNotNull(loaded.trialSpawner);
+        assertTrue(loaded.trialSpawner.enabled);
+        assertNotNull(loaded.trialSpawner.ominousUpgrade);
+        assertFalse(loaded.trialSpawner.ominousUpgrade.enabled);
+    }
+
+    @Test
+    void load_partialTrialSpawner_fillsMissingOminousUpgrade(@TempDir Path tmp) throws IOException {
+        // User toggles the master switch off but omits the nested ominousUpgrade
+        // block — we should preserve their override and fill the rest.
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "trialSpawner": { "enabled": false } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertFalse(loaded.trialSpawner.enabled);
+        assertNotNull(loaded.trialSpawner.ominousUpgrade);
+        assertEquals(0.10f, loaded.trialSpawner.ominousUpgrade.chance);
+        assertEquals(3, loaded.trialSpawner.ominousUpgrade.minimumTier);
+    }
+
+    @Test
+    void load_trialSpawnerOminousChance_clampedToUnitInterval(@TempDir Path tmp) throws IOException {
+        Path tooHigh = tmp.resolve("high.json");
+        Files.writeString(tooHigh, """
+                { "trialSpawner": { "ominousUpgrade": { "chance": 5.0 } } }
+                """);
+        assertEquals(1.0f, TribulationConfig.load(tooHigh).trialSpawner.ominousUpgrade.chance);
+
+        Path tooLow = tmp.resolve("low.json");
+        Files.writeString(tooLow, """
+                { "trialSpawner": { "ominousUpgrade": { "chance": -2.0 } } }
+                """);
+        assertEquals(0.0f, TribulationConfig.load(tooLow).trialSpawner.ominousUpgrade.chance);
+    }
+
+    @Test
+    void load_trialSpawnerMinimumTier_clampedToNonNegative(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "trialSpawner": { "ominousUpgrade": { "minimumTier": -4 } } }
+                """);
+
+        assertEquals(0, TribulationConfig.load(path).trialSpawner.ominousUpgrade.minimumTier);
+    }
+
+    @Test
+    void roundTrip_trialSpawnerPreservesValues(@TempDir Path tmp) {
+        Path path = tmp.resolve("tribulation.json");
+        TribulationConfig original = new TribulationConfig();
+        original.trialSpawner.enabled = false;
+        original.trialSpawner.ominousUpgrade.enabled = true;
+        original.trialSpawner.ominousUpgrade.chance = 0.5f;
+        original.trialSpawner.ominousUpgrade.minimumTier = 4;
+        original.save(path);
+
+        TribulationConfig reloaded = TribulationConfig.load(path);
+
+        assertFalse(reloaded.trialSpawner.enabled);
+        assertTrue(reloaded.trialSpawner.ominousUpgrade.enabled);
+        assertEquals(0.5f, reloaded.trialSpawner.ominousUpgrade.chance);
+        assertEquals(4, reloaded.trialSpawner.ominousUpgrade.minimumTier);
+    }
 }

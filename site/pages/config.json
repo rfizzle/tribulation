@@ -382,6 +382,25 @@
       ]
     },
     {
+      "id": "trial-spawner",
+      "title": "trialSpawner",
+      "intro": "Scales mobs spawned by trial spawners using the levels of the players the spawner has detected, rather than the proximity scan used for natural spawns. An optional, off-by-default ominous upgrade can turn high-tier spawners ominous without a Bad Omen effect.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Apply Tribulation scaling (attributes, abilities, equipment) to trial-spawned mobs. When false, trial spawners behave exactly like vanilla."],
+            ["<code class='text-accent2 whitespace-nowrap'>ominousUpgrade.enabled</code>", "boolean", "false", "Allow activated spawners to roll into ominous mode with no Bad Omen effect."],
+            ["<code class='text-accent2 whitespace-nowrap'>ominousUpgrade.chance</code>", "float", "0.1", "Per-activation roll chance [0.0, 1.0] once the tier gate is met."],
+            ["<code class='text-accent2 whitespace-nowrap'>ominousUpgrade.minimumTier</code>", "int", "3", "Lowest tier (from detected-player level) at which the upgrade can roll."]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"trialSpawner\": {\n    \"enabled\": true,\n    \"ominousUpgrade\": {\n      \"enabled\": false,\n      \"chance\": 0.1,\n      \"minimumTier\": 3\n    }\n  }\n}" }
+      ]
+    },
+    {
       "id": "abilities",
       "title": "abilities",
       "intro": "Toggle individual tier-gated abilities on or off. All default to <code class='text-accent2'>true</code>.",

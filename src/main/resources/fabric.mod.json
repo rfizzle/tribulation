@@ -19,7 +19,8 @@
             "com.rfizzle.tribulation.gametest.APIGameTest",
             "com.rfizzle.tribulation.gametest.ArmorEquipmentGameTest",
             "com.rfizzle.tribulation.gametest.StatisticsGameTest",
-            "com.rfizzle.tribulation.gametest.WeaponEquipmentGameTest"
+            "com.rfizzle.tribulation.gametest.WeaponEquipmentGameTest",
+            "com.rfizzle.tribulation.gametest.TrialSpawnerGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
         "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],

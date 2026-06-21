@@ -507,7 +507,9 @@ public final class TribulationCommand {
                     world.getMoonPhase(), rawMoonFactor));
         } else if (cfg.moonPhaseScaling.enabled) {
             String reason;
-            if (world.isDay()) {
+            if (cfg.moonPhaseScaling.maxBonus <= 0) {
+                reason = "maxBonus is 0";
+            } else if (world.isDay()) {
                 reason = "day";
             } else if (!world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling()) {
                 reason = "no daylight cycle";

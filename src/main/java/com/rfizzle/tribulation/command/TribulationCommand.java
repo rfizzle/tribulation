@@ -251,8 +251,11 @@ public final class TribulationCommand {
         double rawHeightFactor = ScalingEngine.heightAppliesInDimension(world, cfg.heightScaling)
                 ? ScalingEngine.computeHeightFactor(target.getY(), cfg.heightScaling)
                 : 0.0;
+        double rawMoonFactor = ScalingEngine.moonAppliesAt(world, target, cfg.moonPhaseScaling)
+                ? ScalingEngine.computeMoonFactor(world.getMoonPhase(), cfg.moonPhaseScaling.maxBonus)
+                : 0.0;
 
-        for (String line : formatDebug(target, world, cfg, level, effectiveLevel, refScaling, horizDist, rawDistFactor, rawHeightFactor)) {
+        for (String line : formatDebug(target, world, cfg, level, effectiveLevel, refScaling, horizDist, rawDistFactor, rawHeightFactor, rawMoonFactor)) {
             src.sendSuccess(() -> Component.literal(line), false);
         }
         return Command.SINGLE_SUCCESS;
@@ -474,7 +477,8 @@ public final class TribulationCommand {
             MobScaling refScaling,
             double horizontalDistance,
             double rawDistanceFactor,
-            double rawHeightFactor
+            double rawHeightFactor,
+            double rawMoonFactor
     ) {
         List<String> lines = new ArrayList<>();
         lines.add("=== Debug: " + target.getGameProfile().getName() + " ===");
@@ -497,6 +501,24 @@ public final class TribulationCommand {
                 "Height offset: %+.1f blocks  →  factor %+.3f",
                 heightDelta, rawHeightFactor));
 
+        if (rawMoonFactor > 0) {
+            lines.add(String.format(Locale.ROOT,
+                    "Moon phase: %d  →  factor %+.3f",
+                    world.getMoonPhase(), rawMoonFactor));
+        } else if (cfg.moonPhaseScaling.enabled) {
+            String reason;
+            if (world.isDay()) {
+                reason = "day";
+            } else if (!world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling()) {
+                reason = "no daylight cycle";
+            } else if (cfg.moonPhaseScaling.surfaceOnly && target.getY() < cfg.moonPhaseScaling.surfaceY) {
+                reason = String.format(Locale.ROOT, "below surface (Y < %.0f)", cfg.moonPhaseScaling.surfaceY);
+            } else {
+                reason = "new moon";
+            }
+            lines.add("Moon: (inactive - " + reason + ")");
+        }
+
         lines.add("Time factors (reference mob: zombie):");
         for (String attr : ScalingEngine.ALL_ATTRIBUTES) {
             double rate = ScalingEngine.rateFor(attr, refScaling);
@@ -504,7 +526,7 @@ public final class TribulationCommand {
             double timeFactor = ScalingEngine.computeTimeFactor(playerLevel, rate, cap);
             boolean positionScaled = ScalingEngine.isPositionScaled(attr);
             String positionNote = positionScaled
-                    ? String.format(Locale.ROOT, ", +dist %+.3f, +height %+.3f", rawDistanceFactor, rawHeightFactor)
+                    ? String.format(Locale.ROOT, ", +dist %+.3f, +height %+.3f, +moon %+.3f", rawDistanceFactor, rawHeightFactor, rawMoonFactor)
                     : " (time only)";
             lines.add(String.format(Locale.ROOT,
                     "  %-12s rate=%.4f cap=%.2f  →  time %+.3f%s",

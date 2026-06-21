@@ -90,14 +90,14 @@ class ScalingEngineAttributeBridgeTest {
     }
 
     @Test
-    void allThreeAxes_compound_asAddMultipliedBaseSum() {
+    void allFourAxes_compound_asAddMultipliedBaseSum() {
         AttributeMap attrs = new AttributeMap(Zombie.createAttributes().build());
         TribulationConfig cfg = new TribulationConfig();
         MobScaling zombie = cfg.scaling.get("zombie");
 
-        // Level 100 + distance factor 0.5 + height factor 0.2 = time 1.0, dist 0.5, height 0.2.
+        // Level 100 + distance factor 0.5 + height factor 0.2 + moon 0.1 = time 1.0, dist 0.5, height 0.2, moon 0.1.
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_HEALTH, 100, 0.5, 0.2, zombie, cfg.statCaps);
+                ScalingEngine.ATTR_HEALTH, 100, 0.5, 0.2, 0.1, zombie, cfg.statCaps);
 
         AttributeInstance hp = attrs.getInstance(Attributes.MAX_HEALTH);
         hp.addPermanentModifier(new AttributeModifier(
@@ -109,8 +109,11 @@ class ScalingEngineAttributeBridgeTest {
         hp.addPermanentModifier(new AttributeModifier(
                 ScalingEngine.modifierId(ScalingEngine.AXIS_HEIGHT, ScalingEngine.ATTR_HEALTH),
                 f.heightFactor(), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        hp.addPermanentModifier(new AttributeModifier(
+                ScalingEngine.modifierId(ScalingEngine.AXIS_MOON, ScalingEngine.ATTR_HEALTH),
+                f.moonFactor(), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
 
-        // 20 * (1 + 1.0 + 0.5 + 0.2) = 54.
-        assertEquals(54.0, hp.getValue(), EPS);
+        // 20 * (1 + 1.0 + 0.5 + 0.2 + 0.1) = 56.
+        assertEquals(56.0, hp.getValue(), EPS);
     }
 }

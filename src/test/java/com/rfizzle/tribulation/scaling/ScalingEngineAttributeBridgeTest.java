@@ -54,7 +54,7 @@ class ScalingEngineAttributeBridgeTest {
 
         // Pure math: at level 250, time factor is capped at healthCap (2.5).
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_HEALTH, 250, 0.0, 0.0, zombie, cfg.statCaps);
+                ScalingEngine.ATTR_HEALTH, 250, 0.0, 0.0, 0.0, zombie, cfg.statCaps);
         assertEquals(2.5, f.timeFactor(), EPS);
 
         // Apply with the same ID + operation ScalingEngine uses internally.
@@ -76,7 +76,7 @@ class ScalingEngineAttributeBridgeTest {
 
         // Armor uses ADD_VALUE semantics: time factor is in absolute armor points.
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_ARMOR, 250, 0.0, 0.0, zombie, cfg.statCaps);
+                ScalingEngine.ATTR_ARMOR, 250, 0.0, 0.0, 0.0, zombie, cfg.statCaps);
         assertEquals(8.0, f.timeFactor(), EPS);
 
         double baseArmor = attrs.getBaseValue(Attributes.ARMOR);

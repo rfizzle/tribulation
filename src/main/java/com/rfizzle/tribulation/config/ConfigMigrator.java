@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 2;
+    static final int CURRENT_VERSION = 3;
 
     @FunctionalInterface
     interface Migration {
@@ -46,6 +46,12 @@ final class ConfigMigrator {
                 }
                 if (!json.has("soulInventory")) {
                     json.add("soulInventory", new JsonObject());
+                }
+            },
+            // v2 → v3: add trialSpawner section.
+            json -> {
+                if (!json.has("trialSpawner")) {
+                    json.add("trialSpawner", new JsonObject());
                 }
             }
     };

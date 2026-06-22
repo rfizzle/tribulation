@@ -1,0 +1,30 @@
+# tribulation — Threat cue (Big Zombie): heavy sooty dust puff, 16px particle.
+# Low, earthen neutral cloud suggesting mass — distinct from the arcane tier mote
+# and the pale speed streak. Dark sooty rim (m) -> smoke body (s) -> ash lights (a)
+# with a few ink clods (i) for depth.
+size: 16
+
+legend:
+  . transparent
+  m #3a352e   # dark sooty edge
+  s smoke     # #6b6359 smoke body
+  a ash       # #a89f93 ash highlight
+  i ink       # #0a0a0a dense clod
+
+frame:
+  ................
+  ................
+  ................
+  ................
+  .....mmmmmm.....
+  ...mmmmssmmmm...
+  ..mmssssssssmm..
+  .mmsssaaaasssmm.
+  .mmssaaiaiassmm.
+  .mmssaiaiaassmm.
+  .mmssaaiaaassmm.
+  ..mmsssaasssmm..
+  ..mmmmssssmmmm..
+  ....mmmmmmmm....
+  ................
+  ................

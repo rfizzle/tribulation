@@ -35,7 +35,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 4;
+    public int configVersion = 5;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -61,6 +61,7 @@ public class TribulationConfig {
     public WeaponEquipment weaponEquipment = new WeaponEquipment();
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public RaidScaling raidScaling = new RaidScaling();
+    public ThreatParticles threatParticles = new ThreatParticles();
     public Hud hud = new Hud();
 
     public static TribulationConfig load() {
@@ -270,6 +271,8 @@ public class TribulationConfig {
         if (trialSpawner.ominousUpgrade == null) trialSpawner.ominousUpgrade = new TrialSpawnerConfig.OminousUpgrade();
 
         if (raidScaling == null) raidScaling = new RaidScaling();
+
+        if (threatParticles == null) threatParticles = new ThreatParticles();
 
         if (scaling == null) {
             scaling = defaultScaling();
@@ -481,6 +484,15 @@ public class TribulationConfig {
         if (raidScaling.extraWaveCount < 0) {
             Tribulation.LOGGER.warn("raidScaling.extraWaveCount must be >= 0, got {}; clamped to 0", raidScaling.extraWaveCount);
             raidScaling.extraWaveCount = 0;
+        }
+
+        if (threatParticles.particleFrequencyTicks < 1) {
+            Tribulation.LOGGER.warn("threatParticles.particleFrequencyTicks must be >= 1, got {}; clamped to 1", threatParticles.particleFrequencyTicks);
+            threatParticles.particleFrequencyTicks = 1;
+        }
+        if (threatParticles.minimumTier < 0) {
+            Tribulation.LOGGER.warn("threatParticles.minimumTier must be >= 0, got {}; clamped to 0", threatParticles.minimumTier);
+            threatParticles.minimumTier = 0;
         }
 
         for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
@@ -964,6 +976,20 @@ public class TribulationConfig {
             if (!enabled || maxTier < extraWaveTierThreshold) return 0;
             return extraWaveCount;
         }
+    }
+
+    /**
+     * Client-side threat-telegraphing particles. {@code enabled} is the master
+     * off-switch; {@code minimumTier} gates the generic high-tier cue on
+     * non-variant mobs; {@code particleFrequencyTicks} is the mean interval
+     * between emissions (a higher value means rarer particles). Big/Speed
+     * zombie variant cues are not gated by {@code minimumTier} — a visibly
+     * huge low-tier Big Zombie still telegraphs.
+     */
+    public static class ThreatParticles {
+        public boolean enabled = true;
+        public int minimumTier = 4;
+        public int particleFrequencyTicks = 40;
     }
 
     public static class Abilities {

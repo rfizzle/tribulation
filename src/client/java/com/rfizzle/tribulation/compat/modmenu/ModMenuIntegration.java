@@ -44,6 +44,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addXpAndLoot(builder, entry, current);
             addTrialSpawner(builder, entry, current);
             addRaidScaling(builder, entry, current);
+            addThreatParticles(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
                 current.save();
@@ -840,6 +841,31 @@ public final class ModMenuIntegration implements ModMenuApi {
                         rs.extraWaveCount)
                 .setDefaultValue(1).setMin(0)
                 .setSaveConsumer(v -> rs.extraWaveCount = v)
+                .build());
+    }
+
+    private static void addThreatParticles(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.threat_particles"));
+        TribulationConfig.ThreatParticles tp = config.threatParticles;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.threat_particles.enabled"),
+                        tp.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> tp.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.threat_particles.minimum_tier"),
+                        tp.minimumTier)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> tp.minimumTier = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.threat_particles.particle_frequency_ticks"),
+                        tp.particleFrequencyTicks)
+                .setDefaultValue(40).setMin(1)
+                .setSaveConsumer(v -> tp.particleFrequencyTicks = v)
                 .build());
     }
 }

@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 4;
+    static final int CURRENT_VERSION = 5;
 
     @FunctionalInterface
     interface Migration {
@@ -58,6 +58,12 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("raidScaling")) {
                     json.add("raidScaling", new JsonObject());
+                }
+            },
+            // v4 → v5: add threatParticles section.
+            json -> {
+                if (!json.has("threatParticles")) {
+                    json.add("threatParticles", new JsonObject());
                 }
             }
     };

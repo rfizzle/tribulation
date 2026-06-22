@@ -760,4 +760,55 @@ class TribulationConfigTest {
         assertEquals(0.5f, reloaded.trialSpawner.ominousUpgrade.chance);
         assertEquals(4, reloaded.trialSpawner.ominousUpgrade.minimumTier);
     }
+
+    @Test
+    void defaultConfig_threatParticlesHasValidDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertNotNull(cfg.threatParticles);
+        assertTrue(cfg.threatParticles.enabled);
+        assertEquals(4, cfg.threatParticles.minimumTier);
+        assertEquals(40, cfg.threatParticles.particleFrequencyTicks);
+    }
+
+    @Test
+    void roundTrip_preservesThreatParticles(@TempDir Path tmp) {
+        Path path = tmp.resolve("tribulation.json");
+        TribulationConfig original = new TribulationConfig();
+        original.threatParticles.enabled = false;
+        original.threatParticles.minimumTier = 2;
+        original.threatParticles.particleFrequencyTicks = 100;
+        original.save(path);
+
+        TribulationConfig reloaded = TribulationConfig.load(path);
+
+        assertFalse(reloaded.threatParticles.enabled);
+        assertEquals(2, reloaded.threatParticles.minimumTier);
+        assertEquals(100, reloaded.threatParticles.particleFrequencyTicks);
+    }
+
+    @Test
+    void load_missingThreatParticles_fillsDefaults(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, "{}");
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertNotNull(loaded.threatParticles);
+        assertTrue(loaded.threatParticles.enabled);
+        assertEquals(4, loaded.threatParticles.minimumTier);
+        assertEquals(40, loaded.threatParticles.particleFrequencyTicks);
+    }
+
+    @Test
+    void load_threatParticlesOutOfRange_clamped(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "threatParticles": { "minimumTier": -3, "particleFrequencyTicks": 0 } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertEquals(0, loaded.threatParticles.minimumTier);
+        assertEquals(1, loaded.threatParticles.particleFrequencyTicks);
+    }
 }

@@ -6,6 +6,7 @@ import com.rfizzle.tribulation.mixin.CreeperAccessor;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -45,6 +46,22 @@ public final class AbilityManager {
     private static final float CREEPER_CHARGED_CHANCE = 0.25f;
     private static final double SPIDER_LEAP_BONUS = 0.5;
 
+    /**
+     * Scoreboard tags read by the narrow ability mixins and the probe-tooltip
+     * data collector. The tag — not an attribute modifier — is the canonical
+     * "this mob has ability X" signal for abilities expressed through vanilla
+     * mechanics that no attribute can capture (arrow effects, potion type,
+     * roar radius, door breaking, beam charge, infested-block summons).
+     */
+    public static final String TAG_SLOWNESS_ARROWS = "tribulation_slow2";
+    public static final String TAG_POISON_ARROWS = "tribulation_poison2";
+    public static final String TAG_LINGERING_POTIONS = "tribulation_lingering_potions";
+    public static final String TAG_AGGRESSIVE_HEALING = "tribulation_aggro_heal";
+    public static final String TAG_DOOR_BREAKING = "tribulation_door_break";
+    public static final String TAG_GUARDIAN_BEAM = "tribulation_guardian_beam";
+    public static final String TAG_RAVAGER_ROAR = "tribulation_ravager_roar";
+    public static final String TAG_CALL_SLEEPERS = "tribulation_call_sleepers";
+
     private AbilityManager() {}
 
     public static ResourceLocation abilityId(String name) {
@@ -73,6 +90,14 @@ public final class AbilityManager {
                 case "vindicator" -> applyVindicatorAbilities(mob, tier, cfg);
                 case "wither_skeleton" -> applyWitherSkeletonAbilities(mob, tier, cfg);
                 case "piglin" -> applyPiglinAbilities(mob, tier, cfg);
+                case "stray" -> applyStrayAbilities(mob, tier, cfg);
+                case "bogged" -> applyBoggedAbilities(mob, tier, cfg);
+                case "witch" -> applyWitchAbilities(mob, tier, cfg);
+                case "pillager" -> applyPillagerAbilities(mob, tier, cfg);
+                case "guardian" -> applyGuardianAbilities(mob, tier, cfg);
+                case "ravager" -> applyRavagerAbilities(mob, tier, cfg);
+                case "silverfish" -> applySilverfishAbilities(mob, tier, cfg);
+                case "endermite" -> applyEndermiteAbilities(mob, tier, cfg);
                 default -> {}
             }
         } catch (Exception e) {
@@ -198,6 +223,12 @@ public final class AbilityManager {
     // ---- Vindicator ----
 
     private static void applyVindicatorAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 3 && cfg.abilities.vindicatorDoorBreaking) {
+            // Vanilla vindicators only break doors on Hard (DOOR_BREAKING_PREDICATE).
+            // BreakDoorGoalMixin relaxes that difficulty gate for tagged mobs, so the
+            // existing goal fires on every difficulty — mirroring the zombie T3 beat.
+            mob.addTag(TAG_DOOR_BREAKING);
+        }
         if (tier >= 4 && cfg.abilities.vindicatorResistance) {
             applyInfiniteEffect(mob, MobEffects.DAMAGE_RESISTANCE, 0);
         }
@@ -230,7 +261,95 @@ public final class AbilityManager {
         }
     }
 
+    // ---- Stray ----
+
+    private static void applyStrayAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 2 && cfg.abilities.straySlownessUpgrade) {
+            // StrayAbilityMixin upgrades the fired arrow's Slowness I to Slowness II.
+            mob.addTag(TAG_SLOWNESS_ARROWS);
+        }
+    }
+
+    // ---- Bogged ----
+
+    private static void applyBoggedAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 2 && cfg.abilities.boggedPoisonUpgrade) {
+            // BoggedAbilityMixin upgrades the fired arrow's Poison I to Poison II.
+            mob.addTag(TAG_POISON_ARROWS);
+        }
+    }
+
+    // ---- Witch ----
+
+    private static void applyWitchAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 3 && cfg.abilities.witchLingeringPotions) {
+            // WitchAbilityMixin swaps the thrown splash potion for a lingering one.
+            mob.addTag(TAG_LINGERING_POTIONS);
+        }
+        if (tier >= 5 && cfg.abilities.witchAggressiveHealing) {
+            // WitchAbilityMixin raises the per-tick heal-drink probability.
+            mob.addTag(TAG_AGGRESSIVE_HEALING);
+        }
+    }
+
+    // ---- Pillager ----
+
+    private static void applyPillagerAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 2 && cfg.abilities.pillagerQuickCharge) {
+            enchantHeldCrossbow(mob, Enchantments.QUICK_CHARGE, 1);
+        }
+        if (tier >= 4 && cfg.abilities.pillagerMultishot) {
+            enchantHeldCrossbow(mob, Enchantments.MULTISHOT, 1);
+        }
+    }
+
+    // ---- Guardian ----
+
+    private static void applyGuardianAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 3 && cfg.abilities.guardianFasterBeam) {
+            // GuardianBeamMixin shortens the beam's charge-to-fire duration.
+            mob.addTag(TAG_GUARDIAN_BEAM);
+        }
+    }
+
+    // ---- Ravager ----
+
+    private static void applyRavagerAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 3 && cfg.abilities.ravagerRoarExpansion) {
+            // RavagerRoarMixin widens the roar's knockback radius.
+            mob.addTag(TAG_RAVAGER_ROAR);
+        }
+    }
+
+    // ---- Silverfish ----
+
+    private static void applySilverfishAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 2 && cfg.abilities.silverfishCallSleepers) {
+            // Silverfish already wake infested-block friends in vanilla; the tag keeps
+            // the ability discoverable in probes and shares the Endermite toggle.
+            mob.addTag(TAG_CALL_SLEEPERS);
+        }
+    }
+
+    // ---- Endermite ----
+
+    private static void applyEndermiteAbilities(Mob mob, int tier, TribulationConfig cfg) {
+        if (tier >= 2 && cfg.abilities.silverfishCallSleepers) {
+            // SilverfishAbilityHandler (AFTER_DAMAGE) summons silverfish from nearby
+            // infested blocks — the behavior an endermite has no vanilla goal for.
+            mob.addTag(TAG_CALL_SLEEPERS);
+        }
+    }
+
     // ---- Helpers ----
+
+    private static void enchantHeldCrossbow(Mob mob, ResourceKey<Enchantment> enchantment, int level) {
+        ItemStack mainHand = mob.getMainHandItem();
+        if (!mainHand.is(Items.CROSSBOW)) return;
+        HolderLookup.RegistryLookup<Enchantment> lookup =
+                mob.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        lookup.get(enchantment).ifPresent(holder -> mainHand.enchant(holder, level));
+    }
 
     private static void addAttributeModifier(Mob mob, Holder<Attribute> attr, ResourceLocation id, double amount, AttributeModifier.Operation op) {
         AttributeInstance inst = mob.getAttribute(attr);

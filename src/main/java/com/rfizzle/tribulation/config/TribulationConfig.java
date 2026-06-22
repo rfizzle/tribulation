@@ -986,5 +986,15 @@ public class TribulationConfig {
         public boolean vindicatorResistance = true;
         public boolean zombifiedPiglinAggro = true;
         public boolean piglinCrossbow = true;
+        public boolean straySlownessUpgrade = true;
+        public boolean boggedPoisonUpgrade = true;
+        public boolean witchLingeringPotions = true;
+        public boolean witchAggressiveHealing = true;
+        public boolean pillagerQuickCharge = true;
+        public boolean pillagerMultishot = true;
+        public boolean vindicatorDoorBreaking = true;
+        public boolean guardianFasterBeam = true;
+        public boolean ravagerRoarExpansion = true;
+        public boolean silverfishCallSleepers = true;
     }
 }

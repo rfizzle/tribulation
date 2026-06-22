@@ -504,7 +504,17 @@
             ["<code class='text-accent2 whitespace-nowrap'>zoglinFireResist</code>", "Zoglin", "Resist fire damage"],
             ["<code class='text-accent2 whitespace-nowrap'>vindicatorResistance</code>", "Vindicator", "Damage resistance effect"],
             ["<code class='text-accent2 whitespace-nowrap'>zombifiedPiglinAggro</code>", "Zombified Piglin", "Always hostile"],
-            ["<code class='text-accent2 whitespace-nowrap'>piglinCrossbow</code>", "Piglin", "Enhanced crossbow behavior"]
+            ["<code class='text-accent2 whitespace-nowrap'>piglinCrossbow</code>", "Piglin", "Enhanced crossbow behavior"],
+            ["<code class='text-accent2 whitespace-nowrap'>straySlownessUpgrade</code>", "Stray", "Upgrade arrows to Slowness II"],
+            ["<code class='text-accent2 whitespace-nowrap'>boggedPoisonUpgrade</code>", "Bogged", "Upgrade arrows to Poison II"],
+            ["<code class='text-accent2 whitespace-nowrap'>witchLingeringPotions</code>", "Witch", "Throw lingering potions instead of splash"],
+            ["<code class='text-accent2 whitespace-nowrap'>witchAggressiveHealing</code>", "Witch", "Drink healing potions sooner and more often"],
+            ["<code class='text-accent2 whitespace-nowrap'>pillagerQuickCharge</code>", "Pillager", "Quick Charge on the held crossbow"],
+            ["<code class='text-accent2 whitespace-nowrap'>pillagerMultishot</code>", "Pillager", "Multishot on the held crossbow"],
+            ["<code class='text-accent2 whitespace-nowrap'>vindicatorDoorBreaking</code>", "Vindicator", "Break wooden doors on any difficulty"],
+            ["<code class='text-accent2 whitespace-nowrap'>guardianFasterBeam</code>", "Guardian", "Charge the attack beam faster"],
+            ["<code class='text-accent2 whitespace-nowrap'>ravagerRoarExpansion</code>", "Ravager", "Wider roar knockback radius"],
+            ["<code class='text-accent2 whitespace-nowrap'>silverfishCallSleepers</code>", "Silverfish / Endermite", "Summon silverfish from infested blocks when hurt"]
           ]
         }
       ]

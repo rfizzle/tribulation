@@ -78,16 +78,26 @@ class AbilityManagerTest {
         assertTrue(abilities.vindicatorResistance, "vindicatorResistance");
         assertTrue(abilities.zombifiedPiglinAggro, "zombifiedPiglinAggro");
         assertTrue(abilities.piglinCrossbow, "piglinCrossbow");
+        assertTrue(abilities.straySlownessUpgrade, "straySlownessUpgrade");
+        assertTrue(abilities.boggedPoisonUpgrade, "boggedPoisonUpgrade");
+        assertTrue(abilities.witchLingeringPotions, "witchLingeringPotions");
+        assertTrue(abilities.witchAggressiveHealing, "witchAggressiveHealing");
+        assertTrue(abilities.pillagerQuickCharge, "pillagerQuickCharge");
+        assertTrue(abilities.pillagerMultishot, "pillagerMultishot");
+        assertTrue(abilities.vindicatorDoorBreaking, "vindicatorDoorBreaking");
+        assertTrue(abilities.guardianFasterBeam, "guardianFasterBeam");
+        assertTrue(abilities.ravagerRoarExpansion, "ravagerRoarExpansion");
+        assertTrue(abilities.silverfishCallSleepers, "silverfishCallSleepers");
     }
 
     @Test
     void defaultAbilities_toggleCountMatchesMobKeyAbilityCount() {
-        // 19 toggles cover all implemented abilities. If new abilities are added,
+        // 29 toggles cover all implemented abilities. If new abilities are added,
         // this test reminds the developer to also add a config toggle.
         TribulationConfig.Abilities abilities = new TribulationConfig.Abilities();
         long fieldCount = java.util.Arrays.stream(abilities.getClass().getFields())
                 .filter(f -> f.getType() == boolean.class)
                 .count();
-        assertEquals(19, fieldCount, "unexpected number of ability toggles — did you add a new ability?");
+        assertEquals(29, fieldCount, "unexpected number of ability toggles — did you add a new ability?");
     }
 }

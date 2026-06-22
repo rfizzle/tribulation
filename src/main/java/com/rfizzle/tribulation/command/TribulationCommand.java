@@ -4,6 +4,7 @@ import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
+import com.rfizzle.tribulation.compat.common.MobScalingDataCollector;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
@@ -582,6 +583,9 @@ public final class TribulationCommand {
         // an admin can see exactly what was applied. Order is deterministic:
         // attributes in ALL_ATTRIBUTES first (health → toughness), each with
         // its modifiers sorted by ID for stable output.
+        String abilities = MobScalingDataCollector.describeAbilities(mob);
+        lines.add("Abilities: " + (abilities.isEmpty() ? "(none)" : abilities));
+
         List<String> modifierLines = collectModifierLines(mob);
         if (modifierLines.isEmpty()) {
             lines.add("Modifiers: (none)");

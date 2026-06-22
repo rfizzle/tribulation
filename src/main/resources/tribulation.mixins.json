@@ -6,16 +6,23 @@
     "mixins": [
         "AbstractSkeletonAccessor",
         "AbstractSkeletonMixin",
+        "BoggedAbilityMixin",
+        "BreakDoorGoalMixin",
         "CreeperAccessor",
+        "DoorInteractGoalAccessor",
+        "GuardianBeamMixin",
         "HuskAbilityMixin",
         "LivingEntityExperienceMixin",
         "LivingEntityTotemMixin",
         "MobAbilityMixin",
         "RaidScalingMixin",
+        "RavagerRoarMixin",
         "SoulInventoryMixin",
+        "StrayAbilityMixin",
         "TrialSpawnerDataAccessor",
         "TrialSpawnerDataMixin",
-        "TrialSpawnerMixin"
+        "TrialSpawnerMixin",
+        "WitchAbilityMixin"
     ],
     "injectors": {
         "defaultRequire": 1

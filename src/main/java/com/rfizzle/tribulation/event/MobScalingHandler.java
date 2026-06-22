@@ -121,6 +121,7 @@ public final class MobScalingHandler {
             AbilityManager.applyAbilities(mob, tier, toggleKey, cfg);
             WeaponEquipmentHandler.processWeapon(mob, tier, cfg);
             ZombieVariantHandler.apply(mob, toggleKey, cfg.specialZombies, world.getRandom());
+            SkeletonVariantHandler.apply(mob, toggleKey, cfg.specialSkeletons, world.getRandom());
         }
 
         // The combined-armor ceiling is part of the armor-equipment feature; when it

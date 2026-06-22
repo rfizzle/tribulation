@@ -88,6 +88,16 @@ two variants on top of normal scaling:
   lumbering tank.
 - **Speed Zombie** (10%) — 1.3× movement speed, −10 health. Closes gaps fast.
 
+### Special Skeleton Variants
+
+Skeleton-family mobs (Skeleton, Stray, Bogged) can roll one of two variants on
+top of normal scaling:
+
+- **Deadeye Skeleton** (10%) — faster bow draw, −10 health. A glass-cannon
+  archer.
+- **Brute Skeleton** (10%) — +10 health, 0.5 knockback resistance, 1.3× size,
+  slower bow draw. A heavy, hard-to-stagger archer.
+
 ### Boss Scaling
 
 The Ender Dragon, Wither, and anything tagged `c:bosses` scale with a

@@ -50,6 +50,7 @@ public class TribulationConfig {
     public Map<String, MobScaling> scaling = defaultScaling();
     public UnlistedHostileMobs unlistedHostileMobs = new UnlistedHostileMobs();
     public SpecialZombies specialZombies = new SpecialZombies();
+    public SpecialSkeletons specialSkeletons = new SpecialSkeletons();
     public Bosses bosses = new Bosses();
     public XpAndLoot xpAndLoot = new XpAndLoot();
     public Tiers tiers = new Tiers();
@@ -216,6 +217,7 @@ public class TribulationConfig {
         if (hardcoreHearts == null) hardcoreHearts = new HardcoreHearts();
         if (soulInventory == null) soulInventory = new SoulInventory();
         if (specialZombies == null) specialZombies = new SpecialZombies();
+        if (specialSkeletons == null) specialSkeletons = new SpecialSkeletons();
         if (bosses == null) bosses = new Bosses();
         if (xpAndLoot == null) xpAndLoot = new XpAndLoot();
         if (tiers == null) tiers = new Tiers();
@@ -370,6 +372,15 @@ public class TribulationConfig {
         specialZombies.bigZombieSlowness = clampNonNegative("specialZombies.bigZombieSlowness", specialZombies.bigZombieSlowness);
         specialZombies.speedZombieSpeedFactor = clampNonNegative("specialZombies.speedZombieSpeedFactor", specialZombies.speedZombieSpeedFactor);
 
+        specialSkeletons.deadeyeSkeletonChance = clampPercent("specialSkeletons.deadeyeSkeletonChance", specialSkeletons.deadeyeSkeletonChance);
+        specialSkeletons.bruteSkeletonChance = clampPercent("specialSkeletons.bruteSkeletonChance", specialSkeletons.bruteSkeletonChance);
+        specialSkeletons.deadeyeSkeletonAttackInterval = clampAtLeast("specialSkeletons.deadeyeSkeletonAttackInterval", specialSkeletons.deadeyeSkeletonAttackInterval, 1);
+        specialSkeletons.bruteSkeletonAttackInterval = clampAtLeast("specialSkeletons.bruteSkeletonAttackInterval", specialSkeletons.bruteSkeletonAttackInterval, 1);
+        specialSkeletons.deadeyeSkeletonMalusHealth = clampNonNegative("specialSkeletons.deadeyeSkeletonMalusHealth", specialSkeletons.deadeyeSkeletonMalusHealth);
+        specialSkeletons.bruteSkeletonBonusHealth = clampNonNegative("specialSkeletons.bruteSkeletonBonusHealth", specialSkeletons.bruteSkeletonBonusHealth);
+        specialSkeletons.bruteSkeletonBonusKnockbackResistance = clampUnit("specialSkeletons.bruteSkeletonBonusKnockbackResistance", specialSkeletons.bruteSkeletonBonusKnockbackResistance);
+        specialSkeletons.bruteSkeletonSize = clampPositive("specialSkeletons.bruteSkeletonSize", specialSkeletons.bruteSkeletonSize);
+
         bosses.bossMaxFactor = clampNonNegative("bosses.bossMaxFactor", bosses.bossMaxFactor);
         bosses.bossDistanceFactor = clampNonNegative("bosses.bossDistanceFactor", bosses.bossDistanceFactor);
         bosses.bossTimeFactor = clampNonNegative("bosses.bossTimeFactor", bosses.bossTimeFactor);
@@ -476,6 +487,14 @@ public class TribulationConfig {
         if (value > 1) {
             Tribulation.LOGGER.warn("{} must be in [0,1], got {}; clamped to 1", name, value);
             return 1;
+        }
+        return value;
+    }
+
+    private static int clampAtLeast(String name, int value, int min) {
+        if (value < min) {
+            Tribulation.LOGGER.warn("{} must be >= {}, got {}; clamped to {}", name, min, value, min);
+            return min;
         }
         return value;
     }
@@ -705,6 +724,18 @@ public class TribulationConfig {
         public int speedZombieChance = 10;
         public double speedZombieSpeedFactor = 1.3;
         public double speedZombieMalusHealth = 10;
+    }
+
+    public static class SpecialSkeletons {
+        public boolean enabled = true;
+        public int deadeyeSkeletonChance = 10;
+        public int deadeyeSkeletonAttackInterval = 20;
+        public double deadeyeSkeletonMalusHealth = 10;
+        public int bruteSkeletonChance = 10;
+        public int bruteSkeletonAttackInterval = 60;
+        public double bruteSkeletonBonusHealth = 10;
+        public double bruteSkeletonBonusKnockbackResistance = 0.5;
+        public double bruteSkeletonSize = 1.3;
     }
 
     public static class Bosses {

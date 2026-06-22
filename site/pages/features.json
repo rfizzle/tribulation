@@ -397,6 +397,26 @@
               ]
             }
           ]
+        },
+        {
+          "type": "sub",
+          "id": "advancements",
+          "title": "Advancements",
+          "intro": "A dedicated <span class='text-bone'>Tribulation</span> tab in the advancements screen records the mod's progression milestones, so the story of a world reads from in-game without a wiki. All criteria are evaluated server-side and work on a dedicated server. Crossing a tier threshold is marked as a moment: the advancement toast fires and a custom synthesized sting plays for the leveling player only, layered over the level badge's gold flash.",
+          "blocks": [
+            {
+              "type": "table",
+              "nowrapHeaders": true,
+              "headers": ["Advancement", "Earned by"],
+              "rows": [
+                ["<span class='text-bone'>First Blood → Apex Tribulation</span>", "A chained ladder for reaching Tiers 1 through 5"],
+                ["<span class='text-bone'>Beyond the Grave</span>", "Carry a Soulbound item through your own death (Soul Inventory)"],
+                ["<span class='text-bone'>A Moment's Mercy</span>", "Use a Shatter Shard to lower your difficulty"],
+                ["<span class='text-bone'>Mended</span>", "Restore a lost heart with a Heart Fragment (Hardcore Hearts)"],
+                ["<span class='text-bone'>Giant Slayer</span>", "Kill a mob scaled to the maximum tier"]
+              ]
+            }
+          ]
         }
       ]
     }

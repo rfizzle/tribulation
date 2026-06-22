@@ -1,0 +1,31 @@
+{
+  "parent": "tribulation:tier_4",
+  "criteria": {
+    "reach_tier_5": {
+      "conditions": {
+        "min_tier": 5
+      },
+      "trigger": "tribulation:tier_reached"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_5.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:wither_skeleton_skull"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_5.title"
+    }
+  },
+  "requirements": [
+    [
+      "reach_tier_5"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

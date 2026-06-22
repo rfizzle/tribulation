@@ -86,6 +86,9 @@ public final class SoulInventoryHandler {
                 inv.setItem(entry.slot, entry.stack);
             }
         }
+
+        // ≥1 soulbound item carried through death — the Soulbound milestone.
+        com.rfizzle.tribulation.advancement.TribulationCriteria.SOULBOUND_SURVIVED.trigger(newPlayer);
     }
 
     static Optional<Holder.Reference<Enchantment>> resolveSoulboundEnchantment(ServerPlayer player, TribulationConfig cfg) {

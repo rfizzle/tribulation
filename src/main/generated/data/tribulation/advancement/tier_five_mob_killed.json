@@ -1,0 +1,28 @@
+{
+  "parent": "tribulation:root",
+  "criteria": {
+    "tier_five_mob_killed": {
+      "trigger": "tribulation:tier_five_mob_killed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_five_mob_killed.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:netherite_sword"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_five_mob_killed.title"
+    }
+  },
+  "requirements": [
+    [
+      "tier_five_mob_killed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

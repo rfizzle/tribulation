@@ -1,0 +1,28 @@
+{
+  "parent": "tribulation:root",
+  "criteria": {
+    "soulbound_survived": {
+      "trigger": "tribulation:soulbound_survived"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.soulbound_survived.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:soul_lantern"
+    },
+    "title": {
+      "translate": "advancements.tribulation.soulbound_survived.title"
+    }
+  },
+  "requirements": [
+    [
+      "soulbound_survived"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

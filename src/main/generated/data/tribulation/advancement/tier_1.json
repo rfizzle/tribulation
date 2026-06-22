@@ -1,0 +1,30 @@
+{
+  "parent": "tribulation:root",
+  "criteria": {
+    "reach_tier_1": {
+      "conditions": {
+        "min_tier": 1
+      },
+      "trigger": "tribulation:tier_reached"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_1.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:stone_sword"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_1.title"
+    }
+  },
+  "requirements": [
+    [
+      "reach_tier_1"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

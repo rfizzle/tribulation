@@ -1,0 +1,30 @@
+{
+  "parent": "tribulation:tier_1",
+  "criteria": {
+    "reach_tier_2": {
+      "conditions": {
+        "min_tier": 2
+      },
+      "trigger": "tribulation:tier_reached"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_2.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:iron_sword"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_2.title"
+    }
+  },
+  "requirements": [
+    [
+      "reach_tier_2"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

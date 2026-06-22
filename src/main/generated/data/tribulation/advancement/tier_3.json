@@ -1,0 +1,30 @@
+{
+  "parent": "tribulation:tier_2",
+  "criteria": {
+    "reach_tier_3": {
+      "conditions": {
+        "min_tier": 3
+      },
+      "trigger": "tribulation:tier_reached"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_3.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:diamond_sword"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_3.title"
+    }
+  },
+  "requirements": [
+    [
+      "reach_tier_3"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -8,6 +8,7 @@ import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
+import com.rfizzle.tribulation.event.SkeletonVariantHandler;
 import com.rfizzle.tribulation.event.ZombieVariantHandler;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.scaling.BossScalingEngine;
@@ -592,7 +593,9 @@ public final class TribulationCommand {
     enum Variant {
         NONE("none"),
         BIG("big"),
-        SPEED("speed");
+        SPEED("speed"),
+        DEADEYE("deadeye"),
+        BRUTE("brute");
 
         private final String label;
 
@@ -602,14 +605,21 @@ public final class TribulationCommand {
     }
 
     /**
-     * Identify a zombie-variant by looking for the variant modifier IDs. The
-     * Big and Speed variants are mutually exclusive at roll time, but the
-     * variant_speed_health and variant_big_health IDs are distinct so we
-     * check both with Big winning on the unlikely chance both are present
-     * (keeps output deterministic).
+     * Identify a special variant. Skeleton variants are detected by their
+     * per-variant scoreboard tag (always applied, even when a Deadeye's health
+     * malus is 0 and it carries no attribute modifier). Zombie variants are
+     * detected by their modifier IDs — Big and Speed are mutually exclusive at
+     * roll time, but their IDs are distinct so we check both with Big winning on
+     * the unlikely chance both are present (keeps output deterministic).
      */
     static Variant detectVariant(Mob mob) {
         if (mob == null) return Variant.NONE;
+        if (mob.getTags().contains(SkeletonVariantHandler.DEADEYE_TAG)) {
+            return Variant.DEADEYE;
+        }
+        if (mob.getTags().contains(SkeletonVariantHandler.BRUTE_TAG)) {
+            return Variant.BRUTE;
+        }
         if (hasModifier(mob, ZombieVariantHandler.BIG_HEALTH_ID)
                 || hasModifier(mob, ZombieVariantHandler.BIG_DAMAGE_ID)
                 || hasModifier(mob, ZombieVariantHandler.BIG_SIZE_ID)) {

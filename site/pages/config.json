@@ -284,6 +284,28 @@
       ]
     },
     {
+      "id": "special-skeletons",
+      "title": "specialSkeletons",
+      "intro": "Skeleton variant spawn configuration. Applies to Skeleton, Stray, and Bogged (not Wither Skeleton).",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable skeleton variants"],
+            ["<code class='text-accent2 whitespace-nowrap'>deadeyeSkeletonChance</code>", "int", "10", "Percent chance for deadeye variant"],
+            ["<code class='text-accent2 whitespace-nowrap'>deadeyeSkeletonAttackInterval</code>", "int", "20", "Ticks between deadeye shots (lower is faster)"],
+            ["<code class='text-accent2 whitespace-nowrap'>deadeyeSkeletonMalusHealth</code>", "double", "10", "Health subtracted from deadeyes"],
+            ["<code class='text-accent2 whitespace-nowrap'>bruteSkeletonChance</code>", "int", "10", "Percent chance for brute variant"],
+            ["<code class='text-accent2 whitespace-nowrap'>bruteSkeletonAttackInterval</code>", "int", "60", "Ticks between brute shots (higher is slower)"],
+            ["<code class='text-accent2 whitespace-nowrap'>bruteSkeletonBonusHealth</code>", "double", "10", "Health added to brutes"],
+            ["<code class='text-accent2 whitespace-nowrap'>bruteSkeletonBonusKnockbackResistance</code>", "double", "0.5", "Knockback resistance [0,1] for brutes"],
+            ["<code class='text-accent2 whitespace-nowrap'>bruteSkeletonSize</code>", "double", "1.3", "Scale multiplier for brutes"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "bosses",
       "title": "bosses",
       "intro": "Boss mob scaling uses a separate, gentler formula.",

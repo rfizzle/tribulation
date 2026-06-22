@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.compat.common;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.event.MobScalingHandler;
+import com.rfizzle.tribulation.event.SkeletonVariantHandler;
 import com.rfizzle.tribulation.event.ZombieVariantHandler;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import net.minecraft.core.Holder;
@@ -60,6 +61,14 @@ public final class MobScalingDataCollector {
     }
 
     private static String detectVariant(Mob mob) {
+        // Skeleton variants are detected by their always-present per-variant tag —
+        // a Deadeye with a 0 health malus carries no attribute modifier to probe.
+        if (mob.getTags().contains(SkeletonVariantHandler.DEADEYE_TAG)) {
+            return "deadeye";
+        }
+        if (mob.getTags().contains(SkeletonVariantHandler.BRUTE_TAG)) {
+            return "brute";
+        }
         if (hasModifier(mob, ZombieVariantHandler.BIG_HEALTH_ID)
                 || hasModifier(mob, ZombieVariantHandler.BIG_SIZE_ID)) {
             return "big";

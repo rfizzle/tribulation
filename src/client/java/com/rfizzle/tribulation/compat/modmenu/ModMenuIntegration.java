@@ -39,6 +39,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addArmorEquipment(builder, entry, current);
             addWeaponEquipment(builder, entry, current);
             addSpecialZombies(builder, entry, current);
+            addSpecialSkeletons(builder, entry, current);
             addBosses(builder, entry, current);
             addXpAndLoot(builder, entry, current);
             addTrialSpawner(builder, entry, current);
@@ -579,6 +580,66 @@ public final class ModMenuIntegration implements ModMenuApi {
                         sz.speedZombieMalusHealth)
                 .setDefaultValue(10.0).setMin(0.0)
                 .setSaveConsumer(v -> sz.speedZombieMalusHealth = v)
+                .build());
+    }
+
+    private static void addSpecialSkeletons(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.special_skeletons"));
+        TribulationConfig.SpecialSkeletons sk = config.specialSkeletons;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.special_skeletons.enabled"),
+                        sk.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> sk.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntSlider(
+                        Component.translatable("config.tribulation.special_skeletons.deadeye_skeleton_chance"),
+                        sk.deadeyeSkeletonChance, 0, 100)
+                .setDefaultValue(10)
+                .setSaveConsumer(v -> sk.deadeyeSkeletonChance = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.special_skeletons.deadeye_skeleton_attack_interval"),
+                        sk.deadeyeSkeletonAttackInterval)
+                .setDefaultValue(20).setMin(1)
+                .setSaveConsumer(v -> sk.deadeyeSkeletonAttackInterval = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.special_skeletons.deadeye_skeleton_malus_health"),
+                        sk.deadeyeSkeletonMalusHealth)
+                .setDefaultValue(10.0).setMin(0.0)
+                .setSaveConsumer(v -> sk.deadeyeSkeletonMalusHealth = v)
+                .build());
+        cat.addEntry(entry.startIntSlider(
+                        Component.translatable("config.tribulation.special_skeletons.brute_skeleton_chance"),
+                        sk.bruteSkeletonChance, 0, 100)
+                .setDefaultValue(10)
+                .setSaveConsumer(v -> sk.bruteSkeletonChance = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.special_skeletons.brute_skeleton_attack_interval"),
+                        sk.bruteSkeletonAttackInterval)
+                .setDefaultValue(60).setMin(1)
+                .setSaveConsumer(v -> sk.bruteSkeletonAttackInterval = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.special_skeletons.brute_skeleton_bonus_health"),
+                        sk.bruteSkeletonBonusHealth)
+                .setDefaultValue(10.0).setMin(0.0)
+                .setSaveConsumer(v -> sk.bruteSkeletonBonusHealth = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.special_skeletons.brute_skeleton_bonus_knockback_resistance"),
+                        sk.bruteSkeletonBonusKnockbackResistance)
+                .setDefaultValue(0.5).setMin(0.0).setMax(1.0)
+                .setSaveConsumer(v -> sk.bruteSkeletonBonusKnockbackResistance = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.special_skeletons.brute_skeleton_size"),
+                        sk.bruteSkeletonSize)
+                .setDefaultValue(1.3).setMin(1.0)
+                .setSaveConsumer(v -> sk.bruteSkeletonSize = v)
                 .build());
     }
 

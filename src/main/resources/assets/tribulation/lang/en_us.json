@@ -128,6 +128,17 @@
     "config.tribulation.special_zombies.speed_zombie_speed_factor": "Speed Zombie Speed Multiplier",
     "config.tribulation.special_zombies.speed_zombie_malus_health": "Speed Zombie Health Penalty",
 
+    "config.tribulation.category.special_skeletons": "Special Skeletons",
+    "config.tribulation.special_skeletons.enabled": "Enabled",
+    "config.tribulation.special_skeletons.deadeye_skeleton_chance": "Deadeye Skeleton Chance (%)",
+    "config.tribulation.special_skeletons.deadeye_skeleton_attack_interval": "Deadeye Skeleton Bow Interval (ticks)",
+    "config.tribulation.special_skeletons.deadeye_skeleton_malus_health": "Deadeye Skeleton Health Penalty",
+    "config.tribulation.special_skeletons.brute_skeleton_chance": "Brute Skeleton Chance (%)",
+    "config.tribulation.special_skeletons.brute_skeleton_attack_interval": "Brute Skeleton Bow Interval (ticks)",
+    "config.tribulation.special_skeletons.brute_skeleton_bonus_health": "Brute Skeleton Bonus Health",
+    "config.tribulation.special_skeletons.brute_skeleton_bonus_knockback_resistance": "Brute Skeleton Knockback Resistance",
+    "config.tribulation.special_skeletons.brute_skeleton_size": "Brute Skeleton Size Multiplier",
+
     "config.tribulation.category.bosses": "Bosses",
     "config.tribulation.bosses.affect_bosses": "Scale Bosses",
     "config.tribulation.bosses.max_factor": "Boss Max Factor",

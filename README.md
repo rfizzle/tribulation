@@ -62,6 +62,7 @@ Tribulation registers six custom statistics (highest level reached, levels lost 
 ### Additional Features
 
 - Special zombie variants (Big Zombie, Speed Zombie) with distinct stat profiles
+- Special skeleton variants (Deadeye, Brute) with distinct bow cadence and stat profiles
 - Boss scaling with separate, gentler formula (Ender Dragon, Wither, tagged bosses)
 - Trial spawner scaling from detected-player levels, with an optional ominous upgrade
 - Bonus XP proportional to mob difficulty (up to 2x)
@@ -102,7 +103,7 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

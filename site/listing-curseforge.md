@@ -65,6 +65,17 @@ Variants apply across the entire zombie family: Zombie, Husk, Drowned, and Zombi
 
 ---
 
+## Special Skeleton Variants
+
+Two mutually exclusive skeleton variants add unpredictability to ranged encounters:
+
+- **Deadeye Skeleton** — Faster bow draw for a shorter gap between shots, traded for −10 HP. A glass-cannon archer.
+- **Brute Skeleton** — +10 HP, 0.5 knockback resistance, and 1.3x size, with a slower bow draw. A heavy, hard-to-stagger archer.
+
+Variants apply across the skeleton family: Skeleton, Stray, and Bogged (not Wither Skeleton). Their bonuses stack on top of normal scaling.
+
+---
+
 ## Boss Scaling
 
 The Ender Dragon and Wither scale with a separate, gentler formula using only the time and distance axes. No sudden one-shots — just a steady ramp that keeps endgame bosses relevant at higher levels.

@@ -41,6 +41,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addSpecialZombies(builder, entry, current);
             addBosses(builder, entry, current);
             addXpAndLoot(builder, entry, current);
+            addTrialSpawner(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
                 current.save();
@@ -705,6 +706,37 @@ public final class ModMenuIntegration implements ModMenuApi {
                         we.damageCeiling)
                 .setDefaultValue(20.0).setMin(0.0)
                 .setSaveConsumer(v -> we.damageCeiling = v)
+                .build());
+    }
+
+    private static void addTrialSpawner(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.trial_spawner"));
+        TribulationConfig.TrialSpawnerConfig ts = config.trialSpawner;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.trial_spawner.enabled"),
+                        ts.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> ts.enabled = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.trial_spawner.ominous_enabled"),
+                        ts.ominousUpgrade.enabled)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> ts.ominousUpgrade.enabled = v)
+                .build());
+        cat.addEntry(entry.startFloatField(
+                        Component.translatable("config.tribulation.trial_spawner.ominous_chance"),
+                        ts.ominousUpgrade.chance)
+                .setDefaultValue(0.10f).setMin(0.0f).setMax(1.0f)
+                .setSaveConsumer(v -> ts.ominousUpgrade.chance = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.trial_spawner.ominous_min_tier"),
+                        ts.ominousUpgrade.minimumTier)
+                .setDefaultValue(3).setMin(0)
+                .setSaveConsumer(v -> ts.ominousUpgrade.minimumTier = v)
                 .build());
     }
 }

@@ -35,7 +35,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 2;
+    public int configVersion = 3;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -57,6 +57,7 @@ public class TribulationConfig {
     public Abilities abilities = new Abilities();
     public ArmorEquipment armorEquipment = new ArmorEquipment();
     public WeaponEquipment weaponEquipment = new WeaponEquipment();
+    public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public Hud hud = new Hud();
 
     public static TribulationConfig load() {
@@ -248,6 +249,9 @@ public class TribulationConfig {
         if (hud == null) hud = new Hud();
         if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
 
+        if (trialSpawner == null) trialSpawner = new TrialSpawnerConfig();
+        if (trialSpawner.ominousUpgrade == null) trialSpawner.ominousUpgrade = new TrialSpawnerConfig.OminousUpgrade();
+
         if (scaling == null) {
             scaling = defaultScaling();
         } else {
@@ -411,6 +415,11 @@ public class TribulationConfig {
             weaponEquipment.weaponDropChance = 2.0;
         }
         weaponEquipment.damageCeiling = clampNonNegative("weaponEquipment.damageCeiling", weaponEquipment.damageCeiling);
+
+        trialSpawner.ominousUpgrade.chance = (float) clampUnit("trialSpawner.ominousUpgrade.chance", trialSpawner.ominousUpgrade.chance);
+        if (trialSpawner.ominousUpgrade.minimumTier < 0) {
+            trialSpawner.ominousUpgrade.minimumTier = 0;
+        }
 
         for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
             WeaponTier wt = entry.getValue();
@@ -811,6 +820,17 @@ public class TribulationConfig {
 
     public enum MaterialRollMode {
         PER_MOB, PER_SLOT
+    }
+
+    public static class TrialSpawnerConfig {
+        public boolean enabled = true;
+        public OminousUpgrade ominousUpgrade = new OminousUpgrade();
+
+        public static class OminousUpgrade {
+            public boolean enabled = false;
+            public float chance = 0.10f;
+            public int minimumTier = 3;
+        }
     }
 
     public static class Abilities {

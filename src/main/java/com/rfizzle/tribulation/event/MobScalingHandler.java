@@ -68,6 +68,22 @@ public final class MobScalingHandler {
             return;
         }
 
+        // Natural spawns resolve their effective level by proximity. The
+        // trial-spawner mixin calls applyScaling directly with a level derived
+        // from the spawner's detected players instead.
+        int playerLevel = ScalingEngine.getEffectiveLevel(mob, world);
+        applyScaling(mob, world, type, typeId, playerLevel, cfg);
+    }
+
+    /**
+     * Apply the full scaling pipeline (attributes, tier abilities, equipment,
+     * ceilings) to a single mob using an externally supplied effective player
+     * level, then stamp {@link #PROCESSED_TAG}. The caller is responsible for
+     * skipping already-processed and excluded mobs. Shared by the natural-spawn
+     * hook above and {@code TrialSpawnerMixin}.
+     */
+    public static void applyScaling(Mob mob, ServerLevel world, EntityType<?> type,
+                                    ResourceLocation typeId, int playerLevel, TribulationConfig cfg) {
         // Bosses route through BossScalingEngine: uniform rates for health+damage,
         // time + distance axes only (no height), and distance ignores the
         // excludeInOtherDimensions flag. affectBosses=false skips them entirely.
@@ -75,11 +91,10 @@ public final class MobScalingHandler {
             if (!cfg.bosses.affectBosses) {
                 return;
             }
-            int bossPlayerLevel = ScalingEngine.getEffectiveLevel(mob, world);
-            int bossTier = TierManager.getTier(bossPlayerLevel, cfg.tiers);
+            int bossTier = TierManager.getTier(playerLevel, cfg.tiers);
             mob.setAttached(TribulationAttachments.SCALED_TIER, bossTier);
 
-            BossScalingEngine.applyModifiers(mob, world, bossPlayerLevel, cfg);
+            BossScalingEngine.applyModifiers(mob, world, playerLevel, cfg);
             mob.setHealth(mob.getMaxHealth());
             mob.addTag(PROCESSED_TAG);
             return;
@@ -90,7 +105,6 @@ public final class MobScalingHandler {
             return;
         }
 
-        int playerLevel = ScalingEngine.getEffectiveLevel(mob, world);
         int tier = TierManager.getTier(playerLevel, cfg.tiers);
         mob.setAttached(TribulationAttachments.SCALED_TIER, tier);
 

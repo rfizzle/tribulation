@@ -169,6 +169,12 @@
     "config.tribulation.weapon.drop_chance": "Weapon Drop Chance",
     "config.tribulation.weapon.damage_ceiling": "Max Weapon Damage",
 
+    "config.tribulation.category.trial_spawner": "Trial Spawners",
+    "config.tribulation.trial_spawner.enabled": "Scale Trial Spawner Mobs",
+    "config.tribulation.trial_spawner.ominous_enabled": "Ominous Upgrade",
+    "config.tribulation.trial_spawner.ominous_chance": "Ominous Upgrade Chance",
+    "config.tribulation.trial_spawner.ominous_min_tier": "Ominous Minimum Tier",
+
     "item.tribulation.heart_fragment": "Heart Fragment",
     "item.tribulation.heart_fragment.tooltip": "Right-click to restore a lost heart.",
     "item.tribulation.heart_fragment.used": "Restored %s hearts (%s/%s max HP)",

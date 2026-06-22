@@ -163,18 +163,47 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v2_isIdempotent() {
+    void migrate_v2ToV3_addsTrialSpawner() {
         JsonObject json = new JsonObject();
         json.addProperty("configVersion", 2);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
 
-        assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(2, json.get("configVersion").getAsInt());
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("trialSpawner"), "trialSpawner section must be added");
+        assertTrue(json.get("trialSpawner").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
     }
 
     @Test
-    void migrate_v0ToV2_runsBothMigrations() {
+    void migrate_v2ToV3_doesNotOverwriteExistingTrialSpawner() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 2);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("trialSpawner", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("trialSpawner").get("enabled").getAsBoolean(),
+                "pre-existing trialSpawner content must be preserved");
+    }
+
+    @Test
+    void migrate_v3_isIdempotent() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 3);
+        json.add("hardcoreHearts", new JsonObject());
+        json.add("soulInventory", new JsonObject());
+        json.add("trialSpawner", new JsonObject());
+
+        assertFalse(ConfigMigrator.migrate(json));
+        assertEquals(3, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v0ToV3_runsAllMigrations() {
         JsonObject json = new JsonObject();
         // No configVersion → version 0
 
@@ -183,6 +212,7 @@ class ConfigMigratorTest {
         assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
         assertTrue(json.has("hardcoreHearts"));
         assertTrue(json.has("soulInventory"));
+        assertTrue(json.has("trialSpawner"));
     }
 
     @Test

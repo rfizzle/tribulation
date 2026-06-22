@@ -151,6 +151,18 @@
                 "XP multiplied by the mob's scaling factor, up to 2.0×",
                 "Optional extra loot drops (off by default) — a chance to drop an additional copy of the loot table"
               ]
+            },
+            {
+              "id": "trial-spawners",
+              "title": "Trial Spawner Scaling",
+              "html": ["Mobs from 1.21 trial spawners get the full Tribulation treatment — attributes, tier abilities, and equipment — so trial chambers keep pace with the rest of a high-tier world."],
+              "bullets": [
+                "<span class='text-bone'>Detected-player level:</span> Scaling uses the players the spawner has already detected, not a nearest-player scan.",
+                "<span class='text-bone'>Optional ominous upgrade:</span> Off by default — high-tier spawners can roll into ominous mode with no Bad Omen effect.",
+                "Vanilla cooldown, reward ejection, and Bad-Omen ominous behavior are otherwise untouched."
+              ],
+              "bulletSpacing": 2,
+              "note": "Config: <code class='text-accent2'>trialSpawner.enabled</code>, <code class='text-accent2'>trialSpawner.ominousUpgrade</code>"
             }
           ]
         }

@@ -76,12 +76,25 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         entityTag.put("Pos", posTag);
         dataAccessor.setNextSpawnData(Optional.of(new SpawnData(entityTag, Optional.empty(), Optional.empty())));
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-        // Level 100 -> tier 2 with default breakpoints.
-        state.setLevel(player.getUUID(), 100, cfg.general.maxLevel);
-        dataAccessor.getDetectedPlayers().add(player.getUUID());
+
+        // Two players with distinct levels prove the scaling *source*, not just
+        // that scaling happened. The detected player (level 150 -> tier 3) is
+        // teleported well outside the proximity scan range, and a decoy player
+        // (level 50 -> tier 1) sits in proximity but is NOT detected. The natural
+        // ENTITY_LOAD hook resolves by proximity, so if the mixin's pre-add scaling
+        // ever regressed the mob would scale to tier 1 from the decoy. A tier-3
+        // result can therefore only come from the spawner's detected-player list.
+        ServerPlayer detected = helper.makeMockServerPlayerInLevel();
+        state.setLevel(detected.getUUID(), 150, cfg.general.maxLevel);
+        detected.setPos(absSpawn.getX() + 1000.0, absSpawn.getY(), absSpawn.getZ());
+        dataAccessor.getDetectedPlayers().add(detected.getUUID());
+
+        // Decoy: in proximity, not detected. setLevel before spawn so a proximity
+        // scan would deterministically yield tier 1.
+        ServerPlayer decoy = helper.makeMockServerPlayerInLevel();
+        state.setLevel(decoy.getUUID(), 50, cfg.general.maxLevel);
 
         try {
             Optional<UUID> mobUuid = spawner.spawnMob(level, helper.absolutePos(SPAWNER_POS));
@@ -95,11 +108,71 @@ public class TrialSpawnerGameTest implements FabricGameTest {
                     "Trial-spawned mob missing PROCESSED_TAG");
             helper.assertTrue(mob.hasAttached(TribulationAttachments.SCALED_TIER),
                     "Trial-spawned mob missing tier attachment");
-            helper.assertTrue(mob.getAttachedOrThrow(TribulationAttachments.SCALED_TIER) == 2,
-                    "Trial-spawned mob scaled to wrong tier");
+            helper.assertTrue(mob.getAttachedOrThrow(TribulationAttachments.SCALED_TIER) == 3,
+                    "Trial-spawned mob must scale from the detected player (tier 3), not the proximity decoy (tier 1)");
             mob.discard();
         } finally {
-            player.discard();
+            detected.discard();
+            decoy.discard();
+            server.setDifficulty(originalDifficulty, true);
+        }
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void trialSpawner_nearestMode_picksClosestDetectedPlayer(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        Difficulty originalDifficulty = level.getDifficulty();
+        server.setDifficulty(Difficulty.NORMAL, true);
+
+        helper.setBlock(SPAWNER_POS, Blocks.TRIAL_SPAWNER);
+        TrialSpawnerBlockEntity be = helper.getBlockEntity(SPAWNER_POS);
+        TrialSpawner spawner = be.getTrialSpawner();
+        TrialSpawnerDataAccessor dataAccessor = (TrialSpawnerDataAccessor) spawner.getData();
+
+        BlockPos absSpawn = helper.absolutePos(SPAWN_POS);
+        CompoundTag entityTag = new CompoundTag();
+        entityTag.putString("id", "minecraft:zombie");
+        ListTag posTag = new ListTag();
+        posTag.add(0, DoubleTag.valueOf(absSpawn.getX() + 0.5));
+        posTag.add(1, DoubleTag.valueOf(absSpawn.getY() + 0.2));
+        posTag.add(2, DoubleTag.valueOf(absSpawn.getZ() + 0.5));
+        entityTag.put("Pos", posTag);
+        dataAccessor.setNextSpawnData(Optional.of(new SpawnData(entityTag, Optional.empty(), Optional.empty())));
+
+        TribulationConfig cfg = Tribulation.getConfig();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+        // Default scaling mode is NEAREST. Two *detected* players at different
+        // levels and distances: the closer one (tier 1) must win over the farther,
+        // higher-level one (tier 4). Under the arbitrary set-iteration fold this
+        // pick would be non-deterministic; distance-based resolution makes it stable.
+        // Mock players spawn near world origin, but the gametest structure sits
+        // millions of blocks out, so both players are positioned explicitly
+        // relative to the spawn. 'near' sits two blocks from the spawn point (close
+        // but not blocking it); 'far' is teleported 1000 blocks out.
+        BlockPos nearPos = helper.absolutePos(new BlockPos(2, 0, 1));
+        ServerPlayer near = helper.makeMockServerPlayerInLevel();
+        state.setLevel(near.getUUID(), 60, cfg.general.maxLevel); // tier 1
+        near.setPos(nearPos.getX() + 0.5, nearPos.getY(), nearPos.getZ() + 0.5);
+        dataAccessor.getDetectedPlayers().add(near.getUUID());
+
+        ServerPlayer far = helper.makeMockServerPlayerInLevel();
+        state.setLevel(far.getUUID(), 200, cfg.general.maxLevel); // tier 4
+        far.setPos(absSpawn.getX() + 1000.0, absSpawn.getY(), absSpawn.getZ());
+        dataAccessor.getDetectedPlayers().add(far.getUUID());
+
+        try {
+            Optional<UUID> mobUuid = spawner.spawnMob(level, helper.absolutePos(SPAWNER_POS));
+            helper.assertTrue(mobUuid.isPresent(), "Trial spawner failed to spawn the seeded mob");
+            Mob mob = (Mob) level.getEntity(mobUuid.get());
+            helper.assertTrue(mob.getAttachedOrThrow(TribulationAttachments.SCALED_TIER) == 1,
+                    "NEAREST mode must scale from the closest detected player (tier 1), not the farthest (tier 4)");
+            mob.discard();
+        } finally {
+            near.discard();
+            far.discard();
             server.setDifficulty(originalDifficulty, true);
         }
         helper.succeed();
@@ -139,6 +212,90 @@ public class TrialSpawnerGameTest implements FabricGameTest {
             spawner.getData().tryDetectPlayers(level, helper.absolutePos(SPAWNER_POS), spawner);
             helper.assertTrue(spawner.isOminous(),
                     "Trial spawner should have become ominous at tier 3 with chance 1.0");
+        } finally {
+            cfg.trialSpawner.enabled = savedEnabled;
+            cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;
+            cfg.trialSpawner.ominousUpgrade.chance = savedChance;
+            cfg.trialSpawner.ominousUpgrade.minimumTier = savedMinTier;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void trialSpawner_ominousUpgrade_skipsBelowMinimumTier(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+
+        helper.setBlock(SPAWNER_POS, Blocks.TRIAL_SPAWNER);
+        TrialSpawnerBlockEntity be = helper.getBlockEntity(SPAWNER_POS);
+        TrialSpawner spawner = be.getTrialSpawner();
+        TrialSpawnerDataAccessor dataAccessor = (TrialSpawnerDataAccessor) spawner.getData();
+
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.trialSpawner.enabled;
+        boolean savedOminousEnabled = cfg.trialSpawner.ominousUpgrade.enabled;
+        float savedChance = cfg.trialSpawner.ominousUpgrade.chance;
+        int savedMinTier = cfg.trialSpawner.ominousUpgrade.minimumTier;
+        cfg.trialSpawner.enabled = true;
+        cfg.trialSpawner.ominousUpgrade.enabled = true;
+        cfg.trialSpawner.ominousUpgrade.chance = 1.0f; // would always roll if the gate passed
+        cfg.trialSpawner.ominousUpgrade.minimumTier = 3;
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+        // Level 100 -> tier 2, below the configured minimum tier 3.
+        state.setLevel(player.getUUID(), 100, cfg.general.maxLevel);
+        dataAccessor.getDetectedPlayers().add(player.getUUID());
+
+        try {
+            spawner.getData().tryDetectPlayers(level, helper.absolutePos(SPAWNER_POS), spawner);
+            helper.assertFalse(spawner.isOminous(),
+                    "Trial spawner should stay non-ominous below the minimum tier even with chance 1.0");
+        } finally {
+            cfg.trialSpawner.enabled = savedEnabled;
+            cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;
+            cfg.trialSpawner.ominousUpgrade.chance = savedChance;
+            cfg.trialSpawner.ominousUpgrade.minimumTier = savedMinTier;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void trialSpawner_ominousUpgrade_respectsMasterToggle(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+
+        helper.setBlock(SPAWNER_POS, Blocks.TRIAL_SPAWNER);
+        TrialSpawnerBlockEntity be = helper.getBlockEntity(SPAWNER_POS);
+        TrialSpawner spawner = be.getTrialSpawner();
+        TrialSpawnerDataAccessor dataAccessor = (TrialSpawnerDataAccessor) spawner.getData();
+
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.trialSpawner.enabled;
+        boolean savedOminousEnabled = cfg.trialSpawner.ominousUpgrade.enabled;
+        float savedChance = cfg.trialSpawner.ominousUpgrade.chance;
+        int savedMinTier = cfg.trialSpawner.ominousUpgrade.minimumTier;
+        // Master toggle off must gate the ominous upgrade even with a high tier
+        // and a guaranteed roll otherwise configured.
+        cfg.trialSpawner.enabled = false;
+        cfg.trialSpawner.ominousUpgrade.enabled = true;
+        cfg.trialSpawner.ominousUpgrade.chance = 1.0f;
+        cfg.trialSpawner.ominousUpgrade.minimumTier = 3;
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+        // Level 150 -> tier 3, clearing the minimum; only the master toggle blocks it.
+        state.setLevel(player.getUUID(), 150, cfg.general.maxLevel);
+        dataAccessor.getDetectedPlayers().add(player.getUUID());
+
+        try {
+            spawner.getData().tryDetectPlayers(level, helper.absolutePos(SPAWNER_POS), spawner);
+            helper.assertFalse(spawner.isOminous(),
+                    "Trial spawner should stay non-ominous when trialSpawner.enabled is false");
         } finally {
             cfg.trialSpawner.enabled = savedEnabled;
             cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;

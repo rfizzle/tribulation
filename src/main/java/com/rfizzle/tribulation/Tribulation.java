@@ -10,6 +10,7 @@ import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.event.RaidScalingHandler;
 import com.rfizzle.tribulation.event.ShardDropHandler;
+import com.rfizzle.tribulation.event.SilverfishAbilityHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
 import com.rfizzle.tribulation.event.XpLootHandler;
 import com.rfizzle.tribulation.item.TribulationItems;
@@ -56,6 +57,7 @@ public class Tribulation implements ModInitializer {
         SoulInventoryHandler.register();
         ShardDropHandler.register();
         XpLootHandler.register();
+        SilverfishAbilityHandler.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 TribulationCommand.register(dispatcher));
         registerJoinSync();

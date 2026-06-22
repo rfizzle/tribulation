@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.compat.common;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.ability.AbilityManager;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.event.SkeletonVariantHandler;
 import com.rfizzle.tribulation.event.ZombieVariantHandler;
@@ -12,6 +13,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -37,6 +42,14 @@ public final class MobScalingDataCollector {
         TAG_ABILITIES.put("tribulation_web", "Web Placing");
         TAG_ABILITIES.put("tribulation_crop_trample", "Crop Trample");
         TAG_ABILITIES.put("tribulation_hunger2", "Hunger II");
+        TAG_ABILITIES.put(AbilityManager.TAG_SLOWNESS_ARROWS, "Slowness II Arrows");
+        TAG_ABILITIES.put(AbilityManager.TAG_POISON_ARROWS, "Poison II Arrows");
+        TAG_ABILITIES.put(AbilityManager.TAG_LINGERING_POTIONS, "Lingering Potions");
+        TAG_ABILITIES.put(AbilityManager.TAG_AGGRESSIVE_HEALING, "Aggressive Healing");
+        TAG_ABILITIES.put(AbilityManager.TAG_DOOR_BREAKING, "Door Breaking");
+        TAG_ABILITIES.put(AbilityManager.TAG_GUARDIAN_BEAM, "Rapid Beam");
+        TAG_ABILITIES.put(AbilityManager.TAG_RAVAGER_ROAR, "Expanded Roar");
+        TAG_ABILITIES.put(AbilityManager.TAG_CALL_SLEEPERS, "Call Sleepers");
 
         MODIFIER_ABILITIES.put("ability_zombie_reinforcements", "Reinforcements");
         MODIFIER_ABILITIES.put("ability_zombie_sprint", "Sprint");
@@ -80,6 +93,18 @@ public final class MobScalingDataCollector {
         return "";
     }
 
+    /**
+     * Comma-joined, human-readable list of the tribulation abilities active on
+     * {@code mob} — tag-driven, attribute-modifier-driven, and held-item
+     * enchantment abilities alike. Shared by the probe tooltips and the
+     * {@code /tribulation inspect} command so both surfaces report identically.
+     * Returns an empty string when the mob has no detectable abilities.
+     */
+    public static String describeAbilities(Mob mob) {
+        if (mob == null) return "";
+        return detectAbilities(mob);
+    }
+
     private static String detectAbilities(Mob mob) {
         List<String> found = new ArrayList<>();
 
@@ -97,10 +122,31 @@ public final class MobScalingDataCollector {
             }
         }
 
+        detectHeldEnchantments(mob, found);
+
         if (found.isEmpty()) return "";
         StringJoiner joiner = new StringJoiner(", ");
         for (String s : found) joiner.add(s);
         return joiner.toString();
+    }
+
+    /**
+     * Pillager Quick Charge / Multishot are real enchantments on the held
+     * crossbow rather than tags or attribute modifiers, so they need their own
+     * probe over the main-hand item's enchantment set.
+     */
+    private static void detectHeldEnchantments(Mob mob, List<String> found) {
+        ItemStack mainHand = mob.getMainHandItem();
+        if (mainHand.isEmpty()) return;
+        ItemEnchantments enchantments = mainHand.getEnchantments();
+        if (enchantments.isEmpty()) return;
+        for (Holder<Enchantment> holder : enchantments.keySet()) {
+            if (holder.is(Enchantments.QUICK_CHARGE)) {
+                found.add("Quick Charge");
+            } else if (holder.is(Enchantments.MULTISHOT)) {
+                found.add("Multishot");
+            }
+        }
     }
 
     private static boolean hasModifier(Mob mob, ResourceLocation id) {

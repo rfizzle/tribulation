@@ -5,7 +5,6 @@ import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.command.TribulationCommand;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
-import com.rfizzle.tribulation.event.AdvancementsHandler;
 import com.rfizzle.tribulation.event.DeathReliefHandler;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
@@ -57,7 +56,6 @@ public class Tribulation implements ModInitializer {
         SoulInventoryHandler.register();
         ShardDropHandler.register();
         XpLootHandler.register();
-        AdvancementsHandler.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 TribulationCommand.register(dispatcher));
         registerJoinSync();

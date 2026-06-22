@@ -102,6 +102,41 @@ public class MobScalingGameTest implements FabricGameTest {
         assertMultiplayerHp(helper, TribulationConfig.ScalingMode.AVERAGE, 45.0f, 50, 200);
     }
 
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombieSpawn_fullMoon_reachesExtraHp(GameTestHelper helper) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedMoonEnabled = cfg.moonPhaseScaling.enabled;
+        double savedMoonBonus = cfg.moonPhaseScaling.maxBonus;
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+
+        // Night at day 0 is phase 0 (Full Moon).
+        // 18000 is midnight.
+        long savedTime = helper.getLevel().getDayTime();
+        helper.getLevel().setDayTime(18000);
+
+        cfg.moonPhaseScaling.enabled = true;
+        cfg.moonPhaseScaling.maxBonus = 0.5; // +50% health
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+
+        try {
+            // Zombie at level 0: 20 HP. Full moon +0.5: 20 * (1 + 0.5) = 30 HP.
+            Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+            helper.assertValueEqual(zombie.getMaxHealth(), 30.0f, "full moon health bonus");
+        } finally {
+            cfg.moonPhaseScaling.enabled = savedMoonEnabled;
+            cfg.moonPhaseScaling.maxBonus = savedMoonBonus;
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            helper.getLevel().setDayTime(savedTime);
+        }
+        helper.succeed();
+    }
+
     /**
      * Shared recipe for a time-axis-only scaling gametest. Seats a ServerPlayer at
      * {@code playerLevel}, spawns a zombie within {@code mobDetectionRange}, and

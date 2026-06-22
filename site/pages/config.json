@@ -98,6 +98,25 @@
       ]
     },
     {
+      "id": "moon-phase-scaling",
+      "title": "moonPhaseScaling",
+      "intro": "Controls the nighttime moon-phase threat bonus. A triangle curve peaks at the full moon and tapers to zero at the new moon, applied to the position-scaled combat stats (health, damage, armor, toughness) on Overworld-type nights.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable moon-phase scaling axis"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxBonus</code>", "double", "0.1", "Bonus factor at the full moon (0 disables the axis)"],
+            ["<code class='text-accent2 whitespace-nowrap'>surfaceOnly</code>", "boolean", "false", "Only apply to mobs at or above <code class='text-accent2'>surfaceY</code>"],
+            ["<code class='text-accent2 whitespace-nowrap'>surfaceY</code>", "double", "63", "Minimum Y for the bonus when <code class='text-accent2'>surfaceOnly</code> is on"]
+          ]
+        },
+        { "type": "note", "html": "The axis applies only at night and only in dimensions with a daylight cycle (sky light, no ceiling). It never affects time-only stats like speed and follow range." },
+        { "type": "code", "small": true, "code": "{\n  \"moonPhaseScaling\": {\n    \"enabled\": true,\n    \"maxBonus\": 0.1,\n    \"surfaceOnly\": false,\n    \"surfaceY\": 63\n  }\n}" }
+      ]
+    },
+    {
       "id": "stat-caps",
       "title": "statCaps",
       "intro": "Hard ceilings on the total scaling factor for each attribute (all axes combined).",

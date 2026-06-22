@@ -52,6 +52,7 @@ public final class ScalingEngine {
     public static final String AXIS_TIME = "time";
     public static final String AXIS_DISTANCE = "distance";
     public static final String AXIS_HEIGHT = "height";
+    public static final String AXIS_MOON = "moon";
 
     public static final List<String> ALL_ATTRIBUTES = List.of(
             ATTR_HEALTH, ATTR_DAMAGE, ATTR_SPEED, ATTR_FOLLOW_RANGE, ATTR_ARMOR, ATTR_TOUGHNESS
@@ -152,9 +153,19 @@ public final class ScalingEngine {
         return Math.min(levels * cfg.heightFactor, cfg.maxHeightFactor);
     }
 
-    /** Sum the three axes and clip the total at the global cap. */
-    public static double combineFactor(double timeFactor, double distanceFactor, double heightFactor, double globalCap) {
-        double sum = timeFactor + distanceFactor + heightFactor;
+    /** Moon factor: triangle curve from full moon (0) to new moon (4). Returns 0 if disabled. */
+    public static double computeMoonFactor(int moonPhase, double maxBonus) {
+        if (maxBonus <= 0) {
+            return 0.0;
+        }
+        // triangle curve: 0 -> 1.0, 4 -> 0.0, 8 -> 1.0
+        double distFromFull = Math.min(moonPhase, 8 - moonPhase);
+        return maxBonus * (1.0 - distFromFull / 4.0);
+    }
+
+    /** Sum the four axes and clip the total at the global cap. */
+    public static double combineFactor(double timeFactor, double distanceFactor, double heightFactor, double moonFactor, double globalCap) {
+        double sum = timeFactor + distanceFactor + heightFactor + moonFactor;
         if (globalCap <= 0) {
             return sum;
         }
@@ -219,6 +230,7 @@ public final class ScalingEngine {
             int playerLevel,
             double rawDistanceFactor,
             double rawHeightFactor,
+            double rawMoonFactor,
             MobScaling scaling,
             StatCaps caps
     ) {
@@ -228,18 +240,21 @@ public final class ScalingEngine {
 
         double distFactor = 0.0;
         double heightFactor = 0.0;
+        double moonFactor = 0.0;
         if (isPositionScaled(attributeKey)) {
             distFactor = rawDistanceFactor;
             heightFactor = rawHeightFactor;
+            moonFactor = rawMoonFactor;
         }
 
         boolean addValue = usesAddValue(attributeKey);
         if (addValue) {
-            // For ADD_VALUE attributes the per-axis dist/height factors are
+            // For ADD_VALUE attributes the per-axis dist/height/moon factors are
             // dimensionless multipliers; translate them into native units by
             // multiplying by the attribute's per-axis cap.
             distFactor *= cap;
             heightFactor *= cap;
+            moonFactor *= cap;
         }
 
         double globalCapRaw = globalCapFor(attributeKey, caps);
@@ -251,16 +266,17 @@ public final class ScalingEngine {
             globalMax = globalCapRaw;
         }
 
-        double sum = timeFactor + distFactor + heightFactor;
+        double sum = timeFactor + distFactor + heightFactor + moonFactor;
         double total = globalMax > 0 ? Math.min(sum, globalMax) : sum;
         if (total < sum && sum > 0) {
             double scale = total / sum;
             timeFactor *= scale;
             distFactor *= scale;
             heightFactor *= scale;
+            moonFactor *= scale;
         }
 
-        return new ScalingResult.AttributeFactor(timeFactor, distFactor, heightFactor, total);
+        return new ScalingResult.AttributeFactor(timeFactor, distFactor, heightFactor, moonFactor, total);
     }
 
     /** Derive tier 0..5 from player level and the configured thresholds. */
@@ -367,6 +383,14 @@ public final class ScalingEngine {
         return true;
     }
 
+    public static boolean moonAppliesAt(ServerLevel world, Entity entity, TribulationConfig.MoonPhaseScaling cfg) {
+        if (cfg == null || !cfg.enabled) return false;
+        if (!world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling()) return false;
+        if (world.isDay()) return false;
+        if (cfg.surfaceOnly && entity.getY() < cfg.surfaceY) return false;
+        return true;
+    }
+
     // ---- Full compute ----
 
     /**
@@ -391,6 +415,9 @@ public final class ScalingEngine {
         double rawHeightFactor = heightAppliesInDimension(world, config.heightScaling)
                 ? computeHeightFactor(mobY, config.heightScaling)
                 : 0.0;
+        double rawMoonFactor = moonAppliesAt(world, mob, config.moonPhaseScaling)
+                ? computeMoonFactor(world.getMoonPhase(), config.moonPhaseScaling.maxBonus)
+                : 0.0;
 
         double distLevels = distanceAppliesInDimension(world, config.distanceScaling)
                 ? computeDistanceLevels(horizDist, config.distanceScaling.startingDistance, config.distanceScaling.increasingDistance)
@@ -406,12 +433,13 @@ public final class ScalingEngine {
                 .heightLevels(heightLevels)
                 .rawDistanceFactor(rawDistFactor)
                 .rawHeightFactor(rawHeightFactor)
+                .rawMoonFactor(rawMoonFactor)
                 .tier(computeTier(playerLevel, config.tiers));
 
         for (String attr : ALL_ATTRIBUTES) {
             builder.attributeFactor(
                     attr,
-                    computeAttributeFactor(attr, playerLevel, rawDistFactor, rawHeightFactor, scaling, config.statCaps)
+                    computeAttributeFactor(attr, playerLevel, rawDistFactor, rawHeightFactor, rawMoonFactor, scaling, config.statCaps)
             );
         }
         return builder.build();
@@ -456,6 +484,7 @@ public final class ScalingEngine {
         applyAxis(instance, AXIS_TIME, attributeKey, factor.timeFactor(), op);
         applyAxis(instance, AXIS_DISTANCE, attributeKey, factor.distanceFactor(), op);
         applyAxis(instance, AXIS_HEIGHT, attributeKey, factor.heightFactor(), op);
+        applyAxis(instance, AXIS_MOON, attributeKey, factor.moonFactor(), op);
     }
 
     private static void applyAxis(AttributeInstance instance, String axis, String attributeKey, double amount, AttributeModifier.Operation op) {
@@ -499,7 +528,7 @@ public final class ScalingEngine {
         if (instance == null) return 0.0;
 
         double total = 0.0;
-        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
+        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT, AXIS_MOON)) {
             AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) total += mod.amount();
         }
@@ -523,7 +552,8 @@ public final class ScalingEngine {
             if (instance == null) continue;
             if (instance.hasModifier(modifierId(AXIS_TIME, attr))
                     || instance.hasModifier(modifierId(AXIS_DISTANCE, attr))
-                    || instance.hasModifier(modifierId(AXIS_HEIGHT, attr))) {
+                    || instance.hasModifier(modifierId(AXIS_HEIGHT, attr))
+                    || instance.hasModifier(modifierId(AXIS_MOON, attr))) {
                 return true;
             }
         }
@@ -551,7 +581,7 @@ public final class ScalingEngine {
         // Sum current Tribulation modifiers
         double tribulationSum = 0;
         List<AttributeModifier> tribMods = new ArrayList<>();
-        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT)) {
+        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT, AXIS_MOON)) {
             AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) {
                 tribulationSum += mod.amount();

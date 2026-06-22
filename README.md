@@ -24,13 +24,14 @@ A comprehensive difficulty overhaul for Minecraft 1.21.1 (Fabric). Tribulation t
 
 ## Core Systems
 
-### Mob Scaling (3 Axes)
+### Mob Scaling (4 Axes)
 
-Every hostile mob's stats are computed from three independent factors at spawn time:
+Every hostile mob's stats are computed from four independent factors at spawn time:
 
 - **Time** — Your cumulative playtime advances a per-player level (0–250, 1 hour per level). Higher level = stronger mobs near you.
 - **Distance** — Beyond 1000 blocks from world spawn, mobs gain bonus health, damage, armor, and toughness (caps at +150%).
 - **Height** — Deviation from sea level (Y=62) in either direction adds threat (caps at +50%).
+- **Moon phase** — On Overworld nights, mob threat rises toward the full moon and tapers to zero at the new moon (caps at +10%); optionally surface-only.
 
 21 vanilla mob types have individually tuned scaling rates and caps. Modded hostile mobs get conservative fallback scaling automatically.
 
@@ -101,7 +102,7 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

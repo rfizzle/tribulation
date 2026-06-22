@@ -40,6 +40,10 @@
     "config.tribulation.height_scaling.positive": "Scale Above Starting Height",
     "config.tribulation.height_scaling.negative": "Scale Below Starting Height",
     "config.tribulation.height_scaling.exclude_other_dimensions": "Exclude Other Dimensions (Height)",
+    "config.tribulation.moon_scaling.enabled": "Moon Phase Scaling",
+    "config.tribulation.moon_scaling.max_bonus": "Full Moon Bonus",
+    "config.tribulation.moon_scaling.surface_only": "Surface Only",
+    "config.tribulation.moon_scaling.surface_y": "Surface Y Threshold",
 
     "config.tribulation.category.stat_caps": "Stat Caps",
     "config.tribulation.stat_caps.health": "Max Health Factor",

@@ -121,6 +121,11 @@ loom {
 }
 
 sourceSets {
+    main {
+        resources {
+            srcDirs += ["src/main/generated"]
+        }
+    }
     gametest {
         compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
         runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
@@ -141,6 +146,19 @@ loom {
             vmArg "-Dfabric-api.gametest"
             vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.file('junit-gametest.xml').get().asFile}"
             runDir "build/gametest"
+        }
+        datagen {
+            server()
+            name "Data Generation"
+            // The gametest source set carries main on its classpath. Running datagen
+            // from it lets fabric-gametest-api resolve the `fabric-gametest`
+            // entrypoints (which it loads eagerly on every dev launch) while still
+            // seeing the `fabric-datagen` entrypoint and resources from main.
+            source sourceSets.gametest
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/main/generated")}"
+            vmArg "-Dfabric-api.datagen.modid=tribulation"
+            runDir "build/datagen"
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.stat;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.advancement.TribulationCriteria;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.data.TribulationAttachments;
 import com.rfizzle.tribulation.event.ShardDropHandler;
@@ -44,7 +45,8 @@ public final class TribulationStats {
             }
         });
 
-        // Tier-5 kill counting
+        // Tier-5 kill: award the stat and grant the advancement from a single
+        // killer resolution so the AFTER_DEATH traversal only runs once.
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity instanceof Mob mob) {
                 Integer tier = mob.getAttached(TribulationAttachments.SCALED_TIER);
@@ -52,6 +54,7 @@ public final class TribulationStats {
                     ServerPlayer killer = ShardDropHandler.resolveKiller(mob, damageSource);
                     if (killer != null) {
                         killer.awardStat(TIER_5_MOBS_KILLED);
+                        TribulationCriteria.TIER_FIVE_MOB_KILLED.trigger(killer);
                     }
                 }
             }

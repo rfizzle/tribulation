@@ -44,3 +44,7 @@ hs_err_pid*.log
 # art/glyphs/ is throwaway (previews land in /tmp).
 art/glyphs/*.png
 art/glyphs/*.png.mcmeta
+
+# sfx render report — the .sfx source and master .ogg are committed in
+# art/audio/, but the waveform/spectrogram report PNG is a throwaway preview.
+art/audio/*.report.png

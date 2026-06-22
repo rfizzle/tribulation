@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation;
 
+import com.rfizzle.tribulation.advancement.TribulationCriteria;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.command.TribulationCommand;
 import com.rfizzle.tribulation.config.TribulationConfig;
@@ -12,9 +13,11 @@ import com.rfizzle.tribulation.event.ShardDropHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
 import com.rfizzle.tribulation.event.XpLootHandler;
 import com.rfizzle.tribulation.item.TribulationItems;
+import com.rfizzle.tribulation.sound.TribulationSounds;
 import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.scaling.TierManager;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -23,6 +26,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +45,9 @@ public class Tribulation implements ModInitializer {
         com.rfizzle.tribulation.data.TribulationAttachments.register();
         TribulationNetworking.register();
         TribulationItems.register();
+        TribulationSounds.register();
         TribulationStats.register();
+        TribulationCriteria.register();
         registerTickHandler();
         MobScalingHandler.register();
         RaidScalingHandler.register();
@@ -107,13 +113,34 @@ public class Tribulation implements ModInitializer {
         int levelsGained = state.incrementTick(player.getUUID(), ticksToAdd, cfg.general.levelUpTicks, cfg.general.maxLevel);
         if (levelsGained > 0) {
             int newLevel = state.getLevel(player.getUUID());
+            int newTier = TierManager.getTier(newLevel, cfg.tiers);
             TribulationNetworking.syncLevel(player);
             TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
+            if (newTier != oldTier) {
+                onTierCrossed(player, newTier);
+            }
             if (cfg.general.notifyLevelUp) {
-                int newTier = TierManager.getTier(newLevel, cfg.tiers);
                 sendLevelUpMessage(player, newLevel, oldTier, newTier, cfg.general.maxLevel, cfg.general.notifyLevelUpShowTier);
             }
         }
+    }
+
+    /**
+     * Mark a tier crossing as a moment: grant the matching tier advancement
+     * (toast handled by the advancement) and play the {@code tier_up} sting to
+     * the leveling player only. The sound is sent straight to the player's
+     * connection — {@code Level#playSound(null, …)} would broadcast to everyone
+     * nearby, and {@code Player#playNotifySound} is a client-only no-op on a
+     * dedicated server.
+     */
+    private static void onTierCrossed(ServerPlayer player, int newTier) {
+        TribulationCriteria.TIER_REACHED.trigger(player, newTier);
+        player.connection.send(new ClientboundSoundPacket(
+                TribulationSounds.TIER_UP,
+                SoundSource.PLAYERS,
+                player.getX(), player.getY(), player.getZ(),
+                1.0f, 1.0f,
+                player.getRandom().nextLong()));
     }
 
     private static void sendLevelUpMessage(ServerPlayer player, int newLevel, int oldTier, int newTier, int maxLevel, boolean showTier) {

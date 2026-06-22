@@ -81,6 +81,7 @@ public class ShatterShardItem extends Item {
 
             serverPlayer.awardStat(TribulationStats.SHATTER_SHARDS_USED);
             stack.consume(1, serverPlayer);
+            com.rfizzle.tribulation.advancement.TribulationCriteria.SHATTER_SHARD_USED.trigger(serverPlayer);
 
             level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
                     SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);

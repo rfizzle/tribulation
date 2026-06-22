@@ -59,6 +59,10 @@ At 5 level thresholds (50/100/150/200/250), mobs unlock special behaviors:
 
 Tribulation registers six custom statistics (highest level reached, levels lost to death relief, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
 
+### Advancements
+
+A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 ladder, surviving death with a Soulbound item, using a Shatter Shard, restoring a heart with a Heart Fragment, and killing a Tier-5 scaled mob. Crossing a tier fires an advancement toast plus a custom sound sting on the leveling player only. All criteria are server-side and work on dedicated servers.
+
 ### Additional Features
 
 - Special zombie variants (Big Zombie, Speed Zombie) with distinct stat profiles

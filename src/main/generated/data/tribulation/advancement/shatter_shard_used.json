@@ -1,0 +1,27 @@
+{
+  "parent": "tribulation:root",
+  "criteria": {
+    "shatter_shard_used": {
+      "trigger": "tribulation:shatter_shard_used"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.shatter_shard_used.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "tribulation:shatter_shard"
+    },
+    "title": {
+      "translate": "advancements.tribulation.shatter_shard_used.title"
+    }
+  },
+  "requirements": [
+    [
+      "shatter_shard_used"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

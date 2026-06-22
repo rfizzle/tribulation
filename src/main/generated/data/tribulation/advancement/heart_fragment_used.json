@@ -1,0 +1,28 @@
+{
+  "parent": "tribulation:root",
+  "criteria": {
+    "heart_fragment_used": {
+      "trigger": "tribulation:heart_fragment_used"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.heart_fragment_used.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "tribulation:heart_fragment"
+    },
+    "title": {
+      "translate": "advancements.tribulation.heart_fragment_used.title"
+    }
+  },
+  "requirements": [
+    [
+      "heart_fragment_used"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

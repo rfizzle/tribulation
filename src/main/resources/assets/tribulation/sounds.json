@@ -1,0 +1,8 @@
+{
+    "tier_up": {
+        "subtitle": "tribulation.subtitle.tier_up",
+        "sounds": [
+            "tribulation:tier_up"
+        ]
+    }
+}

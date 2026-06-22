@@ -1,0 +1,30 @@
+{
+  "parent": "tribulation:tier_3",
+  "criteria": {
+    "reach_tier_4": {
+      "conditions": {
+        "min_tier": 4
+      },
+      "trigger": "tribulation:tier_reached"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancements.tribulation.tier_4.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:netherite_sword"
+    },
+    "title": {
+      "translate": "advancements.tribulation.tier_4.title"
+    }
+  },
+  "requirements": [
+    [
+      "reach_tier_4"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

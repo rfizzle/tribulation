@@ -77,6 +77,7 @@ public class HeartFragmentItem extends Item {
             serverPlayer.awardStat(TribulationStats.HEARTS_RESTORED, before - after);
             HardcoreHeartsHandler.applyModifier(serverPlayer);
             stack.consume(1, serverPlayer);
+            com.rfizzle.tribulation.advancement.TribulationCriteria.HEART_FRAGMENT_USED.trigger(serverPlayer);
 
             level.playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
                     SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7f, 1.4f);

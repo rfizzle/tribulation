@@ -208,5 +208,28 @@
     "stat.tribulation.shatter_shards_used": "Shatter Shards used",
     "stat.tribulation.hearts_lost": "Half-hearts lost",
     "stat.tribulation.hearts_restored": "Half-hearts restored",
-    "stat.tribulation.tier_5_mobs_killed": "Tier-5 scaled mobs killed"
+    "stat.tribulation.tier_5_mobs_killed": "Tier-5 scaled mobs killed",
+
+    "advancements.tribulation.root.title": "Tribulation",
+    "advancements.tribulation.root.description": "Survive a world that grows deadlier the longer you live.",
+    "advancements.tribulation.tier_1.title": "First Blood",
+    "advancements.tribulation.tier_1.description": "Reach Tier 1 difficulty.",
+    "advancements.tribulation.tier_2.title": "Hardening",
+    "advancements.tribulation.tier_2.description": "Reach Tier 2 difficulty.",
+    "advancements.tribulation.tier_3.title": "Trial by Fire",
+    "advancements.tribulation.tier_3.description": "Reach Tier 3 difficulty.",
+    "advancements.tribulation.tier_4.title": "No Quarter",
+    "advancements.tribulation.tier_4.description": "Reach Tier 4 difficulty.",
+    "advancements.tribulation.tier_5.title": "Apex Tribulation",
+    "advancements.tribulation.tier_5.description": "Reach Tier 5, the deadliest difficulty.",
+    "advancements.tribulation.soulbound_survived.title": "Beyond the Grave",
+    "advancements.tribulation.soulbound_survived.description": "Carry a Soulbound item through your own death.",
+    "advancements.tribulation.shatter_shard_used.title": "A Moment's Mercy",
+    "advancements.tribulation.shatter_shard_used.description": "Use a Shatter Shard to lower your difficulty.",
+    "advancements.tribulation.heart_fragment_used.title": "Mended",
+    "advancements.tribulation.heart_fragment_used.description": "Restore a lost heart with a Heart Fragment.",
+    "advancements.tribulation.tier_five_mob_killed.title": "Giant Slayer",
+    "advancements.tribulation.tier_five_mob_killed.description": "Kill a Tier-5 scaled mob.",
+
+    "tribulation.subtitle.tier_up": "Difficulty tier rises"
 }

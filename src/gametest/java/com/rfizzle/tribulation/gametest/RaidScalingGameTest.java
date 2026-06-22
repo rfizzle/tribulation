@@ -29,10 +29,27 @@ import java.util.Set;
  * <p>The patrol test drives {@link RaidScalingHandler#spawnExtraMembers} with an
  * explicit level so it never has to fight the {@code ENTITY_LOAD}/{@code
  * isPatrolLeader} ordering; it polls (the core defers the add by a tick).
+ *
+ * <p>Gametest structures are packed only a few blocks apart, so a plain
+ * area scan would catch the neighbouring test's pillagers. Each test gives its
+ * captain a unique patrol target (its own block position) — which the spawned
+ * extras inherit — and counts only pillagers carrying that target, isolating
+ * its own spawns from any concurrent test.
  */
 public class RaidScalingGameTest implements FabricGameTest {
 
     private static final BlockPos CAPTAIN_POS = new BlockPos(1, 2, 1);
+
+    /** Count this captain's own extras (matched by inherited patrol target). */
+    private static int countOwnExtras(ServerLevel world, Pillager captain, BlockPos patrolTarget) {
+        List<Pillager> nearby = world.getEntitiesOfClass(
+                Pillager.class, captain.getBoundingBox().inflate(16.0));
+        int extras = 0;
+        for (Pillager p : nearby) {
+            if (p != captain && patrolTarget.equals(p.getPatrolTarget())) extras++;
+        }
+        return extras;
+    }
 
     @GameTest(template = "tribulation:empty_3x3")
     public void patrolSizeScalesWithTier(GameTestHelper helper) {
@@ -49,16 +66,15 @@ public class RaidScalingGameTest implements FabricGameTest {
 
         Pillager captain = helper.spawnWithNoFreeWill(EntityType.PILLAGER, CAPTAIN_POS);
         captain.setPatrolLeader(true);
+        // Unique target so the extras (which inherit it) can be told apart from
+        // any concurrent test's patrol members.
+        BlockPos target = captain.blockPosition();
+        captain.setPatrolTarget(target);
 
         RaidScalingHandler.spawnExtraMembers(captain, world, playerLevel, cfg);
 
         helper.succeedWhen(() -> {
-            List<Pillager> nearby = world.getEntitiesOfClass(
-                    Pillager.class, captain.getBoundingBox().inflate(16.0));
-            int extras = 0;
-            for (Pillager p : nearby) {
-                if (p != captain) extras++;
-            }
+            int extras = countOwnExtras(world, captain, target);
             if (extras != expectedExtra) {
                 helper.fail("Expected " + expectedExtra + " extra patrol members, found " + extras);
             }
@@ -75,16 +91,16 @@ public class RaidScalingGameTest implements FabricGameTest {
 
         Pillager captain = helper.spawnWithNoFreeWill(EntityType.PILLAGER, CAPTAIN_POS);
         captain.setPatrolLeader(true);
+        BlockPos target = captain.blockPosition();
+        captain.setPatrolTarget(target);
 
         RaidScalingHandler.spawnExtraMembers(captain, world, cfg.tiers.tier5, cfg);
 
         // Give the deferred task a window to (not) run, then assert no extras.
         helper.runAfterDelay(3, () -> {
-            List<Pillager> nearby = world.getEntitiesOfClass(
-                    Pillager.class, captain.getBoundingBox().inflate(16.0));
-            if (nearby.size() != 1) {
-                helper.fail("Disabled raid scaling must not add patrol members, found "
-                        + (nearby.size() - 1) + " extras");
+            int extras = countOwnExtras(world, captain, target);
+            if (extras != 0) {
+                helper.fail("Disabled raid scaling must not add patrol members, found " + extras);
             }
             helper.succeed();
         });

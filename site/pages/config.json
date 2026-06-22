@@ -442,6 +442,25 @@
       ]
     },
     {
+      "id": "raid-scaling",
+      "title": "raidScaling",
+      "intro": "Scales raid and pillager-patrol composition with the tier of the targeted player(s). Patrols gain extra members and high-tier raids run additional waves. Raider stats, armor, and weapons already flow through the normal spawn-scaling path, so this block governs only structural escalation — bells, Hero of the Village, and the raid bar behave normally.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Master switch. When false, patrols and raids keep their vanilla size and wave count."],
+            ["<code class='text-accent2 whitespace-nowrap'>patrolBonusRate</code>", "int", "2", "Tiers per extra patrol member: a captain adds <code class='text-accent2'>tier / patrolBonusRate</code> members (floored). 0 disables the patrol bonus."],
+            ["<code class='text-accent2 whitespace-nowrap'>extraWaveTierThreshold</code>", "int", "4", "Lowest tier (from the raid's targeted players) at which extra waves are added."],
+            ["<code class='text-accent2 whitespace-nowrap'>extraWaveCount</code>", "int", "1", "Number of extra waves added once the threshold tier is met."]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"raidScaling\": {\n    \"enabled\": true,\n    \"patrolBonusRate\": 2,\n    \"extraWaveTierThreshold\": 4,\n    \"extraWaveCount\": 1\n  }\n}" }
+      ]
+    },
+    {
       "id": "abilities",
       "title": "abilities",
       "intro": "Toggle individual tier-gated abilities on or off. All default to <code class='text-accent2'>true</code>.",

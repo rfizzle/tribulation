@@ -163,6 +163,18 @@
               ],
               "bulletSpacing": 2,
               "note": "Config: <code class='text-accent2'>trialSpawner.enabled</code>, <code class='text-accent2'>trialSpawner.ominousUpgrade</code>"
+            },
+            {
+              "id": "raid-patrol-scaling",
+              "title": "Raid &amp; Patrol Scaling",
+              "html": ["Vanilla's only built-in escalation system now scales with you. Pillager patrols grow and high-tier raids run extra waves, driven by the tier of the targeted player(s) — while bells, Hero of the Village, and the raid bar all behave normally."],
+              "bullets": [
+                "<span class='text-bone'>Bigger patrols:</span> A patrol captain adds one extra member per <code class='text-accent2'>patrolBonusRate</code> tiers (default +1 per 2 tiers). Each extra spawns through the normal scaling path, so it gets tier-appropriate stats, armor, and weapons.",
+                "<span class='text-bone'>Extra raid waves:</span> Raids whose targeted players are at or above <code class='text-accent2'>extraWaveTierThreshold</code> (default tier 4) run <code class='text-accent2'>extraWaveCount</code> additional wave(s).",
+                "<span class='text-bone'>Tier-appropriate raiders:</span> Raiders already roll armor and weapons like every other scaled mob — no separate toggle needed."
+              ],
+              "bulletSpacing": 2,
+              "note": "Config: <code class='text-accent2'>raidScaling.enabled</code>, <code class='text-accent2'>raidScaling.patrolBonusRate</code>, <code class='text-accent2'>raidScaling.extraWaveTierThreshold</code>, <code class='text-accent2'>raidScaling.extraWaveCount</code>"
             }
           ]
         }

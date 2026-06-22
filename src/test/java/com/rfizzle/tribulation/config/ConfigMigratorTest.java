@@ -191,19 +191,49 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v3_isIdempotent() {
+    void migrate_v3ToV4_addsRaidScaling() {
         JsonObject json = new JsonObject();
         json.addProperty("configVersion", 3);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
 
-        assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(3, json.get("configVersion").getAsInt());
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("raidScaling"), "raidScaling section must be added");
+        assertTrue(json.get("raidScaling").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
     }
 
     @Test
-    void migrate_v0ToV3_runsAllMigrations() {
+    void migrate_v3ToV4_doesNotOverwriteExistingRaidScaling() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 3);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("raidScaling", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("raidScaling").get("enabled").getAsBoolean(),
+                "pre-existing raidScaling content must be preserved");
+    }
+
+    @Test
+    void migrate_v4_isIdempotent() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 4);
+        json.add("hardcoreHearts", new JsonObject());
+        json.add("soulInventory", new JsonObject());
+        json.add("trialSpawner", new JsonObject());
+        json.add("raidScaling", new JsonObject());
+
+        assertFalse(ConfigMigrator.migrate(json));
+        assertEquals(4, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v0ToV4_runsAllMigrations() {
         JsonObject json = new JsonObject();
         // No configVersion → version 0
 
@@ -213,6 +243,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("hardcoreHearts"));
         assertTrue(json.has("soulInventory"));
         assertTrue(json.has("trialSpawner"));
+        assertTrue(json.has("raidScaling"));
     }
 
     @Test

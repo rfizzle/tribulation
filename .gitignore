@@ -4,11 +4,12 @@ build/
 out/
 classes/
 
-# loom dev runtime
-run/
-mods/
-logs/
-config/
+# loom dev runtime (root-level only — anchored so these never match Java
+# package directories like src/.../config/ or src/.../logs/)
+/run/
+/mods/
+/logs/
+/config/
 
 # IDE
 .idea/

@@ -35,7 +35,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 3;
+    public int configVersion = 4;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -59,6 +59,7 @@ public class TribulationConfig {
     public ArmorEquipment armorEquipment = new ArmorEquipment();
     public WeaponEquipment weaponEquipment = new WeaponEquipment();
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
+    public RaidScaling raidScaling = new RaidScaling();
     public Hud hud = new Hud();
 
     public static TribulationConfig load() {
@@ -254,6 +255,8 @@ public class TribulationConfig {
         if (trialSpawner == null) trialSpawner = new TrialSpawnerConfig();
         if (trialSpawner.ominousUpgrade == null) trialSpawner.ominousUpgrade = new TrialSpawnerConfig.OminousUpgrade();
 
+        if (raidScaling == null) raidScaling = new RaidScaling();
+
         if (scaling == null) {
             scaling = defaultScaling();
         } else {
@@ -430,6 +433,19 @@ public class TribulationConfig {
         trialSpawner.ominousUpgrade.chance = (float) clampUnit("trialSpawner.ominousUpgrade.chance", trialSpawner.ominousUpgrade.chance);
         if (trialSpawner.ominousUpgrade.minimumTier < 0) {
             trialSpawner.ominousUpgrade.minimumTier = 0;
+        }
+
+        if (raidScaling.patrolBonusRate < 0) {
+            Tribulation.LOGGER.warn("raidScaling.patrolBonusRate must be >= 0, got {}; clamped to 0", raidScaling.patrolBonusRate);
+            raidScaling.patrolBonusRate = 0;
+        }
+        if (raidScaling.extraWaveTierThreshold < 0) {
+            Tribulation.LOGGER.warn("raidScaling.extraWaveTierThreshold must be >= 0, got {}; clamped to 0", raidScaling.extraWaveTierThreshold);
+            raidScaling.extraWaveTierThreshold = 0;
+        }
+        if (raidScaling.extraWaveCount < 0) {
+            Tribulation.LOGGER.warn("raidScaling.extraWaveCount must be >= 0, got {}; clamped to 0", raidScaling.extraWaveCount);
+            raidScaling.extraWaveCount = 0;
         }
 
         for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
@@ -861,6 +877,43 @@ public class TribulationConfig {
             public boolean enabled = false;
             public float chance = 0.10f;
             public int minimumTier = 3;
+        }
+    }
+
+    /**
+     * Scales raid and pillager-patrol composition with the tier of the
+     * targeted player(s). Patrols gain one extra member per
+     * {@code patrolBonusRate} tiers; raids at or above
+     * {@code extraWaveTierThreshold} run {@code extraWaveCount} additional
+     * wave(s). Raider stats/armor/weapons already flow through the normal
+     * spawn-scaling path, so this block only governs structural escalation.
+     */
+    public static class RaidScaling {
+        public boolean enabled = true;
+        public int patrolBonusRate = 2;
+        public int extraWaveTierThreshold = 4;
+        public int extraWaveCount = 1;
+
+        /**
+         * Extra patrol members for a captain's tier: {@code tier / patrolBonusRate},
+         * floored. The {@code patrolBonusRate > 0} guard keeps a rate of 0 from
+         * dividing by zero (treated as "no bonus"); {@code enabled = false} is the
+         * master off-switch. Pure arithmetic — covered by unit tests.
+         */
+        public int extraPatrolMembers(int tier) {
+            if (!enabled || patrolBonusRate <= 0 || tier <= 0) return 0;
+            return tier / patrolBonusRate;
+        }
+
+        /**
+         * Extra raid waves for the raid's maximum targeted tier:
+         * {@code extraWaveCount} when {@code maxTier >= extraWaveTierThreshold},
+         * else 0. {@code enabled = false} is the master off-switch. Pure
+         * arithmetic — covered by unit tests.
+         */
+        public int extraWaves(int maxTier) {
+            if (!enabled || maxTier < extraWaveTierThreshold) return 0;
+            return extraWaveCount;
         }
     }
 

@@ -43,6 +43,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addBosses(builder, entry, current);
             addXpAndLoot(builder, entry, current);
             addTrialSpawner(builder, entry, current);
+            addRaidScaling(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
                 current.save();
@@ -798,6 +799,37 @@ public final class ModMenuIntegration implements ModMenuApi {
                         ts.ominousUpgrade.minimumTier)
                 .setDefaultValue(3).setMin(0)
                 .setSaveConsumer(v -> ts.ominousUpgrade.minimumTier = v)
+                .build());
+    }
+
+    private static void addRaidScaling(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.raid_scaling"));
+        TribulationConfig.RaidScaling rs = config.raidScaling;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.raid_scaling.enabled"),
+                        rs.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> rs.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.raid_scaling.patrol_bonus_rate"),
+                        rs.patrolBonusRate)
+                .setDefaultValue(2).setMin(0)
+                .setSaveConsumer(v -> rs.patrolBonusRate = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.raid_scaling.extra_wave_tier_threshold"),
+                        rs.extraWaveTierThreshold)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> rs.extraWaveTierThreshold = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.raid_scaling.extra_wave_count"),
+                        rs.extraWaveCount)
+                .setDefaultValue(1).setMin(0)
+                .setSaveConsumer(v -> rs.extraWaveCount = v)
                 .build());
     }
 }

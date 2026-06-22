@@ -11,6 +11,7 @@
         "LivingEntityExperienceMixin",
         "LivingEntityTotemMixin",
         "MobAbilityMixin",
+        "RaidScalingMixin",
         "SoulInventoryMixin",
         "TrialSpawnerDataAccessor",
         "TrialSpawnerDataMixin",

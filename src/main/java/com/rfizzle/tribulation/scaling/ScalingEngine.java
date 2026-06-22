@@ -284,6 +284,21 @@ public final class ScalingEngine {
         return TierManager.getTier(playerLevel, tiers);
     }
 
+    /**
+     * Add a per-dimension baseline offset to a resolved player level and clamp
+     * the result to {@code maxLevel}. This is the only place an effective level
+     * is capped to {@code maxLevel} — stored levels are capped upstream in
+     * {@link PlayerDifficultyState#setLevel}, but the offset is the one thing
+     * that can push a stored level past the ceiling. Negative offsets are
+     * treated as zero (config validation already clamps them; the guard keeps
+     * this method total for direct callers). Pure {@code int} math so it is
+     * unit-testable without a Minecraft bootstrap.
+     */
+    static int applyDimensionOffset(int rawLevel, int offset, int maxLevel) {
+        int sum = rawLevel + Math.max(0, offset);
+        return Math.min(sum, maxLevel);
+    }
+
     // ---- World-aware ----
 
     /**
@@ -302,11 +317,19 @@ public final class ScalingEngine {
         if (server == null) return 0;
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
 
+        // Read the offset and ceiling from the same cfg snapshot as everything
+        // else, so a concurrent reload can't mix generations. The offset is added
+        // only once a player level is actually resolved — the "no player nearby"
+        // paths return 0 unchanged, since there is no nearest player to offset and
+        // mobs out of detection range never scale anyway.
+        int offset = cfg.getDimensionOffset(world.dimension().location());
+        int maxLevel = cfg.general.maxLevel;
+
         TribulationConfig.ScalingMode mode = cfg.general.scalingMode;
         if (mode == TribulationConfig.ScalingMode.NEAREST) {
             Player nearest = world.getNearestPlayer(entity, range);
             if (nearest instanceof ServerPlayer sp) {
-                return state.getLevel(sp.getUUID());
+                return applyDimensionOffset(state.getLevel(sp.getUUID()), offset, maxLevel);
             }
             return 0;
         }
@@ -334,8 +357,8 @@ public final class ScalingEngine {
         }
 
         if (count == 0) return 0;
-        if (mode == TribulationConfig.ScalingMode.MAX) return max;
-        return (int) (sum / count);
+        int raw = mode == TribulationConfig.ScalingMode.MAX ? max : (int) (sum / count);
+        return applyDimensionOffset(raw, offset, maxLevel);
     }
 
     /**

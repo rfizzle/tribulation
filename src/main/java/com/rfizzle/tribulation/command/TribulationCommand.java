@@ -494,6 +494,10 @@ public final class TribulationCommand {
                 "Scaling mode: %s  Effective level: %d",
                 cfg.general.scalingMode, effectiveLevel));
         lines.add(String.format(Locale.ROOT,
+                "Dimension offset: %+d  (%s)",
+                cfg.getDimensionOffset(world.dimension().location()),
+                world.dimension().location()));
+        lines.add(String.format(Locale.ROOT,
                 "Distance from spawn: %.1f blocks  →  factor %+.3f",
                 horizontalDistance, rawDistanceFactor));
 

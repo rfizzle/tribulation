@@ -41,10 +41,14 @@
                 {
                   "title": "Moon Phase",
                   "html": ["A triangle curve peaks at the full moon (<code class='text-accent2'>maxBonus</code>, 0.1 by default) and tapers to zero at the new moon. Applies to health, damage, armor, and toughness on Overworld nights."]
+                },
+                {
+                  "title": "Dimension Offset",
+                  "html": ["A flat per-dimension level boost folded into the effective level — the Nether (+25) and End (+40) by default, so those dimensions stay scarier than the late-game Overworld. Lifts mob stats and ability tiers alike, and is configurable per dimension ID."]
                 }
               ]
             },
-            { "type": "note", "html": "Distance and height are optionally excluded outside the Overworld; the moon axis applies only on nights in dimensions with a daylight cycle. Time scaling applies in every dimension." }
+            { "type": "note", "html": "Distance and height are optionally excluded outside the Overworld; the moon axis applies only on nights in dimensions with a daylight cycle. Time scaling applies in every dimension, and a configurable per-dimension level offset (Nether +25, End +40 by default) raises the effective level used for both stat scaling and ability tiers." }
           ]
         },
         {

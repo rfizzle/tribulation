@@ -41,6 +41,7 @@ public class TribulationConfig {
     public DistanceScaling distanceScaling = new DistanceScaling();
     public HeightScaling heightScaling = new HeightScaling();
     public MoonPhaseScaling moonPhaseScaling = new MoonPhaseScaling();
+    public Map<String, Integer> dimensionOffsets = defaultDimensionOffsets();
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
@@ -148,6 +149,19 @@ public class TribulationConfig {
 
     public boolean isMobEnabled(String mobKey) {
         return mobToggles.getOrDefault(mobKey, Boolean.FALSE);
+    }
+
+    /**
+     * Flat level offset added to the effective scaling level for mobs in the
+     * given dimension (see {@link com.rfizzle.tribulation.scaling.ScalingEngine#getEffectiveLevel}).
+     * Returns {@code 0} when the dimension has no configured entry, so unlisted
+     * dimensions (the Overworld by default) are unaffected. Null-safe against
+     * a missing map or a {@code null} JSON value.
+     */
+    public int getDimensionOffset(ResourceLocation dimension) {
+        if (dimensionOffsets == null || dimension == null) return 0;
+        Integer offset = dimensionOffsets.get(dimension.toString());
+        return offset != null ? offset : 0;
     }
 
     /**
@@ -275,6 +289,15 @@ public class TribulationConfig {
             }
         }
 
+        if (dimensionOffsets == null) {
+            dimensionOffsets = defaultDimensionOffsets();
+        } else {
+            Map<String, Integer> defaults = defaultDimensionOffsets();
+            for (Map.Entry<String, Integer> entry : defaults.entrySet()) {
+                dimensionOffsets.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+
         if (unlistedHostileMobs == null) {
             unlistedHostileMobs = new UnlistedHostileMobs();
         }
@@ -310,6 +333,18 @@ public class TribulationConfig {
         heightScaling.maxHeightFactor = clampNonNegative("heightScaling.maxHeightFactor", heightScaling.maxHeightFactor);
 
         moonPhaseScaling.maxBonus = clampNonNegative("moonPhaseScaling.maxBonus", moonPhaseScaling.maxBonus);
+
+        if (dimensionOffsets != null) {
+            for (Map.Entry<String, Integer> entry : dimensionOffsets.entrySet()) {
+                Integer offset = entry.getValue();
+                if (offset == null) {
+                    entry.setValue(0);
+                } else if (offset < 0) {
+                    Tribulation.LOGGER.warn("dimensionOffsets.{} must be >= 0, got {}; clamped to 0", entry.getKey(), offset);
+                    entry.setValue(0);
+                }
+            }
+        }
 
         statCaps.maxFactorHealth = clampNonNegative("statCaps.maxFactorHealth", statCaps.maxFactorHealth);
         statCaps.maxFactorDamage = clampNonNegative("statCaps.maxFactorDamage", statCaps.maxFactorDamage);
@@ -579,6 +614,20 @@ public class TribulationConfig {
         for (String mob : MOB_KEYS) {
             map.put(mob, true);
         }
+        return map;
+    }
+
+    /**
+     * Baseline threat offsets per dimension. The Nether and End only receive the
+     * time axis by default (distance/height are Overworld-only), so a flat level
+     * offset restores the intended difficulty escalation in those dimensions.
+     * Keys are dimension {@link ResourceLocation} strings; modded dimensions can
+     * be added here too.
+     */
+    private static Map<String, Integer> defaultDimensionOffsets() {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put("minecraft:the_nether", 25);
+        map.put("minecraft:the_end", 40);
         return map;
     }
 

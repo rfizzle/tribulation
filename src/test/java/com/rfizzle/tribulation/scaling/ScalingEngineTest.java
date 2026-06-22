@@ -331,6 +331,28 @@ class ScalingEngineTest {
         assertEquals(5, ScalingEngine.computeTier(50, t));
     }
 
+    // ---- Dimension offset ----
+
+    @Test
+    void dimensionOffset_zeroOffset_isIdentity() {
+        assertEquals(30, ScalingEngine.applyDimensionOffset(30, 0, 250));
+    }
+
+    @Test
+    void dimensionOffset_positiveOffset_adds() {
+        assertEquals(55, ScalingEngine.applyDimensionOffset(30, 25, 250));
+    }
+
+    @Test
+    void dimensionOffset_negativeOffset_clampsToZero() {
+        assertEquals(30, ScalingEngine.applyDimensionOffset(30, -10, 250));
+    }
+
+    @Test
+    void dimensionOffset_sumOverMaxLevel_cappedAtMaxLevel() {
+        assertEquals(250, ScalingEngine.applyDimensionOffset(240, 40, 250));
+    }
+
     // ---- Modifier IDs + classification ----
 
     @Test

@@ -117,6 +117,23 @@
       ]
     },
     {
+      "id": "dimension-offsets",
+      "title": "dimensionOffsets",
+      "intro": "A flat level offset per dimension, added to the effective level used for mob stat scaling and tier-gated abilities in that dimension. The Nether and End only receive the time axis (distance and height are Overworld-only), so a baseline offset restores the intended difficulty escalation there. The offset never touches the player's stored level, HUD readout, tier notifications, or death penalties.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:the_nether</code>", "integer", "25", "Levels added to mobs in the Nether"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:the_end</code>", "integer", "40", "Levels added to mobs in the End"]
+          ]
+        },
+        { "type": "note", "html": "Keys are dimension <code class='text-accent2'>ResourceLocation</code> strings, so modded dimensions can be tuned too. Values are non-negative integers (negatives are clamped to 0 on load); set an entry to 0 to disable its offset. The effective level after the offset is still capped by <code class='text-accent2'>general.maxLevel</code>." },
+        { "type": "code", "small": true, "code": "{\n  \"dimensionOffsets\": {\n    \"minecraft:the_nether\": 25,\n    \"minecraft:the_end\": 40\n  }\n}" }
+      ]
+    },
+    {
       "id": "stat-caps",
       "title": "statCaps",
       "intro": "Hard ceilings on the total scaling factor for each attribute (all axes combined).",

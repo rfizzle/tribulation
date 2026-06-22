@@ -102,6 +102,7 @@ public class MobScalingGameTest implements FabricGameTest {
         assertMultiplayerHp(helper, TribulationConfig.ScalingMode.AVERAGE, 45.0f, 50, 200);
     }
 
+    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void zombieSpawn_fullMoon_reachesExtraHp(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -110,20 +111,37 @@ public class MobScalingGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        double savedRange = cfg.general.mobDetectionRange;
 
-        // Night at day 0 is phase 0 (Full Moon).
-        // 18000 is midnight.
+        // Night at day 0 is phase 0 (Full Moon). 18000 is midnight. setDayTime
+        // alone only moves the clock — skyDarken (what isDay() reads) is recomputed
+        // by the per-tick world loop, which the GameTestServer hasn't run for this
+        // synchronous spawn yet, so without the explicit updateSkyBrightness() the
+        // world still reports day and the moon axis stays inactive.
         long savedTime = helper.getLevel().getDayTime();
         helper.getLevel().setDayTime(18000);
+        helper.getLevel().updateSkyBrightness();
 
         cfg.moonPhaseScaling.enabled = true;
         cfg.moonPhaseScaling.maxBonus = 0.5; // +50% health
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        // Seat the player on the zombie's block and shrink the range so the moon
+        // bonus is measured against a known level-0 player, not a persistent
+        // player leaking in from an adjacent test's structure (~8 blocks away,
+        // inside the default 32-block range) whose time factor would otherwise
+        // stack on top of the moon bonus.
+        cfg.general.mobDetectionRange = 2.0;
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
+        player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
+        state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
 
         try {
-            // Zombie at level 0: 20 HP. Full moon +0.5: 20 * (1 + 0.5) = 30 HP.
+            // Level-0 player: 20 HP. Full moon +0.5: 20 * (1 + 0.5) = 30 HP.
             Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
             helper.assertValueEqual(zombie.getMaxHealth(), 30.0f, "full moon health bonus");
         } finally {
@@ -132,9 +150,74 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.general.mobDetectionRange = savedRange;
             helper.getLevel().setDayTime(savedTime);
+            helper.getLevel().updateSkyBrightness();
+            player.discard();
         }
         helper.succeed();
+    }
+
+    /**
+     * Proves the per-dimension offset feeds the whole scaling pipeline end-to-end.
+     * Gametests run in the Overworld, so rather than teleport to the Nether the
+     * test injects a +50 offset on {@code minecraft:overworld}: a level-0 player
+     * then scales mobs as if they were level 50. Zombie health: timeFactor =
+     * min(50 * 0.01, 2.5) = 0.5 → 20 * (1 + 0.5) = 30 HP. The other axes (and
+     * special variants) are disabled so the assertion reflects the offset alone.
+     */
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombieSpawn_dimensionOffset_scalesAsHigherLevel(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+        TribulationConfig cfg = Tribulation.getConfig();
+
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedMoon = cfg.moonPhaseScaling.enabled;
+        double savedRange = cfg.general.mobDetectionRange;
+        Integer savedOffset = cfg.dimensionOffsets.get("minecraft:overworld");
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+        cfg.moonPhaseScaling.enabled = false;
+        // Seat the player on the zombie's block and shrink the range so the fold
+        // sees only this test's player, not one leaking in from an adjacent
+        // structure (see assertMultiplayerHp for the same isolation).
+        cfg.general.mobDetectionRange = 2.0;
+        cfg.dimensionOffsets.put("minecraft:overworld", 50);
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
+        player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
+        state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
+
+        Zombie zombie;
+        try {
+            zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        } finally {
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            cfg.moonPhaseScaling.enabled = savedMoon;
+            cfg.general.mobDetectionRange = savedRange;
+            if (savedOffset == null) {
+                cfg.dimensionOffsets.remove("minecraft:overworld");
+            } else {
+                cfg.dimensionOffsets.put("minecraft:overworld", savedOffset);
+            }
+            player.discard();
+        }
+
+        Zombie z = zombie;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(z.getTags().contains(MobScalingHandler.PROCESSED_TAG),
+                    "scaling handler must have tagged the zombie");
+            helper.assertValueEqual(z.getMaxHealth(), 30.0f,
+                    "maxHealth with +50 dimension offset at player level 0");
+        });
     }
 
     /**

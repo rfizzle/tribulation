@@ -1,7 +1,7 @@
 {
   "nav": "Features",
   "metaTitle": "Features — Tribulation | Difficulty Overhaul for Minecraft",
-  "metaDescription": "Every Tribulation feature: three-axis mob scaling, per-mob rates, tier-gated abilities, zombie variants, boss scaling, death relief, shatter shards, hardcore hearts, soul inventory, and the level badge HUD.",
+  "metaDescription": "Every Tribulation feature: four-axis mob scaling, per-mob rates, tier-gated abilities, zombie variants, boss scaling, death relief, shatter shards, hardcore hearts, soul inventory, and the level badge HUD.",
   "ogTitle": "Features — Tribulation",
   "ogDescription": "Detailed breakdown of every Tribulation feature and mechanic.",
   "title": "Features",
@@ -16,12 +16,13 @@
         {
           "type": "sub",
           "id": "scaling-axes",
-          "title": "Three Scaling Axes",
-          "intro": "Mob stats are boosted by three independent axes that combine per attribute. Each axis produces a factor added to the mob's base stat via attribute modifiers: <code class='text-accent2'>min(level × rate, cap)</code> for time, plus distance and height bonuses.",
+          "title": "Four Scaling Axes",
+          "intro": "Mob stats are boosted by four independent axes that combine per attribute. Each axis produces a factor added to the mob's base stat via attribute modifiers: <code class='text-accent2'>min(level × rate, cap)</code> for time, plus distance, height, and moon-phase bonuses.",
           "blocks": [
             {
               "type": "cards",
-              "mdColumns": 3,
+              "mdColumns": 2,
+              "lgColumns": 4,
               "leftAccent": true,
               "titleSize": "base",
               "items": [
@@ -36,10 +37,39 @@
                 {
                   "title": "Height (Y-Level)",
                   "html": ["Deviation from Y=62 by 30 blocks adds 0.1, capping at 0.5. Positive and negative deviation both scale — deep caves and tall mountains alike."]
+                },
+                {
+                  "title": "Moon Phase",
+                  "html": ["A triangle curve peaks at the full moon (<code class='text-accent2'>maxBonus</code>, 0.1 by default) and tapers to zero at the new moon. Applies to health, damage, armor, and toughness on Overworld nights."]
                 }
               ]
             },
-            { "type": "note", "html": "Distance and height are optionally excluded outside the Overworld. Time scaling applies in every dimension." }
+            { "type": "note", "html": "Distance and height are optionally excluded outside the Overworld; the moon axis applies only on nights in dimensions with a daylight cycle. Time scaling applies in every dimension." }
+          ]
+        },
+        {
+          "type": "sub",
+          "id": "moon-phase",
+          "title": "Moon-Phase Threat",
+          "intro": "A thematic weekly rhythm layered on top of the position axes. The lunar cycle nudges nighttime danger up toward the full moon and back down toward the new moon, so the same coordinates feel different week to week.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "The Curve",
+                  "html": ["A triangle interpolation over the 8 vanilla moon phases: the full moon yields the configured <code class='text-accent2'>maxBonus</code> (0.1 = +10% by default), the new moon yields zero, and the half-moons land halfway. Like distance and height, the bonus applies only to the position-scaled combat stats — health, damage, armor, and toughness."]
+                },
+                {
+                  "title": "When It Applies",
+                  "html": ["Only at night (<code class='text-accent2'>!isDay()</code>), and only in dimensions with a real daylight cycle (sky light, no ceiling — the Overworld). With <code class='text-accent2'>surfaceOnly</code> enabled, the bonus is further gated to mobs at or above <code class='text-accent2'>surfaceY</code> (63), keeping the check off deep-cave spawns."]
+                }
+              ]
+            },
+            { "type": "note", "html": "Inspect the live moon factor with <code class='text-accent2'>/tribulation debug &lt;player&gt;</code> — it prints the current phase and bonus, or the reason the axis is inactive (day, new moon, below surface, or <code class='text-accent2'>maxBonus</code> of 0)." }
           ]
         },
         {

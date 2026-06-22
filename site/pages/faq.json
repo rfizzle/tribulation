@@ -31,11 +31,11 @@
             },
             {
               "q": "I already run another mob-scaling mod. Can I keep it?",
-              "a": "No — remove it first. Tribulation applies its scaling through attribute modifiers, and a second scaling mod stacking on top produces compounding, unpredictable stat inflation. Tribulation is designed to be the single source of difficulty: three scaling axes, per-player progression, tier abilities, and death penalties in one jar with zero external dependencies."
+              "a": "No — remove it first. Tribulation applies its scaling through attribute modifiers, and a second scaling mod stacking on top produces compounding, unpredictable stat inflation. Tribulation is designed to be the single source of difficulty: four scaling axes, per-player progression, tier abilities, and death penalties in one jar with zero external dependencies."
             },
             {
               "q": "How do I make it harder — or easier?",
-              "a": "Everything is tunable in <code class='text-accent2'>tribulation.json</code>. <strong class='text-bone'>Harder:</strong> lower <code class='text-accent2'>levelUpTicks</code> to level faster, raise the <code class='text-accent2'>statCaps</code>, enable <code class='text-accent2'>dropMoreLoot</code>, or turn on Hardcore Hearts and Soul Inventory. <strong class='text-bone'>Easier:</strong> raise <code class='text-accent2'>levelUpTicks</code>, lower the stat caps, disable the distance or height axes, or bump <code class='text-accent2'>deathRelief.amount</code> so deaths claw back more difficulty. Apply changes live with <code class='text-accent2'>/tribulation reload</code>. The <a href='/guide.html#tuning' class='text-accent hover:text-accent2 underline'>guide</a> has a tuning cheat-sheet."
+              "a": "Everything is tunable in <code class='text-accent2'>tribulation.json</code>. <strong class='text-bone'>Harder:</strong> lower <code class='text-accent2'>levelUpTicks</code> to level faster, raise the <code class='text-accent2'>statCaps</code>, enable <code class='text-accent2'>dropMoreLoot</code>, or turn on Hardcore Hearts and Soul Inventory. <strong class='text-bone'>Easier:</strong> raise <code class='text-accent2'>levelUpTicks</code>, lower the stat caps, disable the distance, height, or moon-phase axes, or bump <code class='text-accent2'>deathRelief.amount</code> so deaths claw back more difficulty. Apply changes live with <code class='text-accent2'>/tribulation reload</code>. The <a href='/guide.html#tuning' class='text-accent hover:text-accent2 underline'>guide</a> has a tuning cheat-sheet."
             },
             {
               "q": "Are Hardcore Hearts and Soul Inventory on by default?",

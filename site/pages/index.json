@@ -2,9 +2,9 @@
   "type": "home",
   "nav": "Home",
   "metaTitle": "Tribulation — Difficulty Overhaul for Minecraft",
-  "metaDescription": "Tribulation is a Minecraft 1.21.1 Fabric mod that overhauls difficulty: three-axis mob scaling, tier-gated abilities, death penalties, hardcore hearts, and soul inventory.",
+  "metaDescription": "Tribulation is a Minecraft 1.21.1 Fabric mod that overhauls difficulty: four-axis mob scaling, tier-gated abilities, death penalties, hardcore hearts, and soul inventory.",
   "ogTitle": "Tribulation — Difficulty Overhaul for Minecraft",
-  "ogDescription": "A comprehensive difficulty mod for Minecraft 1.21.1 Fabric. Three scaling axes, tier-gated abilities, death penalties, and opt-in hardcore mechanics.",
+  "ogDescription": "A comprehensive difficulty mod for Minecraft 1.21.1 Fabric. Four scaling axes, tier-gated abilities, death penalties, and opt-in hardcore mechanics.",
   "hero": {
     "lede": "A comprehensive difficulty overhaul for Minecraft 1.21.1 (Fabric).",
     "sub": "Mobs grow stronger as you play longer, venture further, and descend deeper. Every hour survived raises the stakes with scaling stats, tier abilities, and brutal opt-in mechanics.",
@@ -51,14 +51,15 @@
       ]
     },
     {
-      "title": "Three Scaling Axes",
-      "lede": "Difficulty compounds from three independent sources. Each axis contributes a factor that multiplies mob attributes.",
+      "title": "Four Scaling Axes",
+      "lede": "Difficulty compounds from four independent sources. Each axis contributes a factor that multiplies mob attributes.",
       "ledeNarrow": true,
-      "footnote": "The three factors combine multiplicatively per attribute, then clamp to a global stat cap. <a href='/features.html#scaling-axes' class='text-accent hover:text-accent2 underline'>See the formula →</a>",
+      "footnote": "The four factors combine multiplicatively per attribute, then clamp to a global stat cap. <a href='/features.html#scaling-axes' class='text-accent hover:text-accent2 underline'>See the formula →</a>",
       "blocks": [
         {
           "type": "cards",
-          "mdColumns": 3,
+          "mdColumns": 2,
+          "lgColumns": 4,
           "leftAccent": true,
           "items": [
             {
@@ -75,6 +76,11 @@
               "title": "Height (Y-Level)",
               "titleTone": "bone",
               "html": ["Deviation from sea level (Y=62) in either direction adds threat — deep caves and tall peaks alike. Caps at +50%."]
+            },
+            {
+              "title": "Moon Phase",
+              "titleTone": "bone",
+              "html": ["Full-moon nights raise mob threat; the bonus tapers to zero by the new moon. Caps at +10% by default. Overworld nights only — optionally surface-only."]
             }
           ]
         }

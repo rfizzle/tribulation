@@ -223,6 +223,32 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.heightScaling.excludeInOtherDimensions = v)
                 .build());
+
+        // Moon phase
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.moon_scaling.enabled"),
+                        config.moonPhaseScaling.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> config.moonPhaseScaling.enabled = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.moon_scaling.max_bonus"),
+                        config.moonPhaseScaling.maxBonus)
+                .setDefaultValue(0.1).setMin(0.0)
+                .setSaveConsumer(v -> config.moonPhaseScaling.maxBonus = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.moon_scaling.surface_only"),
+                        config.moonPhaseScaling.surfaceOnly)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> config.moonPhaseScaling.surfaceOnly = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.moon_scaling.surface_y"),
+                        config.moonPhaseScaling.surfaceY)
+                .setDefaultValue(63.0)
+                .setSaveConsumer(v -> config.moonPhaseScaling.surfaceY = v)
+                .build());
     }
 
     private static void addStatCaps(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {

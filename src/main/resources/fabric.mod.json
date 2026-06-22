@@ -21,7 +21,8 @@
             "com.rfizzle.tribulation.gametest.StatisticsGameTest",
             "com.rfizzle.tribulation.gametest.WeaponEquipmentGameTest",
             "com.rfizzle.tribulation.gametest.TrialSpawnerGameTest",
-            "com.rfizzle.tribulation.gametest.SkeletonVariantGameTest"
+            "com.rfizzle.tribulation.gametest.SkeletonVariantGameTest",
+            "com.rfizzle.tribulation.gametest.RaidScalingGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
         "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],

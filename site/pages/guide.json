@@ -1,7 +1,7 @@
 {
   "nav": "Guide",
   "metaTitle": "Getting Started — Tribulation | Difficulty Overhaul for Minecraft",
-  "metaDescription": "A linear walkthrough — install Tribulation, learn how leveling and the three scaling axes work, handle death penalties, and opt into hardcore modes.",
+  "metaDescription": "A linear walkthrough — install Tribulation, learn how leveling and the four scaling axes work, handle death penalties, and opt into hardcore modes.",
   "ogTitle": "Getting Started — Tribulation",
   "ogDescription": "Install Tribulation, learn how leveling works, and opt into hardcore modes.",
   "title": "Getting Started",
@@ -39,7 +39,7 @@
       "blocks": [
         { "type": "prose", "html": [
           "Tribulation's difficulty is driven by a per-player <strong class='text-bone'>difficulty level</strong> from 0 to 250. It is <em>not</em> your XP level — it advances purely with playtime, one level roughly every hour of being in the world.",
-          "The higher your level, the stronger the mobs that spawn near you. But your level is only one of <strong class='text-bone'>three scaling axes</strong> that combine per stat:"
+          "The higher your level, the stronger the mobs that spawn near you. But your level is only one of <strong class='text-bone'>four scaling axes</strong> that combine per stat:"
         ] },
         {
           "type": "table",
@@ -48,11 +48,12 @@
           "rows": [
             ["<span class='text-bone'>Time</span>", "Your difficulty level (≈1/hour, max 250)", "per-mob (e.g. +250% HP)"],
             ["<span class='text-bone'>Distance</span>", "Past 1000 blocks from world spawn", "+150%"],
-            ["<span class='text-bone'>Height</span>", "Deviation from Y=62 (up or down)", "+50%"]
+            ["<span class='text-bone'>Height</span>", "Deviation from Y=62 (up or down)", "+50%"],
+            ["<span class='text-bone'>Moon</span>", "Overworld nights, peaking at the full moon", "+10%"]
           ]
         },
         { "type": "prose", "html": [
-          "The three factors stack per attribute and then clamp to a <a href='/features.html#stat-caps' class='text-accent hover:text-accent2 underline'>global stat cap</a>, so mobs never scale to infinity. A deep cave 2000 blocks from spawn at high level is dramatically more dangerous than the surface near your bed — by design.",
+          "The four factors stack per attribute and then clamp to a <a href='/features.html#stat-caps' class='text-accent hover:text-accent2 underline'>global stat cap</a>, so mobs never scale to infinity. A deep cave 2000 blocks from spawn at high level is dramatically more dangerous than the surface near your bed — by design.",
           "Cross level thresholds of <strong class='text-bone'>50 / 100 / 150 / 200 / 250</strong> and mobs also unlock <a href='/features.html#tier-abilities' class='text-accent hover:text-accent2 underline'>tier-gated abilities</a> — zombies that break doors, skeletons that fire flaming arrows, creepers that spawn charged."
         ] }
       ]

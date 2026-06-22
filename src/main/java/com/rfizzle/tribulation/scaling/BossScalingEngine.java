@@ -102,8 +102,8 @@ public final class BossScalingEngine {
             timeFactor *= scale;
             distFactor *= scale;
         }
-        // height axis is always zero for bosses.
-        return new ScalingResult.AttributeFactor(timeFactor, distFactor, 0.0, capped);
+        // height and moon axes are always zero for bosses.
+        return new ScalingResult.AttributeFactor(timeFactor, distFactor, 0.0, 0.0, capped);
     }
 
     // ---- Full compute ----
@@ -136,6 +136,7 @@ public final class BossScalingEngine {
                 .rawDistanceFactor(distCfg != null && distCfg.enabled
                         ? computeDistanceFactor(horizDist, distCfg, config.bosses) : 0.0)
                 .rawHeightFactor(0.0)
+                .rawMoonFactor(0.0)
                 .tier(ScalingEngine.computeTier(playerLevel, config.tiers));
 
         for (String attr : BOSS_ATTRIBUTES) {

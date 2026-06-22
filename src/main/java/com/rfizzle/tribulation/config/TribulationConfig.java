@@ -40,6 +40,7 @@ public class TribulationConfig {
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
     public HeightScaling heightScaling = new HeightScaling();
+    public MoonPhaseScaling moonPhaseScaling = new MoonPhaseScaling();
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
@@ -206,6 +207,7 @@ public class TribulationConfig {
         if (timeScaling == null) timeScaling = new TimeScaling();
         if (distanceScaling == null) distanceScaling = new DistanceScaling();
         if (heightScaling == null) heightScaling = new HeightScaling();
+        if (moonPhaseScaling == null) moonPhaseScaling = new MoonPhaseScaling();
         if (statCaps == null) statCaps = new StatCaps();
         if (totems == null) totems = new Totems();
         if (deathRelief == null) deathRelief = new DeathRelief();
@@ -297,6 +299,8 @@ public class TribulationConfig {
         heightScaling.heightDistance = clampPositive("heightScaling.heightDistance", heightScaling.heightDistance);
         heightScaling.heightFactor = clampNonNegative("heightScaling.heightFactor", heightScaling.heightFactor);
         heightScaling.maxHeightFactor = clampNonNegative("heightScaling.maxHeightFactor", heightScaling.maxHeightFactor);
+
+        moonPhaseScaling.maxBonus = clampNonNegative("moonPhaseScaling.maxBonus", moonPhaseScaling.maxBonus);
 
         statCaps.maxFactorHealth = clampNonNegative("statCaps.maxFactorHealth", statCaps.maxFactorHealth);
         statCaps.maxFactorDamage = clampNonNegative("statCaps.maxFactorDamage", statCaps.maxFactorDamage);
@@ -568,6 +572,13 @@ public class TribulationConfig {
         public boolean positiveHeightScaling = true;
         public boolean negativeHeightScaling = true;
         public boolean excludeInOtherDimensions = true;
+    }
+
+    public static class MoonPhaseScaling {
+        public boolean enabled = true;
+        public double maxBonus = 0.1;
+        public boolean surfaceOnly = false;
+        public double surfaceY = 63.0;
     }
 
     public static class StatCaps {

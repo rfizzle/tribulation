@@ -167,56 +167,77 @@ class ScalingEngineTest {
 
     @Test
     void combineFactor_sumsAndRespectsGlobalCap() {
-        assertEquals(1.0, ScalingEngine.combineFactor(0.3, 0.4, 0.3, 4.0), EPS);
-        assertEquals(4.0, ScalingEngine.combineFactor(3.0, 1.5, 0.5, 4.0), EPS);
+        assertEquals(1.1, ScalingEngine.combineFactor(0.3, 0.4, 0.3, 0.1, 4.0), EPS);
+        assertEquals(4.0, ScalingEngine.combineFactor(3.0, 1.5, 0.5, 0.2, 4.0), EPS);
     }
 
     @Test
     void combineFactor_zeroCap_returnsRawSum() {
-        assertEquals(1.0, ScalingEngine.combineFactor(0.3, 0.4, 0.3, 0.0), EPS);
+        assertEquals(1.1, ScalingEngine.combineFactor(0.3, 0.4, 0.3, 0.1, 0.0), EPS);
+    }
+
+    // ---- Moon factor ----
+
+    @ParameterizedTest
+    @CsvSource({
+            "0, 0.1, 0.1",   // Full Moon
+            "1, 0.1, 0.075", // Waning Gibbous
+            "2, 0.1, 0.05",  // Last Quarter
+            "3, 0.1, 0.025", // Waning Crescent
+            "4, 0.1, 0.0",   // New Moon
+            "5, 0.1, 0.025", // Waxing Crescent
+            "6, 0.1, 0.05",  // First Quarter
+            "7, 0.1, 0.075", // Waxing Gibbous
+            "0, 0.0, 0.0"    // maxBonus 0
+    })
+    void computeMoonFactor_matchesTriangleCurve(int phase, double maxBonus, double expected) {
+        assertEquals(expected, ScalingEngine.computeMoonFactor(phase, maxBonus), EPS);
     }
 
     // ---- Per-attribute factor: ADD_MULTIPLIED_BASE ----
 
     @Test
-    void attributeFactor_health_positionScaled_combinesAllThreeAxes() {
+    void attributeFactor_health_positionScaled_combinesAllFourAxes() {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_HEALTH, 100, 0.5, 0.2, zombie, cfg.statCaps
+                ScalingEngine.ATTR_HEALTH, 100, 0.5, 0.2, 0.1, zombie, cfg.statCaps
         );
-        // Time: min(100*0.01, 2.5) = 1.0. Distance: 0.5. Height: 0.2. Sum: 1.7 < cap 4.0.
+        // Time: min(100*0.01, 2.5) = 1.0. Distance: 0.5. Height: 0.2. Moon: 0.1. Sum: 1.8 < cap 4.0.
         assertEquals(1.0, f.timeFactor(), EPS);
         assertEquals(0.5, f.distanceFactor(), EPS);
         assertEquals(0.2, f.heightFactor(), EPS);
-        assertEquals(1.7, f.totalFactor(), EPS);
+        assertEquals(0.1, f.moonFactor(), EPS);
+        assertEquals(1.8, f.totalFactor(), EPS);
     }
 
     @Test
-    void attributeFactor_speed_timeOnly_ignoresDistanceAndHeight() {
+    void attributeFactor_speed_timeOnly_ignoresPositionAxes() {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_SPEED, 250, 1.5, 0.5, zombie, cfg.statCaps
+                ScalingEngine.ATTR_SPEED, 250, 1.5, 0.5, 0.1, zombie, cfg.statCaps
         );
-        // Speed: rate=0.0012, cap=0.3, level=250 → 0.3. Distance/height not applied.
+        // Speed: rate=0.0012, cap=0.3, level=250 → 0.3. Distance/height/moon not applied.
         assertEquals(0.3, f.timeFactor(), EPS);
         assertEquals(0.0, f.distanceFactor(), EPS);
         assertEquals(0.0, f.heightFactor(), EPS);
+        assertEquals(0.0, f.moonFactor(), EPS);
         assertEquals(0.3, f.totalFactor(), EPS);
     }
 
     @Test
-    void attributeFactor_followRange_timeOnly_ignoresDistanceAndHeight() {
+    void attributeFactor_followRange_timeOnly_ignoresPositionAxes() {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_FOLLOW_RANGE, 100, 1.0, 0.5, zombie, cfg.statCaps
+                ScalingEngine.ATTR_FOLLOW_RANGE, 100, 1.0, 0.5, 0.1, zombie, cfg.statCaps
         );
         // followRange: rate=0.01, cap=1.0, level=100 → 1.0. No position scaling.
         assertEquals(1.0, f.timeFactor(), EPS);
         assertEquals(0.0, f.distanceFactor(), EPS);
         assertEquals(0.0, f.heightFactor(), EPS);
+        assertEquals(0.0, f.moonFactor(), EPS);
     }
 
     @Test
@@ -226,13 +247,14 @@ class ScalingEngineTest {
         cfg.statCaps.maxFactorHealth = 1.0;
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_HEALTH, 250, 1.5, 0.5, zombie, cfg.statCaps
+                ScalingEngine.ATTR_HEALTH, 250, 1.5, 0.5, 0.5, zombie, cfg.statCaps
         );
-        // Raw: time=2.5, dist=1.5, height=0.5, sum=4.5. Clipped to 1.0. Scale=1/4.5.
-        double scale = 1.0 / 4.5;
+        // Raw: time=2.5, dist=1.5, height=0.5, moon=0.5 sum=5.0. Clipped to 1.0. Scale=1/5.0.
+        double scale = 1.0 / 5.0;
         assertEquals(2.5 * scale, f.timeFactor(), EPS);
         assertEquals(1.5 * scale, f.distanceFactor(), EPS);
         assertEquals(0.5 * scale, f.heightFactor(), EPS);
+        assertEquals(0.5 * scale, f.moonFactor(), EPS);
         assertEquals(1.0, f.totalFactor(), EPS);
     }
 
@@ -242,14 +264,15 @@ class ScalingEngineTest {
     void attributeFactor_armor_addValue_timeInAbsolutePoints() {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
-        // Zero distance/height so we isolate the time axis.
+        // Zero distance/height/moon so we isolate the time axis.
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_ARMOR, 250, 0.0, 0.0, zombie, cfg.statCaps
+                ScalingEngine.ATTR_ARMOR, 250, 0.0, 0.0, 0.0, zombie, cfg.statCaps
         );
         // Armor rate=0.032, cap=8: level 250 → min(8, 8)=8 absolute armor.
         assertEquals(8.0, f.timeFactor(), EPS);
         assertEquals(0.0, f.distanceFactor(), EPS);
         assertEquals(0.0, f.heightFactor(), EPS);
+        assertEquals(0.0, f.moonFactor(), EPS);
         assertEquals(8.0, f.totalFactor(), EPS);
     }
 
@@ -257,13 +280,14 @@ class ScalingEngineTest {
     void attributeFactor_armor_addValue_distanceTranslatedViaCap() {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
-        // Time 0, distance factor 1.0, height 0. Armor cap = 8 → distance contrib = 1.0 * 8 = 8.
+        // Time 0, distance factor 1.0, height 0, moon 0. Armor cap = 8 → distance contrib = 1.0 * 8 = 8.
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_ARMOR, 0, 1.0, 0.0, zombie, cfg.statCaps
+                ScalingEngine.ATTR_ARMOR, 0, 1.0, 0.0, 0.0, zombie, cfg.statCaps
         );
         assertEquals(0.0, f.timeFactor(), EPS);
         assertEquals(8.0, f.distanceFactor(), EPS);
         assertEquals(0.0, f.heightFactor(), EPS);
+        assertEquals(0.0, f.moonFactor(), EPS);
     }
 
     @Test
@@ -271,13 +295,13 @@ class ScalingEngineTest {
         TribulationConfig cfg = new TribulationConfig();
         TribulationConfig.MobScaling zombie = cfg.scaling.get("zombie");
         // maxFactorProtection=2.0, armorCap=8 → globalMax = 16.
-        // Raw: time=8 + dist=1.5*8=12 + height=0.5*8=4 → sum=24, clipped to 16.
+        // Raw: time=8 + dist=1.5*8=12 + height=0.5*8=4 + moon=0.1*8=0.8 → sum=24.8, clipped to 16.
         ScalingResult.AttributeFactor f = ScalingEngine.computeAttributeFactor(
-                ScalingEngine.ATTR_ARMOR, 250, 1.5, 0.5, zombie, cfg.statCaps
+                ScalingEngine.ATTR_ARMOR, 250, 1.5, 0.5, 0.1, zombie, cfg.statCaps
         );
         assertEquals(16.0, f.totalFactor(), EPS);
         // Axes scaled proportionally so they sum to the total.
-        assertEquals(16.0, f.timeFactor() + f.distanceFactor() + f.heightFactor(), EPS);
+        assertEquals(16.0, f.timeFactor() + f.distanceFactor() + f.heightFactor() + f.moonFactor(), EPS);
     }
 
     // ---- Tier ----

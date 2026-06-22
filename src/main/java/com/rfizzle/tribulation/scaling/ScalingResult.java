@@ -17,6 +17,7 @@ public final class ScalingResult {
     private final double heightLevels;
     private final double rawDistanceFactor;
     private final double rawHeightFactor;
+    private final double rawMoonFactor;
     private final int tier;
     private final Map<String, AttributeFactor> attributeFactors;
 
@@ -27,6 +28,7 @@ public final class ScalingResult {
         this.heightLevels = b.heightLevels;
         this.rawDistanceFactor = b.rawDistanceFactor;
         this.rawHeightFactor = b.rawHeightFactor;
+        this.rawMoonFactor = b.rawMoonFactor;
         this.tier = b.tier;
         this.attributeFactors = Collections.unmodifiableMap(new LinkedHashMap<>(b.attributeFactors));
     }
@@ -37,6 +39,7 @@ public final class ScalingResult {
     public double heightLevels() { return heightLevels; }
     public double rawDistanceFactor() { return rawDistanceFactor; }
     public double rawHeightFactor() { return rawHeightFactor; }
+    public double rawMoonFactor() { return rawMoonFactor; }
     public int tier() { return tier; }
     public Map<String, AttributeFactor> attributeFactors() { return attributeFactors; }
 
@@ -50,24 +53,27 @@ public final class ScalingResult {
         private final double timeFactor;
         private final double distanceFactor;
         private final double heightFactor;
+        private final double moonFactor;
         private final double totalFactor;
 
-        public AttributeFactor(double timeFactor, double distanceFactor, double heightFactor, double totalFactor) {
+        public AttributeFactor(double timeFactor, double distanceFactor, double heightFactor, double moonFactor, double totalFactor) {
             this.timeFactor = timeFactor;
             this.distanceFactor = distanceFactor;
             this.heightFactor = heightFactor;
+            this.moonFactor = moonFactor;
             this.totalFactor = totalFactor;
         }
 
         public double timeFactor() { return timeFactor; }
         public double distanceFactor() { return distanceFactor; }
         public double heightFactor() { return heightFactor; }
+        public double moonFactor() { return moonFactor; }
         public double totalFactor() { return totalFactor; }
 
         @Override
         public String toString() {
-            return String.format("AttributeFactor{time=%.4f, dist=%.4f, height=%.4f, total=%.4f}",
-                    timeFactor, distanceFactor, heightFactor, totalFactor);
+            return String.format("AttributeFactor{time=%.4f, dist=%.4f, height=%.4f, moon=%.4f, total=%.4f}",
+                    timeFactor, distanceFactor, heightFactor, moonFactor, totalFactor);
         }
     }
 
@@ -78,6 +84,7 @@ public final class ScalingResult {
         private double heightLevels;
         private double rawDistanceFactor;
         private double rawHeightFactor;
+        private double rawMoonFactor;
         private int tier;
         private final Map<String, AttributeFactor> attributeFactors = new LinkedHashMap<>();
 
@@ -87,13 +94,14 @@ public final class ScalingResult {
         public Builder heightLevels(double v) { this.heightLevels = v; return this; }
         public Builder rawDistanceFactor(double v) { this.rawDistanceFactor = v; return this; }
         public Builder rawHeightFactor(double v) { this.rawHeightFactor = v; return this; }
+        public Builder rawMoonFactor(double v) { this.rawMoonFactor = v; return this; }
         public Builder tier(int v) { this.tier = v; return this; }
         public Builder attributeFactor(String attr, AttributeFactor f) {
             this.attributeFactors.put(attr, f);
             return this;
         }
-        public Builder attributeFactor(String attr, double time, double dist, double height, double total) {
-            this.attributeFactors.put(attr, new AttributeFactor(time, dist, height, total));
+        public Builder attributeFactor(String attr, double time, double dist, double height, double moon, double total) {
+            this.attributeFactors.put(attr, new AttributeFactor(time, dist, height, moon, total));
             return this;
         }
         public ScalingResult build() { return new ScalingResult(this); }

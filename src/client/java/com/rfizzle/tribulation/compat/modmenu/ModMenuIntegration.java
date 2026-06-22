@@ -348,6 +348,16 @@ public final class ModMenuIntegration implements ModMenuApi {
         addAbilityToggle(cat, entry, "vindicator_resistance", a.vindicatorResistance, v -> a.vindicatorResistance = v);
         addAbilityToggle(cat, entry, "zombified_piglin_aggro", a.zombifiedPiglinAggro, v -> a.zombifiedPiglinAggro = v);
         addAbilityToggle(cat, entry, "piglin_crossbow", a.piglinCrossbow, v -> a.piglinCrossbow = v);
+        addAbilityToggle(cat, entry, "stray_slowness_upgrade", a.straySlownessUpgrade, v -> a.straySlownessUpgrade = v);
+        addAbilityToggle(cat, entry, "bogged_poison_upgrade", a.boggedPoisonUpgrade, v -> a.boggedPoisonUpgrade = v);
+        addAbilityToggle(cat, entry, "witch_lingering_potions", a.witchLingeringPotions, v -> a.witchLingeringPotions = v);
+        addAbilityToggle(cat, entry, "witch_aggressive_healing", a.witchAggressiveHealing, v -> a.witchAggressiveHealing = v);
+        addAbilityToggle(cat, entry, "pillager_quick_charge", a.pillagerQuickCharge, v -> a.pillagerQuickCharge = v);
+        addAbilityToggle(cat, entry, "pillager_multishot", a.pillagerMultishot, v -> a.pillagerMultishot = v);
+        addAbilityToggle(cat, entry, "vindicator_door_breaking", a.vindicatorDoorBreaking, v -> a.vindicatorDoorBreaking = v);
+        addAbilityToggle(cat, entry, "guardian_faster_beam", a.guardianFasterBeam, v -> a.guardianFasterBeam = v);
+        addAbilityToggle(cat, entry, "ravager_roar_expansion", a.ravagerRoarExpansion, v -> a.ravagerRoarExpansion = v);
+        addAbilityToggle(cat, entry, "silverfish_call_sleepers", a.silverfishCallSleepers, v -> a.silverfishCallSleepers = v);
     }
 
     private static void addAbilityToggle(ConfigCategory cat, ConfigEntryBuilder entry,

@@ -28,7 +28,7 @@ import java.util.Set;
  * Hold-to-peek tier detail panel. While {@link TribulationClient#KEY_TIER_DETAIL}
  * is held — and the HUD's normal visibility rules pass — this overlays a framed
  * panel with the player's level, tier, progress to the next level, and the
- * abilities scaled mobs have at the current tier.
+ * abilities that nearby scaled mobs have at the current tier.
  *
  * <p>The ability listing is read from {@link MobAbilities}, the same registry
  * {@link com.rfizzle.tribulation.ability.AbilityManager} applies server-side, so
@@ -37,8 +37,9 @@ import java.util.Set;
  * <p>No {@code Screen} is opened: the panel never captures the mouse, pauses the
  * game, or blocks movement — it behaves like vanilla's hold-Tab player list.
  * Because a non-focused HUD layer can't scroll without capturing input, the
- * ability list never scrolls: it reflows into as many balanced columns as it
- * takes to keep the panel within the screen height (growing wider, not taller).
+ * body keeps a comfortable fixed size: everything that fits is shown at once,
+ * and any overflow is paged — the body cross-fades between pages of mobs, with
+ * page dots, while the header and progress stay static.
  */
 public final class TierDetailPanelRenderer implements HudRenderCallback {
     private static final ResourceLocation PANEL = Tribulation.id("textures/gui/tier_detail_panel.png");
@@ -55,17 +56,30 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
     private static final int ABILITY_INDENT = 6;
     private static final int BAR_H = 6;
     private static final int MIN_CONTENT_W = 188;
-    private static final int MAX_COLUMNS = 4;
     private static final float MAX_SCREEN_FRACTION = 0.92f;
+
+    /** A page is a comfortable, bounded body: up to this many columns... */
+    private static final int PAGE_MAX_COLS = 2;
+    /** ...each up to this many rows (also clamped down by the screen-height budget). */
+    private static final int PAGE_COMFORT_ROWS = 10;
+
+    /** Time one page stays up, including its fade in/out (ms). */
+    private static final long PAGE_HOLD_MS = 2600L;
+    /** Cross-fade duration at each page boundary (ms). */
+    private static final long FADE_MS = 350L;
 
     /** How often (in game ticks) the nearby-mob scan refreshes its cache. */
     private static final int SCAN_INTERVAL_TICKS = 10;
     /** Hard cap on the scan radius so a misconfigured detection range can't inflate a huge AABB. */
     private static final double MAX_SCAN_RANGE = 64.0;
 
+    private static final int DOT_SIZE = 3;
+    private static final int DOT_GAP = 3;
+
     private static final int COLOR_BONE = 0xFFE8E0D4;
     private static final int COLOR_ASH = 0xFFA89F93;
     private static final int COLOR_BAR_TRACK = 0xFF26241F;
+    private static final int COLOR_DOT_OFF = 0xFF55504A;
 
     private static final String BULLET = "› ";
 
@@ -100,51 +114,51 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
         // nearby mob type, not an entity scan.
         refreshNearbyIfStale(mc, config);
         List<Group> groups = new ArrayList<>();
-        int totalRows = 0;
         for (String mobKey : TribulationConfig.MOB_KEYS) {
             if (!nearbyMobKeys.contains(mobKey)) continue;
             List<MobAbility> abilities = MobAbilities.activeForMob(mobKey, tier, config);
             if (abilities.isEmpty()) continue;
             groups.add(new Group(Component.translatable("entity.minecraft." + mobKey), abilities));
-            totalRows += 1 + abilities.size();
         }
+        boolean hasList = !groups.isEmpty();
         Component emptyText = Component.translatable("hud.tribulation.tier_detail.no_abilities");
         Component nearbyHeading = Component.translatable("hud.tribulation.tier_detail.nearby_heading");
 
-        // ---- Reflow the ability list into enough columns to fit the screen ----
-        // Everything except the ability rows is fixed-height "chrome"; the rows
-        // get whatever vertical budget remains, and we add columns until they fit.
+        // Fixed-height "chrome" (everything but the ability rows) sets the row budget.
         int chromeH = 2 * INSET
                 + ICON_SIZE + SECTION_GAP        // header
                 + 1 + SECTION_GAP                // divider
                 + LINE_H + 3 + BAR_H + 3 + LINE_H + SECTION_GAP  // level + bar + figures
                 + 1 + SECTION_GAP;               // divider
-        // Reserve a line for the "Nearby" caption when there's a list to head.
-        int headingH = groups.isEmpty() ? 0 : LINE_H;
-        int rowBudget = (int) (graphics.guiHeight() * MAX_SCREEN_FRACTION) - chromeH - headingH;
-        int maxRowsPerCol = Math.max(1, rowBudget / LINE_H);
-        int numCols = groups.isEmpty()
-                ? 1
-                : Math.min(MAX_COLUMNS, Math.max(1, (totalRows + maxRowsPerCol - 1) / maxRowsPerCol));
-        List<List<Group>> columns = distribute(groups, numCols, totalRows);
+        int headingH = hasList ? LINE_H : 0;
 
-        int[] colW = new int[numCols];
-        int abilityW = 0;
-        int abilityRows = 1;
-        if (groups.isEmpty()) {
-            abilityW = font.width(emptyText);
-        } else {
-            int gaps = 0;
-            abilityRows = 0;
-            for (int i = 0; i < numCols; i++) {
-                colW[i] = columnWidth(font, columns.get(i));
-                if (colW[i] > 0) {
-                    abilityW += colW[i] + (gaps > 0 ? COL_GAP : 0);
-                    gaps++;
+        // A comfortable page: up to PAGE_MAX_COLS columns of up to `rowsPerCol`
+        // rows, where rowsPerCol is the smaller of the comfort cap and what the
+        // screen height actually allows. Overflow beyond one page is cycled.
+        int rowBudget = (int) (graphics.guiHeight() * MAX_SCREEN_FRACTION) - chromeH - headingH;
+        int rowsPerCol = Math.max(1, Math.min(PAGE_COMFORT_ROWS, rowBudget / LINE_H));
+        List<List<List<Group>>> pages = paginate(groups, PAGE_MAX_COLS, rowsPerCol);
+        int numPages = pages.size();
+
+        // Fixed body dimensions across all pages, so cycling never resizes the panel.
+        int uniformColW = 0;
+        int bodyRows = hasList ? 0 : 1;
+        int maxColsUsed = 1;
+        if (hasList) {
+            for (List<List<Group>> page : pages) {
+                int colsUsed = 0;
+                for (List<Group> col : page) {
+                    if (col.isEmpty()) continue;
+                    colsUsed++;
+                    uniformColW = Math.max(uniformColW, columnWidth(font, col));
+                    bodyRows = Math.max(bodyRows, rowCount(col));
                 }
-                abilityRows = Math.max(abilityRows, rowCount(columns.get(i)));
+                maxColsUsed = Math.max(maxColsUsed, colsUsed);
             }
         }
+        int abilityW = hasList
+                ? maxColsUsed * uniformColW + (maxColsUsed - 1) * COL_GAP
+                : font.width(emptyText);
 
         // ---- Header / progress strings ----
         Component title = Component.translatable("hud.tribulation.tier_detail.title");
@@ -160,23 +174,20 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
                 ClientTribulationState.getProgressTicks(), ClientTribulationState.getGoalTicks());
         Component percentText = Component.translatable("hud.tribulation.tier_detail.percent", percent);
 
+        int dotsW = numPages > 1 ? numPages * DOT_SIZE + (numPages - 1) * DOT_GAP : 0;
+        int headingRowW = font.width(nearbyHeading) + (dotsW > 0 ? 12 + dotsW : 0);
         int headerW = ICON_SIZE + 4 + font.width(title) + 12 + font.width(tierLabel);
         int levelRowW = font.width(levelText) + 12 + font.width(nextText);
         int figuresW = font.width(progressText) + 12 + font.width(percentText);
-        int contentW = Math.max(MIN_CONTENT_W, Math.max(Math.max(headerW, levelRowW), Math.max(figuresW, abilityW)));
+        int contentW = max(MIN_CONTENT_W, headerW, levelRowW, figuresW, abilityW, headingRowW);
 
-        int contentH = chromeH - 2 * INSET + headingH + abilityRows * LINE_H;
+        int contentH = chromeH - 2 * INSET + headingH + bodyRows * LINE_H;
         int panelW = contentW + 2 * INSET;
         int panelH = contentH + 2 * INSET;
         int panelX = (graphics.guiWidth() - panelW) / 2;
         int panelY = (graphics.guiHeight() - panelH) / 2;
 
-        // ---- Frame, watermark, content ----
-        // Safety net: the column reflow keeps the panel within the screen in
-        // normal cases, but the MAX_COLUMNS cap (and column width) can't cover
-        // every extreme — many nearby mob types on a tiny window / high GUI
-        // scale. If the panel still wouldn't fit, scale the whole thing down
-        // uniformly about the screen centre so it can never clip or overflow.
+        // ---- Safety net: scale the whole panel down if it still wouldn't fit ----
         graphics.setColor(1f, 1f, 1f, 1f);
         float fitScale = Math.min(1f, Math.min(
                 graphics.guiWidth() * MAX_SCREEN_FRACTION / panelW,
@@ -190,6 +201,8 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
             graphics.pose().scale(fitScale, fitScale, 1f);
             graphics.pose().translate(-scx, -scy, 0f);
         }
+
+        // ---- Frame, watermark, content ----
         drawNineSlice(graphics, panelX, panelY, panelW, panelH);
         drawSkullWatermark(graphics, panelX + panelW / 2, panelY + panelH / 2, tierColor);
 
@@ -224,17 +237,29 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
 
         y = divider(graphics, contentX, y, contentW, tierColor);
 
-        // Ability columns, under a "Nearby" caption.
-        if (groups.isEmpty()) {
+        // ---- Body: static "Nearby" caption + dots, with the page cross-fading ----
+        if (!hasList) {
             graphics.drawString(font, emptyText, contentX, y, COLOR_ASH, true);
         } else {
             graphics.drawString(font, nearbyHeading, contentX, y, COLOR_ASH, true);
+
+            int page = 0;
+            float bodyAlpha = 1f;
+            if (numPages > 1) {
+                long now = System.currentTimeMillis();
+                page = (int) ((now / PAGE_HOLD_MS) % numPages);
+                bodyAlpha = pageAlpha(now % PAGE_HOLD_MS);
+                drawDots(graphics, contentX + contentW - dotsW, y + 2, numPages, page, tierColor);
+            }
             y += LINE_H;
+
+            int headerColor = fade(COLOR_BONE, bodyAlpha);
+            int abilityColor = fade(COLOR_ASH, bodyAlpha);
             int cx = contentX;
-            for (int i = 0; i < numCols; i++) {
-                if (columns.get(i).isEmpty()) continue;
-                drawColumn(graphics, font, columns.get(i), cx, y);
-                cx += colW[i] + COL_GAP;
+            for (List<Group> col : pages.get(page)) {
+                if (col.isEmpty()) continue;
+                drawColumn(graphics, font, col, cx, y, headerColor, abilityColor);
+                cx += uniformColW + COL_GAP;
             }
         }
 
@@ -274,36 +299,65 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
     }
 
     /**
-     * Distribute groups across {@code numCols} columns, balancing row counts and
-     * never splitting a group. Fills a column up to the per-column row target,
-     * then moves on — preserving {@code MOB_KEYS} order left-to-right.
+     * Partition groups into pages of up to {@code pageCols} columns, each up to
+     * {@code rowsPerCol} rows, never splitting a group. Columns fill top-to-bottom
+     * then left-to-right; a full page starts a new one. Always returns at least
+     * one (possibly empty) page.
      */
-    private static List<List<Group>> distribute(List<Group> groups, int numCols, int totalRows) {
-        List<List<Group>> columns = new ArrayList<>();
-        for (int i = 0; i < numCols; i++) {
-            columns.add(new ArrayList<>());
-        }
-        int target = (totalRows + numCols - 1) / numCols;
+    private static List<List<List<Group>>> paginate(List<Group> groups, int pageCols, int rowsPerCol) {
+        List<List<List<Group>>> pages = new ArrayList<>();
+        List<List<Group>> page = emptyPage(pageCols);
         int col = 0;
-        int acc = 0;
+        int colRows = 0;
         for (Group g : groups) {
-            if (acc >= target && col < numCols - 1) {
+            int gr = g.rowCount();
+            if (colRows > 0 && colRows + gr > rowsPerCol) {
                 col++;
-                acc = 0;
+                colRows = 0;
+                if (col >= pageCols) {
+                    pages.add(page);
+                    page = emptyPage(pageCols);
+                    col = 0;
+                }
             }
-            columns.get(col).add(g);
-            acc += g.rowCount();
+            page.get(col).add(g);
+            colRows += gr;
         }
-        return columns;
+        pages.add(page);
+        return pages;
     }
 
-    private static void drawColumn(GuiGraphics graphics, Font font, List<Group> column, int x, int top) {
+    private static List<List<Group>> emptyPage(int pageCols) {
+        List<List<Group>> page = new ArrayList<>(pageCols);
+        for (int i = 0; i < pageCols; i++) {
+            page.add(new ArrayList<>());
+        }
+        return page;
+    }
+
+    /** Triangular fade: 0→1 over the first {@link #FADE_MS}, 1→0 over the last. */
+    private static float pageAlpha(long within) {
+        if (within < FADE_MS) return within / (float) FADE_MS;
+        if (within > PAGE_HOLD_MS - FADE_MS) return (PAGE_HOLD_MS - within) / (float) FADE_MS;
+        return 1f;
+    }
+
+    private static void drawDots(GuiGraphics g, int x, int y, int count, int active, int activeColor) {
+        int dx = x;
+        for (int i = 0; i < count; i++) {
+            g.fill(dx, y, dx + DOT_SIZE, y + DOT_SIZE, i == active ? activeColor : COLOR_DOT_OFF);
+            dx += DOT_SIZE + DOT_GAP;
+        }
+    }
+
+    private static void drawColumn(GuiGraphics graphics, Font font, List<Group> column, int x, int top,
+                                   int headerColor, int abilityColor) {
         int cy = top;
         for (Group g : column) {
-            graphics.drawString(font, g.header(), x, cy, COLOR_BONE, true);
+            graphics.drawString(font, g.header(), x, cy, headerColor, true);
             cy += LINE_H;
             for (MobAbility ability : g.abilities()) {
-                graphics.drawString(font, abilityComponent(ability), x + ABILITY_INDENT, cy, COLOR_ASH, true);
+                graphics.drawString(font, abilityComponent(ability), x + ABILITY_INDENT, cy, abilityColor, true);
                 cy += LINE_H;
             }
         }
@@ -384,6 +438,21 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
 
     private static int withAlpha(int argb, int alpha) {
         return (alpha << 24) | (argb & 0xFFFFFF);
+    }
+
+    /** Scale a colour's existing alpha by {@code a} (0..1) — used for the body fade. */
+    private static int fade(int color, float a) {
+        int base = (color >>> 24) & 0xFF;
+        int scaled = Math.round(base * Math.max(0f, Math.min(1f, a)));
+        return (scaled << 24) | (color & 0xFFFFFF);
+    }
+
+    private static int max(int... values) {
+        int m = Integer.MIN_VALUE;
+        for (int v : values) {
+            m = Math.max(m, v);
+        }
+        return m;
     }
 
     private static int nextTierLevel(int tier, TribulationConfig.Tiers tiers) {

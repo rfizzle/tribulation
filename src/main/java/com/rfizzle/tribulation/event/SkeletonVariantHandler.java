@@ -42,13 +42,13 @@ public final class SkeletonVariantHandler {
     public static final String BRUTE_TAG = "tribulation_variant_brute";
 
     public static final ResourceLocation DEADEYE_HEALTH_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_deadeye_health");
+            Tribulation.id("variant_deadeye_health");
     public static final ResourceLocation BRUTE_HEALTH_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_brute_health");
+            Tribulation.id("variant_brute_health");
     public static final ResourceLocation BRUTE_KNOCKBACK_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_brute_knockback");
+            Tribulation.id("variant_brute_knockback");
     public static final ResourceLocation BRUTE_SIZE_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_brute_size");
+            Tribulation.id("variant_brute_size");
 
     /**
      * The skeleton-family mob keys that can roll a special variant. Wither

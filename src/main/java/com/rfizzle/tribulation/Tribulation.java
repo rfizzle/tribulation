@@ -79,8 +79,6 @@ public class Tribulation implements ModInitializer {
     private static void registerJoinSync() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
-            PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
-            int level = state.getLevel(player.getUUID());
             TribulationNetworking.syncLevel(player);
         });
     }

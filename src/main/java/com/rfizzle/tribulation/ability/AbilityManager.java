@@ -61,7 +61,7 @@ public final class AbilityManager {
     private AbilityManager() {}
 
     public static ResourceLocation abilityId(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "ability_" + name);
+        return Tribulation.id("ability_" + name);
     }
 
     /**

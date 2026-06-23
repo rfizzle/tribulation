@@ -196,7 +196,7 @@ public final class BossScalingEngine {
 
     /** Boss-namespaced modifier ID so inspect/debug can tell boss from mob modifiers. */
     public static ResourceLocation modifierId(String axis, String attribute) {
-        return ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, axis + "_" + attribute);
+        return Tribulation.id(axis + "_" + attribute);
     }
 
     /**

@@ -16,8 +16,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Public API for Tribulation.
@@ -79,15 +83,18 @@ public final class TribulationAPI {
      * @return the client-side level
      */
     public static int getClientLevel() {
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            try {
-                Class<?> clazz = Class.forName("com.rfizzle.tribulation.client.ClientTribulationState");
-                return (int) clazz.getMethod("getLevel").invoke(null);
-            } catch (Exception e) {
-                return -1;
-            }
+        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) {
+            return -1;
         }
-        return -1;
+        MethodHandle handle = CLIENT_LEVEL.resolve();
+        if (handle == null) {
+            return -1;
+        }
+        try {
+            return (int) handle.invokeExact();
+        } catch (Throwable t) {
+            return -1;
+        }
     }
 
     /**
@@ -109,15 +116,18 @@ public final class TribulationAPI {
      * @return true if the HUD element is being drawn right now
      */
     public static boolean isHudVisible() {
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            try {
-                Class<?> clazz = Class.forName("com.rfizzle.tribulation.client.TribulationHudOverlay");
-                return (boolean) clazz.getMethod("isHudVisible").invoke(null);
-            } catch (Exception e) {
-                return false;
-            }
+        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) {
+            return false;
         }
-        return false;
+        MethodHandle handle = HUD_VISIBLE.resolve();
+        if (handle == null) {
+            return false;
+        }
+        try {
+            return (boolean) handle.invokeExact();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /**
@@ -133,15 +143,78 @@ public final class TribulationAPI {
      * @return the element's stacking contribution in px, or 0 if not visible
      */
     public static int getHudHeight() {
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            try {
-                Class<?> clazz = Class.forName("com.rfizzle.tribulation.client.TribulationHudOverlay");
-                return (int) clazz.getMethod("getHudHeightContribution").invoke(null);
-            } catch (Exception e) {
-                return 0;
+        if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) {
+            return 0;
+        }
+        MethodHandle handle = HUD_HEIGHT.resolve();
+        if (handle == null) {
+            return 0;
+        }
+        try {
+            return (int) handle.invokeExact();
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    // Reflection-backed bridges to client-only state. The server-side API
+    // surface must not reference client classes directly, so each accessor
+    // resolves its target method once into a cached MethodHandle (the
+    // isHudVisible/getHudHeight pair is called per-render by sibling mods, so
+    // an uncached Class.forName + getMethod per call would be wasteful). The
+    // first resolution failure is logged; thereafter the sentinel is returned
+    // silently.
+    private static final ClientAccessor CLIENT_LEVEL = new ClientAccessor(
+            "com.rfizzle.tribulation.client.ClientTribulationState", "getLevel", int.class);
+    private static final ClientAccessor HUD_VISIBLE = new ClientAccessor(
+            "com.rfizzle.tribulation.client.TribulationHudOverlay", "isHudVisible", boolean.class);
+    private static final ClientAccessor HUD_HEIGHT = new ClientAccessor(
+            "com.rfizzle.tribulation.client.TribulationHudOverlay", "getHudHeightContribution", int.class);
+
+    private static final class ClientAccessor {
+        private final String className;
+        private final String methodName;
+        private final Class<?> returnType;
+        private final AtomicBoolean logged = new AtomicBoolean(false);
+        private volatile boolean resolved;
+        private volatile MethodHandle handle;
+
+        ClientAccessor(String className, String methodName, Class<?> returnType) {
+            this.className = className;
+            this.methodName = methodName;
+            this.returnType = returnType;
+        }
+
+        /**
+         * Resolve the target static method once into a cached MethodHandle,
+         * or {@code null} if the client class/method is unavailable. The first
+         * failure is logged; the result is memoized either way so callers on
+         * the per-render hot path never re-pay reflection cost.
+         */
+        MethodHandle resolve() {
+            if (resolved) {
+                return handle;
+            }
+            synchronized (this) {
+                if (resolved) {
+                    return handle;
+                }
+                MethodHandle resolvedHandle = null;
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    resolvedHandle = MethodHandles.publicLookup()
+                            .findStatic(clazz, methodName, MethodType.methodType(returnType));
+                } catch (Throwable t) {
+                    if (logged.compareAndSet(false, true)) {
+                        Tribulation.LOGGER.warn("Tribulation client accessor {}.{} unavailable; returning sentinel",
+                                className, methodName, t);
+                    }
+                }
+                handle = resolvedHandle;
+                resolved = true;
+                return handle;
             }
         }
-        return 0;
     }
 
     /**

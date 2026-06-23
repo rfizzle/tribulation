@@ -202,9 +202,8 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
             graphics.pose().translate(-scx, -scy, 0f);
         }
 
-        // ---- Frame, watermark, content ----
+        // ---- Frame, content ----
         drawNineSlice(graphics, panelX, panelY, panelW, panelH);
-        drawSkullWatermark(graphics, panelX + panelW / 2, panelY + panelH / 2, tierColor);
 
         int contentX = panelX + INSET;
         int y = panelY + INSET;
@@ -414,17 +413,6 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
 
     private static void blit(GuiGraphics g, int x, int y, int dw, int dh, int u, int v, int sw, int sh) {
         g.blit(PANEL, x, y, dw, dh, u, v, sw, sh, TEX_SIZE, TEX_SIZE);
-    }
-
-    /** A large, very faint tier-tinted skull behind the content. */
-    private static void drawSkullWatermark(GuiGraphics g, int cx, int cy, int tierColor) {
-        int size = 56;
-        float r = ((tierColor >> 16) & 0xFF) / 255f;
-        float gr = ((tierColor >> 8) & 0xFF) / 255f;
-        float b = (tierColor & 0xFF) / 255f;
-        g.setColor(r, gr, b, 0.06f);
-        g.blit(ICON, cx - size / 2, cy - size / 2, size, size, 0, 0, 32, 32, 32, 32);
-        g.setColor(1f, 1f, 1f, 1f);
     }
 
     private static void blitTinted(GuiGraphics g, ResourceLocation tex, int x, int y, int color) {

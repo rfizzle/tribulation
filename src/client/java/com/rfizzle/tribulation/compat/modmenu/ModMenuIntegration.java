@@ -9,7 +9,24 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.network.chat.Component;
 
+import java.util.Locale;
+
 public final class ModMenuIntegration implements ModMenuApi {
+
+    /**
+     * Render an enum constant as a friendly title-cased label in the Cloth
+     * dropdowns (e.g. {@code NEAREST} → "Nearest", {@code TOP_LEFT} → "Top
+     * Left", {@code PER_MOB} → "Per Mob") instead of the raw constant name.
+     */
+    private static Component enumLabel(Enum<?> value) {
+        StringBuilder sb = new StringBuilder();
+        for (String word : value.name().toLowerCase(Locale.ROOT).split("_")) {
+            if (word.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return Component.literal(sb.toString());
+    }
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
@@ -81,6 +98,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                         TribulationConfig.ScalingMode.values(),
                         config.general.scalingMode)
                 .setDefaultValue(TribulationConfig.ScalingMode.NEAREST)
+                .setNameProvider(ModMenuIntegration::enumLabel)
                 .setSaveConsumer(v -> config.general.scalingMode = v)
                 .build());
         cat.addEntry(entry.startBooleanToggle(
@@ -112,6 +130,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                         TribulationConfig.Anchor.values(),
                         hud.anchor)
                 .setDefaultValue(TribulationConfig.Anchor.TOP_LEFT)
+                .setNameProvider(ModMenuIntegration::enumLabel)
                 .setSaveConsumer(v -> hud.anchor = v)
                 .build());
         cat.addEntry(entry.startIntField(
@@ -729,6 +748,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                         TribulationConfig.MaterialRollMode.values(),
                         ae.materialRollMode)
                 .setDefaultValue(TribulationConfig.MaterialRollMode.PER_MOB)
+                .setNameProvider(ModMenuIntegration::enumLabel)
                 .setSaveConsumer(v -> ae.materialRollMode = v)
                 .build());
         cat.addEntry(entry.startDoubleField(

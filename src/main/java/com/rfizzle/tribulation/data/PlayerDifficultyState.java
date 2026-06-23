@@ -10,12 +10,29 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Per-player difficulty state (level, tick counter, death-relief anchor, hearts
+ * lost), persisted as overworld {@link SavedData}. Entries are created lazily on
+ * first access via {@link #getPlayerData(UUID)} and kept for every player that
+ * has ever progressed — the map is intentionally never evicted on logout so a
+ * returning player keeps their level across sessions.
+ *
+ * <p>Access is overwhelmingly from the server thread, but the backing map is a
+ * {@link ConcurrentHashMap} so the lazy {@code computeIfAbsent} insertions and
+ * the {@link #save} iteration cannot race or throw a
+ * {@link java.util.ConcurrentModificationException} if a future caller touches
+ * it off-thread. Serialization sorts entries by UUID for a deterministic,
+ * diff-friendly on-disk order.
+ */
 public class PlayerDifficultyState extends SavedData {
     public static final String STORAGE_KEY = "tribulation_players";
     public static final long NEVER_DIED = Long.MIN_VALUE;
@@ -33,7 +50,7 @@ public class PlayerDifficultyState extends SavedData {
             null
     );
 
-    private final Map<UUID, PlayerData> data = new LinkedHashMap<>();
+    private final Map<UUID, PlayerData> data = new ConcurrentHashMap<>();
 
     public PlayerDifficultyState() {}
 
@@ -260,7 +277,9 @@ public class PlayerDifficultyState extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag list = new ListTag();
-        for (Map.Entry<UUID, PlayerData> entry : data.entrySet()) {
+        List<Map.Entry<UUID, PlayerData>> entries = new ArrayList<>(data.entrySet());
+        entries.sort(Map.Entry.comparingByKey(Comparator.comparing(UUID::toString)));
+        for (Map.Entry<UUID, PlayerData> entry : entries) {
             CompoundTag playerTag = new CompoundTag();
             playerTag.putUUID(NBT_UUID_KEY, entry.getKey());
             playerTag.putInt(NBT_LEVEL_KEY, entry.getValue().level);

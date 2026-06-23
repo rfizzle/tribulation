@@ -98,13 +98,17 @@
               "id": "stray",
               "title": "Stray",
               "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.2%/lvl (max +300%) · Speed +0.12%/lvl (max +30%) · Armor +0.020/lvl (max +5) · Toughness +0.015/lvl (max +4)</span>"],
-              "bullets": ["Stat scaling only — keeps its vanilla Slowness arrows, now backed by a much deeper health pool"]
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> its arrows upgrade from vanilla Slowness to Slowness II — a harder snare backed by a much deeper health pool"
+              ]
             },
             {
               "id": "bogged",
               "title": "Bogged",
               "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.2%/lvl (max +300%) · Speed +0.12%/lvl (max +30%) · Armor +0.020/lvl (max +5) · Toughness +0.015/lvl (max +4)</span>"],
-              "bullets": ["Stat scaling only — its vanilla poison arrows need no help"]
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> its arrows upgrade from vanilla Poison to Poison II"
+              ]
             },
             {
               "id": "wither-skeleton",
@@ -151,13 +155,18 @@
               "id": "silverfish",
               "title": "Silverfish",
               "html": ["<span class='text-smoke text-sm'>HP +0.5%/lvl (max +125%) · Damage +0.8%/lvl (max +200%) · Speed +0.1%/lvl (max +25%) · no armor scaling</span>"],
-              "bullets": ["Stat scaling only — deliberately light; the swarm is the threat"]
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> when hurt, calls nearby silverfish out of infested blocks — the swarm assembles faster"
+              ]
             },
             {
               "id": "endermite",
               "title": "Endermite",
               "html": ["<span class='text-smoke text-sm'>HP +0.5%/lvl (max +125%) · Damage +1.0%/lvl (max +250%) · Speed +0.24%/lvl (max +60%) · no armor scaling</span>"],
-              "bullets": ["Stat scaling only, with the fastest speed scaling in the roster"]
+              "bullets": [
+                "The fastest speed scaling in the roster",
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> when hurt, wakes nearby silverfish from infested blocks to join the fight"
+              ]
             }
           ]
         }
@@ -177,7 +186,10 @@
               "id": "pillager",
               "title": "Pillager",
               "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.12%/lvl (max +30%) · Armor +0.024/lvl (max +6) · Toughness +0.020/lvl (max +5)</span>"],
-              "bullets": ["Stat scaling only — crossbow damage rides the damage axis"]
+              "bullets": [
+                "<span class='text-accent font-semibold'>Tier 2 (lvl 100):</span> its crossbow gains Quick Charge I — faster reloads between bolts",
+                "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> its crossbow gains Multishot — three bolts per shot"
+              ]
             },
             {
               "id": "vindicator",
@@ -185,6 +197,7 @@
               "html": ["<span class='text-smoke text-sm'>HP +1.2%/lvl (max +300%) · Damage +2.0%/lvl (max +500%) · Speed +0.12%/lvl (max +30%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
               "bullets": [
                 "The steepest damage scaling in the roster — its axe was already vanilla's hardest-hitting weapon",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> breaks down doors on any difficulty — no hiding behind a closed door",
                 "<span class='text-accent font-semibold'>Tier 4 (lvl 200):</span> permanent Resistance I — takes 20% less damage from everything"
               ]
             },
@@ -192,13 +205,20 @@
               "id": "witch",
               "title": "Witch",
               "html": ["<span class='text-smoke text-sm'>HP +0.8%/lvl (max +200%) · Damage +0.8%/lvl (max +200%) · Speed +0.08%/lvl (max +20%) · Armor +0.016/lvl (max +4) · Toughness +0.012/lvl (max +3)</span>"],
-              "bullets": ["Stat scaling only, kept gentle on purpose — her vanilla potion kit is the threat"]
+              "bullets": [
+                "Gentle stat scaling on purpose — her potion kit is the threat",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> throws lingering potions instead of splash — the cloud stays where it lands",
+                "<span class='text-accent2 font-semibold'>Tier 5 (lvl 250):</span> drinks healing potions far more aggressively (25% chance per tick vs vanilla's 5%) — much harder to burst down"
+              ]
             },
             {
               "id": "ravager",
               "title": "Ravager",
               "html": ["<span class='text-smoke text-sm'>HP +1.6%/lvl (max +400%) · Damage +1.4%/lvl (max +350%) · Speed +0.08%/lvl (max +20%) · Armor +0.032/lvl (max +8) · Toughness +0.024/lvl (max +6)</span>"],
-              "bullets": ["The biggest health scaling in the roster — a late-raid Ravager is a siege engine"]
+              "bullets": [
+                "The biggest health scaling in the roster — a late-raid Ravager is a siege engine",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> its roar knocks back from a wider radius (6 blocks vs vanilla's 4)"
+              ]
             }
           ]
         }
@@ -242,7 +262,10 @@
               "id": "guardian",
               "title": "Guardian",
               "html": ["<span class='text-smoke text-sm'>HP +1.0%/lvl (max +250%) · Damage +1.4%/lvl (max +350%) · Speed +0.1%/lvl (max +25%) · Armor +0.020/lvl (max +5) · Toughness +0.020/lvl (max +5)</span>"],
-              "bullets": ["Stat scaling only — the beam damage rides the damage axis"]
+              "bullets": [
+                "Beam damage rides the damage axis",
+                "<span class='text-accent font-semibold'>Tier 3 (lvl 150):</span> charges its beam in half the time (floor 20 ticks) — far less reaction window"
+              ]
             }
           ]
         }

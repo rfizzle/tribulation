@@ -23,11 +23,11 @@ public final class TribulationItems {
     public static final String CREATIVE_TAB_PATH = "main";
 
     public static final ResourceLocation SHATTER_SHARD_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, SHATTER_SHARD_PATH);
+            Tribulation.id(SHATTER_SHARD_PATH);
     public static final ResourceLocation HEART_FRAGMENT_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, HEART_FRAGMENT_PATH);
+            Tribulation.id(HEART_FRAGMENT_PATH);
     public static final ResourceLocation CREATIVE_TAB_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, CREATIVE_TAB_PATH);
+            Tribulation.id(CREATIVE_TAB_PATH);
 
     public static final Item SHATTER_SHARD = new ShatterShardItem(
             new Item.Properties()

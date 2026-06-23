@@ -64,6 +64,12 @@ public final class ScalingEngine {
 
     public static final Set<String> ADD_VALUE_ATTRIBUTES = Set.of(ATTR_ARMOR, ATTR_TOUGHNESS);
 
+    /** Per-mob scaling axes in inspect/debug display order. */
+    public static final List<String> AXES = List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT, AXIS_MOON);
+
+    private static final List<String> BOSS_AXES =
+            List.of(BossScalingEngine.AXIS_BOSS_TIME, BossScalingEngine.AXIS_BOSS_DISTANCE);
+
     /**
      * Holder lookups are deferred to a nested class so pure-math tests can load
      * {@link ScalingEngine} without bootstrapping Minecraft's attribute registry.
@@ -87,7 +93,7 @@ public final class ScalingEngine {
     // ---- Identifier helpers ----
 
     public static ResourceLocation modifierId(String axis, String attribute) {
-        return ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, axis + "_" + attribute);
+        return Tribulation.id(axis + "_" + attribute);
     }
 
     public static Holder<Attribute> attributeHolder(String attributeKey) {
@@ -551,11 +557,11 @@ public final class ScalingEngine {
         if (instance == null) return 0.0;
 
         double total = 0.0;
-        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT, AXIS_MOON)) {
+        for (String axis : AXES) {
             AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) total += mod.amount();
         }
-        for (String axis : List.of(BossScalingEngine.AXIS_BOSS_TIME, BossScalingEngine.AXIS_BOSS_DISTANCE)) {
+        for (String axis : BOSS_AXES) {
             AttributeModifier mod = instance.getModifier(BossScalingEngine.modifierId(axis, attributeKey));
             if (mod != null) total += mod.amount();
         }
@@ -604,7 +610,7 @@ public final class ScalingEngine {
         // Sum current Tribulation modifiers
         double tribulationSum = 0;
         List<AttributeModifier> tribMods = new ArrayList<>();
-        for (String axis : List.of(AXIS_TIME, AXIS_DISTANCE, AXIS_HEIGHT, AXIS_MOON)) {
+        for (String axis : AXES) {
             AttributeModifier mod = instance.getModifier(modifierId(axis, attributeKey));
             if (mod != null) {
                 tribulationSum += mod.amount();

@@ -31,17 +31,17 @@ public final class ZombieVariantHandler {
     public static final String PROCESSED_TAG = "tribulation_variant_processed";
 
     public static final ResourceLocation BIG_HEALTH_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_big_health");
+            Tribulation.id("variant_big_health");
     public static final ResourceLocation BIG_DAMAGE_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_big_damage");
+            Tribulation.id("variant_big_damage");
     public static final ResourceLocation BIG_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_big_speed");
+            Tribulation.id("variant_big_speed");
     public static final ResourceLocation BIG_SIZE_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_big_size");
+            Tribulation.id("variant_big_size");
     public static final ResourceLocation SPEED_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_speed_speed");
+            Tribulation.id("variant_speed_speed");
     public static final ResourceLocation SPEED_HEALTH_ID =
-            ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "variant_speed_health");
+            Tribulation.id("variant_speed_health");
 
     /**
      * The zombie-family mob keys that can roll a special variant. Matches

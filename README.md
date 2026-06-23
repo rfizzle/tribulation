@@ -117,7 +117,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 
@@ -216,5 +216,5 @@ Install any, combine all.
 
 ## License
 
-Licensed under the [MIT License](LICENSE). © 2026 rfizzle. Tribulation is not
+Licensed under the [MIT License](LICENSE). © 2025-2026 rfizzle. Tribulation is not
 affiliated with Mojang Studios or Microsoft.

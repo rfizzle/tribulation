@@ -2,17 +2,17 @@
 
 Minecraft 1.21.1 Fabric mod. Difficulty overhaul: formula-driven mob scaling and opt-in death penalties.
 
-**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. Only the genuinely mod-specific visuals are custom pixel art, authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept in `art/glyphs/`): the `heart_fragment` and `shatter_shard` item textures and the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier). The mod registers no custom blocks and no custom `SoundEvent`s — every cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shard, player level-up for the fragment), because synthesizing a bespoke sound would only make these one-shot feedbacks feel artificial. Custom synthesized cues via `/sfx` (concord `design/DESIGN-SYSTEM.md` §9) would be added only where a sound benefits from its own identity; nothing in the shipped feature set crosses that bar. Scaled-mob visual identity (Big/Speed zombies) reuses vanilla rendering: Big zombies drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
+**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. The genuinely mod-specific visuals are custom pixel art authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept in `art/glyphs/`): the `heart_fragment` and `shatter_shard` item textures, the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier), the tier-detail panel frame (`textures/gui/tier_detail_panel.png`, drawn nine-sliced), and three threat-telegraphing particle sprites (`textures/particle/threat_{tier,big,speed}.png`). The mod registers no custom blocks. It registers exactly one custom `SoundEvent` — `tribulation:tier_up`, a synthesized milestone sting authored through the `/sfx` pipeline (`art/audio/tier-up.sfx`, concord `design/DESIGN-SYSTEM.md` §9) — because a tier-up is the one moment that benefits from its own identity; every other cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shard, player level-up for the fragment). Scaled-mob visual identity (Big/Speed zombies, Brute skeletons) reuses vanilla rendering: large variants drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
 
 ---
 
-## 1. Mob Scaling — Three Axes
+## 1. Mob Scaling — Four Axes
 
-Every hostile mob's combat attributes are boosted at spawn time by three independent axes whose factors combine per attribute. Scaling is **frozen at spawn** — computed once when the entity loads, written as persistent attribute modifiers, and never recomputed for that entity.
+Every hostile mob's combat attributes are boosted at spawn time by four independent axes whose factors combine per attribute. Scaling is **frozen at spawn** — computed once when the entity loads, written as persistent attribute modifiers, and never recomputed for that entity.
 
 ### Behavior
 
-On `ServerEntityEvents.ENTITY_LOAD`, `MobScalingHandler` processes each `Mob` that does not already carry the `tribulation_processed` scoreboard tag. It resolves a `MobScaling` profile for the entity, derives an effective player level, computes per-attribute factors across the three axes, applies them as `AttributeModifier`s, tops the mob's current HP up to its new max, and tags it processed.
+On `ServerEntityEvents.ENTITY_LOAD`, `MobScalingHandler` processes each `Mob` that does not already carry the `tribulation_processed` scoreboard tag. It resolves a `MobScaling` profile for the entity, derives an effective player level, computes per-attribute factors across the four axes, applies them as `AttributeModifier`s, tops the mob's current HP up to its new max, and tags it processed.
 
 The six scaled attributes:
 
@@ -25,9 +25,9 @@ The six scaled attributes:
 | `armor` | `ARMOR` | `ADD_VALUE` |
 | `toughness` | `ARMOR_TOUGHNESS` | `ADD_VALUE` |
 
-Each axis applies as its own modifier, with ID `tribulation:<axis>_<attribute>` (e.g. `tribulation:time_health`, `tribulation:distance_armor`). Re-applying scaling overwrites the same IDs, so values never stack on reload.
+Each axis applies as its own modifier, with ID `tribulation:<axis>_<attribute>` (e.g. `tribulation:time_health`, `tribulation:distance_armor`, `tribulation:moon_damage`). Re-applying scaling overwrites the same IDs, so values never stack on reload.
 
-### The Three Axes
+### The Four Axes
 
 **Time (player level)** — applies to **all six** attributes. Per-attribute factor is `min(playerLevel × rate, perAttributeCap)`, where `rate` and `cap` come from the mob's profile.
 
@@ -46,14 +46,16 @@ heightFactor = min(heightLevels × heightFactor, maxHeightFactor)
 ```
 Defaults: `heightDistance=30`, `heightFactor=0.1`, `maxHeightFactor=0.5`. Both upward and downward deviation add threat; `positiveHeightScaling`/`negativeHeightScaling` gate each direction independently.
 
-### Per-Attribute Combination and Global Cap
-
-For each attribute the three axis factors are summed and clipped to that attribute's **global cap** (`statCaps`). When clipping occurs, the three axes are scaled down **proportionally** so the per-axis breakdown still sums to the clipped total (preserves inspect/debug readability).
-
-- For `ADD_MULTIPLIED_BASE` attributes the global cap is a dimensionless multiplier (`maxFactorHealth=4.0` → up to +400% of base).
-- For `ADD_VALUE` attributes (`armor`, `toughness`) the per-axis distance/height factors are first multiplied by the attribute's own per-mob cap to convert them into native armor points, and the global cap is `maxFactorProtection × perMobCap`.
-
-Global caps (`statCaps`): health `4.0`, damage `4.5`, speed `0.5`, protection `2.0`, follow_range `1.5`.
+**Moon phase** — applies only to the position-scaled subset. A triangle curve over the 8 vanilla moon phases peaks at the full moon and falls to zero at the new moon (`ScalingEngine.computeMoonFactor`):
+```
+distFromFull = min(moonPhase, 8 − moonPhase)   (full = phase 0, new = phase 4)
+moonFactor   = maxBonus × (1 − distFromFull / 4)
+```
+Default `maxBonus=0.1` (+10% at the full moon; the half-moons land at +5%). The moon axis only contributes when `moonAppliesAt` holds (`ScalingEngine.moonAppliesAt`):
+- `moonPhaseScaling.enabled` is true and `maxBonus > 0`;
+- the dimension has a real daylight cycle (`hasSkyLight()` **and not** `hasCeiling()` — the Overworld, not the Nether or End);
+- it is night (`!world.isDay()`);
+- if `surfaceOnly` (default false), the mob's Y is `≥ surfaceY` (default 63), keeping the bonus off deep-cave spawns.
 
 ### Effective Level Resolution
 
@@ -66,6 +68,17 @@ Global caps (`statCaps`): health `4.0`, damage `4.5`, speed `0.5`, protection `2
 | `MAX` | Highest level among non-spectator players within range |
 
 Creative players count in all three modes; spectators never do.
+
+**Dimension offset.** Once a qualifying player is found, a flat per-dimension level boost is folded into the result: `effectiveLevel = min(rawLevel + max(0, offset), maxLevel)`. Offsets come from `dimensionOffsets`, a `Map<dimensionId, int>` defaulting to `minecraft:the_nether → 25` and `minecraft:the_end → 40`; the Overworld and any unlisted dimension default to 0. The offset is the single value returned by `getEffectiveLevel`, so it raises **both** scaled stats and the mob's ability/equipment tier — a level-100 player near a mob in the End yields an effective level of 140. The "no player in range" paths return 0 unchanged (the offset is not added to mobs that would not scale anyway).
+
+### Per-Attribute Combination and Global Cap
+
+For each attribute the four axis factors are summed and clipped to that attribute's **global cap** (`statCaps`). When clipping occurs, the axes are scaled down **proportionally** so the per-axis breakdown still sums to the clipped total (preserves inspect/debug readability).
+
+- For `ADD_MULTIPLIED_BASE` attributes the global cap is a dimensionless multiplier (`maxFactorHealth=4.0` → up to +400% of base).
+- For `ADD_VALUE` attributes (`armor`, `toughness`) the per-axis distance/height/moon factors are first multiplied by the attribute's own per-mob cap to convert them into native armor points, and the global cap is `maxFactorProtection × perMobCap`.
+
+Global caps (`statCaps`): health `4.0`, damage `4.5`, speed `0.5`, protection `2.0`, follow_range `1.5`.
 
 ### Mob Profile Resolution and Modded Fallback
 
@@ -117,7 +130,7 @@ After scaling and any equipped armor, `MobScalingHandler` clamps the combined `A
 ### Scope
 
 - Only server-side `Mob` entities. Players, non-mob entities, and entities in `general.excludedEntities` (default contains `the_bumblezone:cosmic_crystal_entity`) are skipped.
-- Bosses route through a separate engine (§3).
+- Bosses route through a separate engine (§3). Trial-spawner and patrol mobs route through dedicated handlers (§9, §10) but reuse this same per-mob formula.
 - The frozen-at-spawn tag means existing mobs keep their stats across `/tribulation reload`; only newly loaded mobs use updated config.
 
 ### Implementation Notes
@@ -135,15 +148,15 @@ Each player carries a difficulty **level** (0–`maxLevel`, default 250) that ad
 
 `Tribulation` registers a `ServerTickEvents.END_SERVER_TICK` handler that fires every 20 ticks (1 s). When `timeScaling.enabled` and at least one player is online, every online player's tick counter advances by 20. Crossing `levelUpTicks` (default 72000 ticks = 1 hour) grants one level, carrying the remainder. At `maxLevel` the counter is zeroed and no further levels are gained.
 
-On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`.
+On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`. Crossing a tier boundary additionally fires the tier advancement and the tier-up sting (§19, §24).
 
 ### Persistence
 
-Level state lives in `PlayerDifficultyState`, a `SavedData` stored on the overworld (`tribulation_players`). Per-player fields: `Level` (int), `Tick` (tick counter toward next level), `LastDeathTick` (long, death-relief cooldown anchor; sentinel `Long.MIN_VALUE` = never died), `HeartsLost` (int half-hearts). Survives restarts. Level is **not** reset on death (only reduced by the opt-in penalties).
+Level state lives in `PlayerDifficultyState`, a `SavedData` stored on the overworld (`tribulation_players`). Per-player fields: `Level` (int), `Tick` (tick counter toward next level), `LastDeathTick` (long, death-relief cooldown anchor; sentinel `Long.MIN_VALUE` = never died), `HeartsLost` (int half-hearts). The backing map is a `ConcurrentHashMap`; entries are created lazily on first access and kept for life (no logout eviction, so a returning player keeps their level). Serialization sorts entries by UUID for deterministic on-disk order. Survives restarts. Level is **not** reset on death (only reduced by the opt-in penalties).
 
 ### Scope
 
-- Per-player and global to the player — the same level applies to every mob spawned near them regardless of dimension. Time scaling applies in **all** dimensions.
+- Per-player and global to the player — the same level applies to every mob spawned near them regardless of dimension. Time scaling applies in **all** dimensions; the per-dimension offset (§1) raises the effective level used in the Nether/End.
 - On player join, the current level is synced to the client for the HUD.
 
 ---
@@ -156,7 +169,7 @@ Bosses use a separate, gentler formula with uniform rates.
 
 A mob whose `EntityType` is in the `#c:bosses` tag (ships with `minecraft:ender_dragon`, `minecraft:wither`, `minecraft:elder_guardian`, `minecraft:warden`) routes through `BossScalingEngine` instead of the per-mob engine. When `bosses.affectBosses` is false, bosses are skipped entirely (no scaling, no processed tag short-circuit other than the normal path).
 
-Only **health and damage** are scaled, over **time and distance** axes (no height). Both axes use flat boss rates rather than per-mob rates:
+Only **health and damage** are scaled, over **time and distance** axes (no height, no moon). Both axes use flat boss rates rather than per-mob rates:
 ```
 bossTime     = playerLevel × bossTimeFactor          (default 0.3)
 bossDistance = distanceLevels × bossDistanceFactor    (default 0.1, same start/step thresholds as §1)
@@ -166,7 +179,7 @@ When the sum exceeds the cap, the two axes scale down proportionally. Distance i
 
 ### Scope
 
-- Bosses receive no tier abilities, zombie variants, or equipment — only the boss health/damage buff.
+- Bosses receive no tier abilities, variants, or equipment — only the boss health/damage buff.
 - Boss-formula scaling is detectable via `TribulationAPI.isBossScaled` (reads the boss-axis modifiers).
 
 ---
@@ -177,42 +190,54 @@ At five level thresholds, scaled vanilla mobs unlock special behaviors keyed off
 
 ### Tiers
 
-`TierManager` classifies a player level into tier 0–5. Thresholds (`tiers`, inclusive on the lower bound): tier1 `50`, tier2 `100`, tier3 `150`, tier4 `200`, tier5 `250`. A player at exactly the threshold is in that tier. A mob's tier is frozen at spawn alongside its scaling (stored in the `SCALED_TIER` attachment).
+`TierManager` classifies a player level into tier 0–5. Thresholds (`tiers`, inclusive on the lower bound): tier1 `50`, tier2 `100`, tier3 `150`, tier4 `200`, tier5 `250`. A player at exactly the threshold is in that tier. A mob's tier is frozen at spawn alongside its scaling (stored in the `SCALED_TIER` attachment) and reflects the effective level — including the dimension offset (§1).
 
 ### Ability Table
 
-`AbilityManager.applyAbilities` runs only for the 21 vanilla mob keys whose toggle is enabled; each ability also checks its own `abilities.*` flag. Abilities are expressed as attribute modifiers (`tribulation:ability_*` IDs), infinite-duration effects, vanilla setters, equipment, or scoreboard tags consumed by mixins, so they persist in NBT.
+`AbilityManager.applyAbilities` runs only for the 21 vanilla mob keys whose toggle is enabled; each ability also checks its own `abilities.*` flag. Abilities are expressed as attribute modifiers (`tribulation:ability_*` IDs), infinite-duration effects, vanilla setters, equipment, or scoreboard tags consumed by mixins, so they persist in NBT. `MobAbilities.REGISTRY` holds 31 entries (the 29 `abilities.*` flags, two of which — `spiderWebPlacing` and `silverfishCallSleepers` — cover two mob keys each).
 
-| Mob | Tier ≥ | Ability | Mechanism |
-|---|---|---|---|
-| Zombie | 1 | Reinforcements | `+0.10` `SPAWN_REINFORCEMENTS_CHANCE` (ADD_VALUE) |
-| Zombie | 3 | Door breaking | `setCanBreakDoors(true)` |
-| Zombie | 5 | Sprinting | `+0.15` `MOVEMENT_SPEED` (×base) |
-| Creeper | 1 | Shorter fuse | max swell set to 15 ticks (via `CreeperAccessor`) |
-| Creeper | 5 | Charged | 25% chance to set powered flag |
-| Skeleton | 2 | Sword switch | bow → stone sword |
-| Skeleton | 4 | Flame arrows | infinite Fire Resistance + `setRemainingFireTicks(MAX)` (self ablaze; arrows ignite) |
-| Spider | 2 | Web placing | `tribulation_web` tag (on-hit cobweb, mobGriefing-gated) |
-| Spider | 3 | Crop trample | `tribulation_crop_trample` tag (on-hit destroys crops/farmland, mobGriefing-gated) |
-| Spider | 5 | Leap attack | `+0.5` `JUMP_STRENGTH` (×base) |
-| Cave Spider | 2 | Web placing | `tribulation_web` tag |
-| Husk | 4 | Hunger II | `tribulation_hunger2` tag (upgrades vanilla Hunger I → II on hit) |
-| Drowned | 2 | Trident | empty main hand → trident |
-| Zombified Piglin | 5 | Aggro range | `+0.5` `FOLLOW_RANGE` (×base) |
-| Hoglin | 1 | Knockback resist | `+0.5` `KNOCKBACK_RESISTANCE` (ADD_VALUE) |
-| Zoglin | 3 | Fire resist | infinite Fire Resistance |
-| Vindicator | 4 | Resistance | infinite Resistance I |
-| Wither Skeleton | 3 | Sprint | `+0.15` `MOVEMENT_SPEED` (×base) |
-| Wither Skeleton | 4 | Fire Aspect | Fire Aspect I on main-hand weapon (if held) |
-| Piglin | 2 | Crossbow | empty main hand → crossbow |
+| Mob | Tier ≥ | Ability | Mechanism | Config flag |
+|---|---|---|---|---|
+| Zombie | 1 | Reinforcements | `+0.10` `SPAWN_REINFORCEMENTS_CHANCE` (ADD_VALUE) | `zombieReinforcements` |
+| Zombie | 3 | Door breaking | `setCanBreakDoors(true)` | `zombieDoorBreaking` |
+| Zombie | 5 | Sprinting | `+0.15` `MOVEMENT_SPEED` (×base) | `zombieSprinting` |
+| Creeper | 1 | Shorter fuse | max swell set to 15 ticks (`CreeperAccessor`) | `creeperShorterFuse` |
+| Creeper | 5 | Charged | 25% chance to set the powered flag | `creeperCharged` |
+| Skeleton | 2 | Sword switch | bow → stone sword | `skeletonSwordSwitch` |
+| Skeleton | 4 | Flame arrows | infinite Fire Resistance + `setRemainingFireTicks(MAX)` (self ablaze; arrows ignite) | `skeletonFlameArrows` |
+| Spider | 2 | Web placing | `tribulation_web` tag (on-hit cobweb, mobGriefing-gated) | `spiderWebPlacing` |
+| Spider | 3 | Crop trample | `tribulation_crop_trample` tag (on-hit destroys crops/farmland, mobGriefing-gated) | `spiderCropTrample` |
+| Spider | 5 | Leap attack | `+0.5` `JUMP_STRENGTH` (×base) | `spiderLeapAttack` |
+| Cave Spider | 2 | Web placing | `tribulation_web` tag (shares the spider toggle) | `spiderWebPlacing` |
+| Endermite | 2 | Call sleepers | `tribulation_call_sleepers` tag → `SilverfishAbilityHandler` wakes nearby silverfish from infested blocks when hurt | `silverfishCallSleepers` |
+| Silverfish | 2 | Call sleepers | `tribulation_call_sleepers` tag (relies on the vanilla wake-friends goal) | `silverfishCallSleepers` |
+| Drowned | 2 | Trident | empty main hand → trident | `drownedTrident` |
+| Husk | 4 | Hunger II | `tribulation_hunger2` tag (upgrades vanilla Hunger I → II on hit) | `huskHunger` |
+| Stray | 2 | Slowness II arrows | `tribulation_slow2` tag → `StrayAbilityMixin` adds `MOVEMENT_SLOWDOWN` amp 1 to fired arrows | `straySlownessUpgrade` |
+| Bogged | 2 | Poison II arrows | `tribulation_poison2` tag → `BoggedAbilityMixin` adds `POISON` amp 1 to fired arrows | `boggedPoisonUpgrade` |
+| Pillager | 2 | Quick Charge | enchants held crossbow with Quick Charge I | `pillagerQuickCharge` |
+| Pillager | 4 | Multishot | enchants held crossbow with Multishot | `pillagerMultishot` |
+| Vindicator | 3 | Door breaking | `tribulation_door_break` tag → `BreakDoorGoalMixin` allows door-breaking on any difficulty | `vindicatorDoorBreaking` |
+| Vindicator | 4 | Resistance | infinite Resistance I | `vindicatorResistance` |
+| Witch | 3 | Lingering potions | `tribulation_lingering_potions` tag → `WitchAbilityMixin` redirects SPLASH → LINGERING potions | `witchLingeringPotions` |
+| Witch | 5 | Aggressive healing | `tribulation_aggro_heal` tag → `WitchAbilityMixin` raises the drink-potion chance 0.05 → 0.25 | `witchAggressiveHealing` |
+| Wither Skeleton | 3 | Sprint | `+0.15` `MOVEMENT_SPEED` (×base) | `witherSkeletonSprint` |
+| Wither Skeleton | 4 | Fire Aspect | Fire Aspect I on the main-hand weapon (if held) | `witherSkeletonFireAspect` |
+| Guardian | 3 | Faster beam | `tribulation_guardian_beam` tag → `GuardianBeamMixin` halves attack duration (floor 20 ticks) | `guardianFasterBeam` |
+| Hoglin | 1 | Knockback resist | `+0.5` `KNOCKBACK_RESISTANCE` (ADD_VALUE) | `hoglinKnockbackResist` |
+| Zoglin | 3 | Fire resist | infinite Fire Resistance | `zoglinFireResist` |
+| Ravager | 3 | Roar expansion | `tribulation_ravager_roar` tag → `RavagerRoarMixin` inflates the roar AABB 4.0 → 6.0 | `ravagerRoarExpansion` |
+| Piglin | 2 | Crossbow | empty main hand → crossbow | `piglinCrossbow` |
+| Zombified Piglin | 5 | Aggro range | `+0.5` `FOLLOW_RANGE` (×base) | `zombifiedPiglinAggro` |
 
-The corresponding `abilities.*` config flags all default to `true`.
+The 29 `abilities.*` config flags all default to `true`.
 
 ### Implementation Notes
 
-- On-hit abilities (`spiderWebPlacing`, `spiderCropTrample`) are driven by `MobAbilityMixin` on `Mob#doHurtTarget`, gated by the `mobGriefing` gamerule. `huskHunger` is driven by `HuskAbilityMixin` on `Husk#doHurtTarget`.
-- The `abilities` config also exposes `creeperShorterFuse`, `creeperCharged`, `zombifiedPiglinAggro`, `zoglinFireResist`, etc. — every entry in the table maps to a flag.
+- On-hit abilities (`spiderWebPlacing`, `spiderCropTrample`) are driven by `MobAbilityMixin` on `Mob#doHurtTarget`, gated by the `mobGriefing` gamerule; `huskHunger` is driven by `HuskAbilityMixin` on `Husk#doHurtTarget`.
+- Arrow-effect abilities (`straySlownessUpgrade`, `boggedPoisonUpgrade`) inject in the respective `*AbilityMixin` on `AbstractSkeleton#getArrow`, reading the mob's tag.
 - Skeleton flame arrows are implemented by keeping the skeleton permanently on fire (fire-immune) so its arrows inherit ignition; there is no dedicated arrow-modification code.
+- Crossbow enchants (`pillagerQuickCharge`, `pillagerMultishot`) use the `enchantHeldCrossbow` helper and no-op when the main hand is not a crossbow.
 
 ---
 
@@ -233,11 +258,30 @@ Variant modifiers use distinct `tribulation:variant_*` IDs so they never collide
 ### Implementation Notes
 
 - `Attributes.SCALE` natively drives both the rendered model and the entity bounding box in 1.21, syncing through the existing attribute packet — no TrackedData or renderer mixin.
-- Variants are detectable via `/tribulation inspect` (Big wins if both ID families are somehow present, for deterministic output).
+- Variants are detectable via `/tribulation inspect` (Big wins if both ID families are somehow present, for deterministic output) and drive the variant threat particles (§18).
 
 ---
 
-## 6. Tier-Driven Equipment
+## 6. Special Skeleton Variants
+
+Skeleton-family mobs can roll a Deadeye or Brute variant on top of base scaling — the archer counterpart to the zombie variants.
+
+### Behavior
+
+`SkeletonVariantHandler.apply` runs for the eligible keys `skeleton`, `stray`, `bogged` (Wither Skeleton is excluded — it carries tier abilities) when `specialSkeletons.enabled`. It is layered **after** base scaling. The roll is **deadeye-first, then brute, mutually exclusive**, each gated by an independent percent chance, and the result is tagged (`tribulation_skeleton_variant_processed`) so a failed roll is not retried on reload. Each variant also carries a detection tag (`tribulation_variant_deadeye` / `tribulation_variant_brute`).
+
+**Deadeye variant** (glass-cannon archer): `MAX_HEALTH` `−deadeyeSkeletonMalusHealth` (default `−10`, ADD_VALUE); bow attack interval set to `deadeyeSkeletonAttackInterval` (default 20 ticks — faster than vanilla). ID `tribulation:variant_deadeye_health`.
+
+**Brute variant** (heavy, hard-to-stagger archer): `MAX_HEALTH` `+bruteSkeletonBonusHealth` (default `+10`); `KNOCKBACK_RESISTANCE` `+bruteSkeletonBonusKnockbackResistance` (default `+0.5`, ADD_VALUE); `SCALE` `×base` by `bruteSkeletonSize − 1` (default 1.3 → +30%); bow attack interval set to `bruteSkeletonAttackInterval` (default 60 ticks — slower than vanilla). IDs `tribulation:variant_brute_health` / `_knockback` / `_size`.
+
+### Implementation Notes
+
+- Bow cadence is not an attribute in 1.21.1. `AbstractSkeletonMixin` injects at `RETURN` of `reassessWeaponGoal`, reads the variant tag, and calls `setMinAttackInterval` on the bow goal; the handler re-runs `reassessWeaponGoal()` after tagging so the mixin sees the tag.
+- Like the Big zombie, Brute size drives `Attributes.SCALE` (model + hitbox), syncing through the vanilla attribute packet. Detectable via `/tribulation inspect` and the Jade/WTHIT overlay.
+
+---
+
+## 7. Tier-Driven Equipment
 
 Scaled humanoid mobs can roll armor and weapons matched to their tier.
 
@@ -288,24 +332,60 @@ Default weapon tiers (`wear% / enchant% / maxEnchLevel`, materials):
 
 ---
 
-## 7. Bonus XP and Extra Loot
+## 8. Bonus XP and Extra Loot
 
 Scaled mobs reward proportionally more XP and, optionally, duplicate loot.
 
 ### Behavior
 
-**XP** (`xpAndLoot.extraXp`, default true): `LivingEntityExperienceMixin` hooks `LivingEntity#getExperienceReward` and multiplies a mob's base XP by `1 + min(healthFactor, maxXpFactor − 1)`, where `healthFactor` is the mob's MAX_HEALTH axis sum. Capped at `maxXpFactor` (default 2.0 → up to 2× XP). Result is rounded to the nearest int; only `Mob`s with positive scaling are affected.
+**XP** (`xpAndLoot.xpMultiplier`, default `1.0`): `LivingEntityExperienceMixin` hooks `LivingEntity#getExperienceReward` and multiplies a mob's base XP by `1 + healthFactor × xpMultiplier`, where `healthFactor` is the mob's MAX_HEALTH axis sum. There is no separate XP ceiling — `healthFactor` is already bounded by `statCaps.maxFactorHealth`, so `xpMultiplier` is a plain gain dial (a fully-scaled reference zombie reaches ~3.5× XP at the default; a mob at the global health cap reaches ~5×). `xpMultiplier=0` disables the bonus. The result is rounded to the nearest int; only `Mob`s with positive scaling are affected.
 
 **Extra loot** (`xpAndLoot.dropMoreLoot`, default **false**): on `AFTER_DEATH`, `XpLootHandler` rolls `min(healthFactor × moreLootChance, maxLootChance)` (defaults `moreLootChance=0.02`, `maxLootChance=0.7`). On success it scans freshly-spawned `ItemEntity`s (age ≤1 tick, within 1.5 blocks) and duplicates one at random.
 
 ### Scope
 
-- XP scaling reads the persistent health modifier, so it survives chunk reload/restart with no extra state.
+- XP scaling reads the persistent health modifier (via `getExperienceReward`, not `dropExperience`), so it survives chunk reload/restart, shows in `/xp query`, and stacks correctly with Looting modifiers.
 - Loot duplication is off by default.
 
 ---
 
-## 8. Death Relief
+## 9. Trial Spawner Scaling
+
+Mobs from 1.21 trial spawners get the full Tribulation treatment (stats, abilities, equipment), keeping trial chambers in step with a high-tier world.
+
+### Behavior
+
+`TrialSpawnerMixin` `@WrapOperation`s the `ServerLevel.tryAddFreshEntityWithPassengers` call inside `TrialSpawner#spawnMob`: it scales the mob and stamps `MobScalingHandler.PROCESSED_TAG` **before** the entity is added, so the normal proximity `ENTITY_LOAD` path sees it already processed and skips it (no re-scale race).
+
+Scaling uses the **spawner's detected-player set**, not a nearest-player world scan. With `NEAREST` it picks the nearest detected player by distance to the spawn origin; with `MAX`/`AVERAGE` it folds the detected players' levels via `ScalingEngine.foldLevels`. An empty detected set yields level 0 (effectively vanilla).
+
+**Ominous upgrade** (`trialSpawner.ominousUpgrade`, default **off**): `TrialSpawnerDataMixin` injects at `tryDetectPlayers`, once per activation. When enabled and the folded detected-player tier is `≥ minimumTier` (default 3), a `chance` roll (default 0.10) calls `spawner.applyOminous` — a high-tier spawner rolls into ominous mode **with no Bad Omen effect on the player**. Vanilla cooldown, reward ejection, and Bad-Omen ominous behavior are otherwise untouched.
+
+### Config
+
+`trialSpawner.enabled` (true); `trialSpawner.ominousUpgrade.enabled` (false), `.chance` (0.10), `.minimumTier` (3).
+
+---
+
+## 10. Raid & Patrol Scaling
+
+Vanilla's built-in escalation — pillager patrols and raids — scales with the tier of the targeted player(s). Bells, Hero of the Village, and the raid bar all behave normally; this system governs only structural escalation (raider stats/armor/weapons already flow through §1/§7).
+
+### Patrol growth
+
+`RaidScalingHandler` listens on `ServerEntityEvents.ENTITY_LOAD` for a `Pillager` that `isPatrolLeader()` and is not yet tagged `tribulation_patrol_processed` (tagged immediately so a chunk reload never re-spawns extras). It resolves the captain's effective level, derives a tier, and adds `extraPatrolMembers(tier) = tier / patrolBonusRate` members (integer-floored, default +1 per 2 tiers). Extras are spawned on the **next** server tick via a `TickTask` (avoids mutating the entity list mid-iteration) with `MobSpawnType.PATROL`, tagged only `tribulation_patrol_processed` — deliberately **not** the scaling processed tag — so the normal `ENTITY_LOAD` path gives each extra tier-appropriate stats, armor, and weapons.
+
+### Extra raid waves
+
+`RaidScalingMixin` `@ModifyReturnValue`s `Raid#getNumGroups`, returning `original + extraWaves`. `extraWaves(maxTier) = maxTier ≥ extraWaveTierThreshold ? extraWaveCount : 0` (defaults threshold tier 4, count 1). The extra-wave count is computed once and memoized so the frozen `numGroups` stays consistent across the raid (the captain banner lands on the right wave). The targeted tier comes from the non-spectator players within `general.mobDetectionRange` of the raid center, folded via `ScalingEngine.foldLevels`.
+
+### Config
+
+`raidScaling.enabled` (true), `patrolBonusRate` (2), `extraWaveTierThreshold` (4), `extraWaveCount` (1). `patrolBonusRate ≤ 0` disables the patrol bonus.
+
+---
+
+## 11. Death Relief
 
 A rubber-band penalty that lowers difficulty on death.
 
@@ -321,7 +401,7 @@ A successful application syncs the level, fires `TribulationLevelCallback`, and 
 
 ---
 
-## 9. Shatter Shards
+## 12. Shatter Shards
 
 A rare mob drop that voluntarily lowers difficulty.
 
@@ -341,7 +421,7 @@ A rare mob drop that voluntarily lowers difficulty.
 
 ---
 
-## 10. Hardcore Hearts (opt-in)
+## 13. Hardcore Hearts (opt-in)
 
 Permanent max-health loss on death, recoverable with Heart Fragments.
 
@@ -366,7 +446,7 @@ SAS     S = tribulation:shatter_shard, A = minecraft:golden_apple → 1 heart_fr
 
 ---
 
-## 11. Soul Inventory (opt-in)
+## 14. Soul Inventory (opt-in)
 
 Death destroys the inventory unless items carry the Soulbound enchantment.
 
@@ -384,7 +464,7 @@ Death destroys the inventory unless items carry the Soulbound enchantment.
 
 ---
 
-## 12. Totem Interaction
+## 15. Totem Interaction
 
 `LivingEntityTotemMixin` hooks `checkTotemDeathProtection`. When a player is saved by a totem:
 - If `deathRelief.enabled` **and** `totems.countsAsDeathRelief` (default false), death relief is applied as if the player had died.
@@ -394,7 +474,7 @@ By default a totem fully shields the player from both penalties.
 
 ---
 
-## 13. HUD Difficulty Badge
+## 16. HUD Difficulty Badge
 
 A persistent client HUD element showing difficulty level/tier, following the Concord shared HUD standard.
 
@@ -406,12 +486,74 @@ The element occupies **priority 1** (topmost) in the shared HUD strip and contri
 
 ### Implementation Notes
 
-- The badge conveys the level numerically only via its progress bar and tint — the displayed level value comes from `ClientTribulationState`, synced from the server via `TribulationLevelPayload(level, progressTicks, goalTicks)`.
-- `TribulationAPI.isHudVisible()` / `getHudHeight()` expose the element's state (reflection-backed) so sibling Concord mods stack below it without hardcoding its height. The DESIGN doc describes a `Lv. 127 · T3` text label; the shipped badge is icon + progress bar only (no inline text) — see discrepancy note below.
+- The badge conveys the level only via its progress bar and tint — the underlying level value comes from `ClientTribulationState`, synced from the server via `TribulationLevelPayload(level, progressTicks, goalTicks)`. The exact number is available on demand through the tier detail panel (§17) or `/tribulation info`.
+- `TribulationAPI.isHudVisible()` / `getHudHeight()` expose the element's state (reflection-backed, cached `MethodHandle`s) so sibling Concord mods stack below it without hardcoding its height.
 
 ---
 
-## 14. Public API — `TribulationAPI`
+## 17. Tier Detail Panel (Peek)
+
+A hold-to-peek client overlay that shows the full difficulty picture on demand.
+
+### Behavior
+
+Binding `key.tribulation.tier_detail` ("Peek Tier Detail", category Tribulation) is **unbound by default**. While held — like vanilla's hold-Tab player list, never capturing the mouse or pausing the game — `TierDetailPanelRenderer` (a `HudRenderCallback`) overlays a framed panel showing:
+
+- the exact level, the tier as **"Tier n / 5"** in the tier color, and a progress bar with the precise `progressTicks / goalTicks` figures and percent;
+- the level at which the next tier unlocks (or "Maximum tier reached" at tier 5);
+- grouped by mob, the abilities that **nearby** scaled hostiles have at the player's current tier.
+
+The "nearby" list is built from an AABB scan around the player (range = `general.mobDetectionRange`, clamped `[1, 64]`, `minecraft`-namespace mobs only), refreshed at most every 10 game ticks and cached, so per-frame cost is a registry lookup, not an entity scan. The ability entries come from `MobAbilities.activeForMob` — the same registry the server applies — so disabling an ability in config also removes it from the panel.
+
+The panel keeps a fixed body size: when more mob types are present than fit, it pages through them with a soft cross-fade and page dots (no scrolling), and a `fitScale` net shrinks the whole panel if it would exceed 92% of the screen. The frame is `textures/gui/tier_detail_panel.png` drawn nine-sliced, tinted with a tier-colored accent. Visibility follows the same rules as the HUD badge (hidden during F1, open screens, spectator/death) and additionally requires the key to be held. Entirely client-side.
+
+---
+
+## 18. Threat Telegraphing Particles
+
+Dangerous mobs give themselves away with a faint particle cue — a secondary threat tell alongside equipment scaling, readable without Jade/WTHIT.
+
+### Behavior
+
+`TribulationParticleEmitter` runs on `ClientTickEvents.END_CLIENT_TICK`, scanning mobs within a fixed 16-block radius that carry the synced `SCALED_TIER` attachment. `ThreatCue.decide` selects the cue:
+
+- a **Big** zombie variant emits the heavy sooty `threat_big` cue and a **Speed** zombie variant emits the pale `threat_speed` streak — both at **any** tier (a hulking or blink-fast zombie is dangerous the moment it spawns), ignoring `minimumTier`;
+- otherwise a mob at `tier ≥ minimumTier` (default 4) trails the generic `threat_tier` cursed mote.
+
+Each eligible mob emits with probability `1/particleFrequencyTicks` per client tick (default frequency 40). Variant detection reads only client-syncable attribute modifiers (`SCALE`/`MAX_HEALTH`/`MOVEMENT_SPEED`). Invisible mobs emit nothing. The cue reads data the entity already syncs, so there is no server-tick cost.
+
+### Particles & assets
+
+Three custom `SimpleParticleType`s are registered into `BuiltInRegistries.PARTICLE_TYPE` (`TribulationParticles`): `tribulation:threat_tier`, `tribulation:threat_big`, `tribulation:threat_speed`, each with a particle-definition JSON, a 16×16 sprite (`textures/particle/threat_*.png`, `.glyph` sources under `art/glyphs/threat-*-16.glyph`), and a `ThreatParticle` provider (a translucent `TextureSheetParticle` with TIER/BIG/SPEED style presets). Purely cosmetic — no physics, collision, or light.
+
+### Config
+
+`threatParticles.enabled` (true), `minimumTier` (4), `particleFrequencyTicks` (40). Read client-side but hot-reloadable via `/tribulation reload`.
+
+---
+
+## 19. Advancements
+
+A dedicated `tribulation` advancement tab records progression milestones, evaluated server-side (works on dedicated servers). Generated by `TribulationAdvancementProvider` (datagen).
+
+| Advancement | Title | Earned by |
+|---|---|---|
+| `tribulation:root` | Tribulation | join (tick trigger) |
+| `tribulation:tier_1` | First Blood | reach tier 1 |
+| `tribulation:tier_2` | Hardening | reach tier 2 |
+| `tribulation:tier_3` | Trial by Fire | reach tier 3 |
+| `tribulation:tier_4` | No Quarter | reach tier 4 |
+| `tribulation:tier_5` | Apex Tribulation | reach tier 5 |
+| `tribulation:soulbound_survived` | Beyond the Grave | carry a Soulbound item through your own death |
+| `tribulation:shatter_shard_used` | A Moment's Mercy | use a Shatter Shard |
+| `tribulation:heart_fragment_used` | Mended | restore a heart with a Heart Fragment |
+| `tribulation:tier_five_mob_killed` | Giant Slayer | kill a mob scaled to the maximum tier |
+
+The tier ladder is chained (each tier parents the previous, off `root`); the four milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the four leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§24).
+
+---
+
+## 20. Public API — `TribulationAPI`
 
 `com.rfizzle.tribulation.api.TribulationAPI` is the stable (`@Stable`) soft-dependency surface. All methods are safe to call when guarded by `FabricLoader.isModLoaded("tribulation")`.
 
@@ -419,8 +561,8 @@ The element occupies **priority 1** (topmost) in the shared HUD strip and contri
 |---|---|---|
 | `getLevel(ServerPlayer)` | `int` | Authoritative server-side level |
 | `getTier(ServerPlayer)` | `int` | Tier 0–5 for the player's level |
-| `getEffectiveLevel(Entity)` | `int` | Level that would scale a mob at this entity's position; 0 off-server |
-| `getClientLevel()` | `int` | Client-side last-synced level; `−1` if unknown or called off-client (reflection-backed) |
+| `getEffectiveLevel(Entity)` | `int` | Level that would scale a mob at this entity's position (includes the dimension offset); 0 off-server |
+| `getClientLevel()` | `int` | Client-side last-synced level; `−1` if unknown or called off-client (reflection-backed, cached `MethodHandle`) |
 | `isHudVisible()` | `boolean` | Whether the HUD badge is drawn right now (client only) |
 | `getHudHeight()` | `int` | HUD stacking contribution in px (20+2 visible, else 0) |
 | `getScaledTier(Entity)` | `OptionalInt` | Frozen tier the entity was scaled to; empty if never scaled |
@@ -433,11 +575,11 @@ The element occupies **priority 1** (topmost) in the shared HUD strip and contri
 
 **`TribulationLevelCallback`** (`@Stable`): a Fabric `Event` firing `onLevelChanged(ServerPlayer, oldLevel, newLevel)`. Server-only; fires on playtime progression, death relief, Shatter Shard use, `/tribulation set`, and `/tribulation reset`.
 
-Drop-chance providers (`ArmorDropChanceProvider`, `WeaponDropChanceProvider`) are functional interfaces; a misbehaving provider (throws or returns non-finite) falls back to the configured default and never breaks mob spawning. The README also shows `getScaledTier` returning an `OptionalInt` and a level-change listener — both match the shipped surface.
+Drop-chance providers (`ArmorDropChanceProvider`, `WeaponDropChanceProvider`) are functional interfaces; a misbehaving provider (throws or returns non-finite) falls back to the configured default and never breaks mob spawning. The three reflection-backed client accessors (`getClientLevel`/`isHudVisible`/`getHudHeight`) resolve their target once into a cached `MethodHandle` and log the first failure, so the per-render calls from sibling mods stay cheap.
 
 ---
 
-## 15. Commands
+## 21. Commands
 
 ### `/tribulation` Command Tree
 
@@ -452,7 +594,7 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 | `/tribulation reset <player>` | 2 | Reset a player to level 0 |
 | `/tribulation reload` | 2 | Hot-reload `config/tribulation.json` |
 | `/tribulation config` | 2 | Print a summary of current configuration |
-| `/tribulation debug <player>` | 2 | Full scaling breakdown at the player's position (reference mob: zombie) |
+| `/tribulation debug <player>` | 2 | Full scaling breakdown at the player's position (reference mob: zombie), including the live moon factor or the reason the moon axis is inactive |
 | `/tribulation inspect` | 2 | Inspect the `Mob` you're looking at within 10 blocks (type, HP, scaling factor, variant, every Tribulation modifier) |
 | `/tribulation hearts <player>` | 2 | Another player's heart penalty |
 | `/tribulation hearts <player> restore <amount>` | 2 | Restore lost half-hearts |
@@ -463,13 +605,13 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 
 - Registered via `CommandRegistrationCallback`. All mutations route through `PlayerDifficultyState` (persist + `setDirty()`) and sync the client + fire `TribulationLevelCallback` where appropriate.
 - `/tribulation reload` re-reads the config; existing mobs keep their modifiers, new mobs use new values.
-- The shipped root command is `level` (not the README's `set`-as-lookup framing); the README command table omits `level`, `reset`, `config`, `inventory`, and the `hearts <player> restore/reset` subcommands and lists only six — see discrepancy note. The website `commands.json` page lists the full, correct tree.
+- The website `commands.json` page lists the full, correct tree.
 
 ---
 
-## 16. Configuration
+## 22. Configuration
 
-Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is 2; `ConfigMigrator` migrates older files on load. Unknown/missing fields are filled with defaults and clamped to valid ranges on load.
+Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **5**; `ConfigMigrator` migrates older files on load (v0→v5: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
 
 ### General
 
@@ -482,6 +624,7 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `general.excludedEntities` | list | `["the_bumblezone:cosmic_crystal_entity"]` |
 | `general.notifyLevelUp` | bool | true |
 | `general.notifyLevelUpShowTier` | bool | true |
+| `dimensionOffsets` | map\<id,int\> | `{the_nether: 25, the_end: 40}` |
 
 ### Scaling Axes
 
@@ -502,6 +645,10 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `heightScaling.positiveHeightScaling` | bool | true |
 | `heightScaling.negativeHeightScaling` | bool | true |
 | `heightScaling.excludeInOtherDimensions` | bool | true |
+| `moonPhaseScaling.enabled` | bool | true |
+| `moonPhaseScaling.maxBonus` | double | 0.1 |
+| `moonPhaseScaling.surfaceOnly` | bool | false |
+| `moonPhaseScaling.surfaceY` | double | 63 |
 
 ### Stat Caps & Tiers
 
@@ -557,12 +704,20 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `specialZombies.speedZombieChance` | int (%) | 10 |
 | `specialZombies.speedZombieSpeedFactor` | double | 1.3 |
 | `specialZombies.speedZombieMalusHealth` | double | 10 |
+| `specialSkeletons.enabled` | bool | true |
+| `specialSkeletons.deadeyeSkeletonChance` | int (%) | 10 |
+| `specialSkeletons.deadeyeSkeletonAttackInterval` | int | 20 |
+| `specialSkeletons.deadeyeSkeletonMalusHealth` | double | 10 |
+| `specialSkeletons.bruteSkeletonChance` | int (%) | 10 |
+| `specialSkeletons.bruteSkeletonAttackInterval` | int | 60 |
+| `specialSkeletons.bruteSkeletonBonusHealth` | double | 10 |
+| `specialSkeletons.bruteSkeletonBonusKnockbackResistance` | double | 0.5 |
+| `specialSkeletons.bruteSkeletonSize` | double | 1.3 |
 | `bosses.affectBosses` | bool | true |
 | `bosses.bossMaxFactor` | double | 3.0 |
 | `bosses.bossDistanceFactor` | double | 0.1 |
 | `bosses.bossTimeFactor` | double | 0.3 |
-| `xpAndLoot.extraXp` | bool | true |
-| `xpAndLoot.maxXpFactor` | double | 2.0 |
+| `xpAndLoot.xpMultiplier` | double | 1.0 |
 | `xpAndLoot.dropMoreLoot` | bool | false |
 | `xpAndLoot.moreLootChance` | double | 0.02 |
 | `xpAndLoot.maxLootChance` | double | 0.7 |
@@ -576,28 +731,43 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `armorEquipment.armorDropChance` | double `[0,2]` | 0.0 |
 | `armorEquipment.armorCeiling` | double | 24.0 |
 | `armorEquipment.toughnessCeiling` | double | 15.0 |
-| `armorEquipment.tiers.*` | ArmorTier | per §6 |
+| `armorEquipment.tiers.*` | ArmorTier | per §7 |
 | `weaponEquipment.enabled` | bool | true |
 | `weaponEquipment.weaponDropChance` | double `[0,2]` | 0.0 |
 | `weaponEquipment.damageCeiling` | double | 20.0 |
-| `weaponEquipment.tiers.*` | WeaponTier | per §6 |
+| `weaponEquipment.tiers.*` | WeaponTier | per §7 |
 
-### Abilities & HUD
+### Trial Spawner, Raid, Abilities, HUD & Particles
 
-- `abilities.*` — 19 boolean flags (one per ability in §4), all default `true`.
-- `hud.enabled` (true), `hud.anchor` (TOP_LEFT), `hud.offsetX` (4), `hud.offsetY` (4).
+| Key | Type | Default |
+|---|---|---|
+| `trialSpawner.enabled` | bool | true |
+| `trialSpawner.ominousUpgrade.enabled` | bool | false |
+| `trialSpawner.ominousUpgrade.chance` | float | 0.10 |
+| `trialSpawner.ominousUpgrade.minimumTier` | int | 3 |
+| `raidScaling.enabled` | bool | true |
+| `raidScaling.patrolBonusRate` | int | 2 |
+| `raidScaling.extraWaveTierThreshold` | int | 4 |
+| `raidScaling.extraWaveCount` | int | 1 |
+| `abilities.*` | bool | true (29 flags, one per ability in §4) |
+| `hud.enabled` | bool | true |
+| `hud.anchor` | enum | TOP_LEFT |
+| `hud.offsetX` / `hud.offsetY` | int | 4 / 4 |
+| `threatParticles.enabled` | bool | true |
+| `threatParticles.minimumTier` | int | 4 |
+| `threatParticles.particleFrequencyTicks` | int | 40 |
 
 Drop-chance fields accept `[0, 2]` — a value ≥1.0 requests a guaranteed + pristine drop (vanilla's PRESERVE threshold).
 
 ---
 
-## 17. Compatibility
+## 23. Compatibility
 
 ### Required
 - Fabric Loader ≥0.16.10, Fabric API, Minecraft ~1.21.1, Java ≥21. **Zero hard third-party dependencies.**
 
 ### Optional Integrations
-- **ModMenu + Cloth Config** — config screen (`ModMenuIntegration`).
+- **ModMenu + Cloth Config** — config screen (`ModMenuIntegration`); enum dropdowns render friendly title-cased labels.
 - **Jade / WTHIT** — mob-scaling tooltip overlay (`JadeTribulationPlugin`, `WthitClientPlugin`/`WthitCommonPlugin`) showing the looked-at mob's scaling state via a shared `MobScalingDataCollector` + `TribulationTooltipFormatter`.
 - **EMI / REI / JEI** — Shatter Shard / Heart Fragment recipe display (`EmiShardPlugin`, `ReiShardPlugin`, `JeiShardPlugin`).
 
@@ -611,20 +781,22 @@ Tribulation is a single self-contained jar; users should remove any prior mob-sc
 
 ---
 
-## 18. Sound Design
+## 24. Sound Design
 
-Tribulation registers **no custom `SoundEvent`s**. The only two cues are item-use feedbacks, mapped to vanilla sounds whose character already fits:
+Tribulation registers **one** custom `SoundEvent`, `tribulation:tier_up` (`TribulationSounds`), backed by `assets/tribulation/sounds/tier_up.ogg` with subtitle `tribulation.subtitle.tier_up` and a `/sfx` synthesis source at `art/audio/tier-up.sfx` (a rising arpeggio milestone sting). It plays for the **single** leveling player — sent via a targeted `ClientboundSoundPacket` (`SoundSource.PLAYERS`), not a broadcast — when `Tribulation.onTierCrossed` fires on a tier change, layered over the HUD badge's gold flash and the tier advancement toast.
 
-| Feature | Event | Vanilla Sound | Pitch |
-|---|---|---|---|
-| Shatter Shard — use | crystalline shatter | `minecraft:block.amethyst_block.break` | 1.2 |
-| Heart Fragment — use | vitality restored | `minecraft:entity.player.levelup` | 1.4 |
+The two item-use feedbacks reuse vanilla sounds whose character already fits:
 
-All other feedback is visual (HUD tint flash, chat/action-bar messages) or relies on the vanilla sounds attached to the abilities themselves (e.g. charged-creeper, trident). A bespoke `/sfx`-synthesized cue would be considered only where a sound benefits from its own identity per concord `design/DESIGN-SYSTEM.md` §9; nothing shipped meets that bar.
+| Feature | Vanilla Sound | Pitch |
+|---|---|---|
+| Shatter Shard — use | `minecraft:block.amethyst_block.break` | 1.2 |
+| Heart Fragment — use | `minecraft:entity.player.levelup` | 1.4 |
+
+All other feedback is visual (HUD tint flash, threat particles, chat/action-bar messages) or relies on the vanilla sounds attached to the abilities themselves (charged-creeper, trident).
 
 ---
 
-## 19. Localization
+## 25. Localization
 
 All user-facing text uses translation keys in `assets/tribulation/lang/en_us.json`.
 
@@ -635,36 +807,39 @@ All user-facing text uses translation keys in `assets/tribulation/lang/en_us.jso
 | `config.tribulation.*` | `config.tribulation.tiers.tier1` | Cloth Config screen labels/categories |
 | `enchantment.tribulation.soulbound` | — | Soulbound enchantment name + `.desc` |
 | `stat.tribulation.*` | `stat.tribulation.shatter_shards_used` | Custom statistics |
+| `advancements.tribulation.*` | `advancements.tribulation.tier_5.title` | Advancement titles/descriptions |
+| `key.tribulation.tier_detail` | — | Peek Tier Detail keybind |
+| `subtitles`/`tribulation.subtitle.tier_up` | — | Tier-up sound subtitle |
 | `itemGroup.tribulation.main` | — | Creative tab |
 
 Parameterized messages use `%s`-style placeholders. Command output (`/info`, `/debug`, `/inspect`, `/config`) is built as literal `String.format` text in `TribulationCommand`, not translation keys.
 
 ---
 
-## 20. Statistics
+## 26. Statistics
 
 Custom stats registered by `TribulationStats` and awarded across the systems above: `highest_level_reached`, `levels_lost_to_death_relief`, `shatter_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
 
 ---
 
-## 21. Persistence & Networking Architecture
+## 27. Persistence & Networking Architecture
 
-- **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost. Survives restarts.
-- **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier; the `tribulation_processed` (and `tribulation_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`) scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
-- **Networking** — one S2C payload, `TribulationLevelPayload(level, progressTicks, goalTicks)`, sent on join and on any level change to drive the client HUD. Registered in `TribulationNetworking`.
+- **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost. Backed by a `ConcurrentHashMap`, serialized in sorted-UUID order. Survives restarts.
+- **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier (synced to the client for threat particles); the `tribulation_processed`, `tribulation_variant_processed`, `tribulation_skeleton_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`, and `tribulation_patrol_processed` scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
+- **Networking** — one S2C payload, `TribulationLevelPayload(level, progressTicks, goalTicks)`, sent on join and on any level change to drive the client HUD. Registered in `TribulationNetworking`. The tier-up sound is sent as a vanilla `ClientboundSoundPacket`.
 
 ---
 
-## 22. Testing Strategy
+## 28. Testing Strategy
 
 ### Unit Tests (`src/test/`, fabric-loader-junit)
-Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie-variant rolls, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color.
+Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, dimension-offset and moon-factor math, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie- and skeleton-variant rolls, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color, threat-cue decisions.
 
 ### Gametests (`src/gametest/`, Fabric Gametest API)
-`MobScalingGameTest`, `DeathPenaltiesGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest` — verify end-to-end behavior on a running server (scaling application, penalty flows, totem interaction, API surface, equipment rolls, stat awards).
+`MobScalingGameTest`, `DeathPenaltiesGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest` — verify end-to-end behavior on a running server (scaling application, penalty flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, particle registration, stat awards).
 
 ---
 
-## 23. Future Considerations
-- Tier threshold icon set and death-penalty mode icons (DESIGN §3) are designed but not yet rendered in-game; only the HUD badge and two item textures ship.
+## 29. Future Considerations
+- Tier threshold icon set and death-penalty mode icons (DESIGN §3) are designed but not yet rendered in-game.
 - No custom blocks ship; the mod's footprint is intentionally behavioral.

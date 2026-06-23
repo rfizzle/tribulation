@@ -3,9 +3,13 @@
     "id": "tribulation",
     "version": "${version}",
     "name": "Tribulation",
-    "description": "A comprehensive difficulty overhaul for Minecraft. Formula-driven mob scaling across time, distance, and height axes with opt-in death penalties and hardcore mechanics.",
+    "description": "A comprehensive difficulty overhaul for Minecraft. Formula-driven mob scaling across time, distance, height, and moon-phase axes with opt-in death penalties and hardcore mechanics.",
     "authors": ["rfizzle"],
-    "contact": {},
+    "contact": {
+        "homepage": "https://tribulation.rfizzle.com",
+        "sources": "https://github.com/rfizzle/tribulation",
+        "issues": "https://github.com/rfizzle/tribulation/issues"
+    },
     "license": "MIT",
     "icon": "assets/tribulation/icon.png",
     "environment": "*",

@@ -8,7 +8,6 @@ import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiInfoRecipe;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -24,6 +23,6 @@ public final class EmiShardPlugin implements EmiPlugin {
         registry.addRecipe(new EmiInfoRecipe(
                 List.of(EmiStack.of(TribulationItems.SHATTER_SHARD)),
                 text,
-                ResourceLocation.fromNamespaceAndPath(Tribulation.MOD_ID, "/shard_info")));
+                Tribulation.id("/shard_info")));
     }
 }

@@ -232,5 +232,5 @@ Vanilla+ collection. Install any, combine all:
 ## License & credits
 
 Licensed under the [MIT License](https://github.com/rfizzle/tribulation/blob/master/LICENSE).
-© 2026 rfizzle. Tribulation is not affiliated with Mojang Studios or
+© 2025-2026 rfizzle. Tribulation is not affiliated with Mojang Studios or
 Microsoft.

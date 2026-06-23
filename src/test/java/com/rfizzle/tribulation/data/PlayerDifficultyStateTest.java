@@ -652,14 +652,18 @@ class PlayerDifficultyStateTest {
     }
 
     @Test
-    void save_serializesPlayersInInsertionOrder() {
+    void save_serializesPlayersSortedByUuid() {
         PlayerDifficultyState state = new PlayerDifficultyState();
-        List<UUID> expectedOrder = new ArrayList<>();
+        List<UUID> uuids = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             UUID uuid = UUID.randomUUID();
-            expectedOrder.add(uuid);
+            uuids.add(uuid);
             state.getPlayerData(uuid).level = i;
         }
+        // Serialization sorts by UUID string for a deterministic, diff-friendly
+        // on-disk order independent of the (unordered) backing map.
+        List<UUID> expectedOrder = new ArrayList<>(uuids);
+        expectedOrder.sort(java.util.Comparator.comparing(UUID::toString));
 
         CompoundTag tag = state.save(new CompoundTag(), null);
         ListTag list = tag.getList("Players", 10); // 10 is TAG_COMPOUND

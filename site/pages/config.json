@@ -293,9 +293,13 @@
           "rows": [
             ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable zombie variants"],
             ["<code class='text-accent2 whitespace-nowrap'>bigZombieChance</code>", "int", "10", "Percent chance for big variant"],
-            ["<code class='text-accent2 whitespace-nowrap'>bigZombieSize</code>", "double", "1.3", "Scale multiplier"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieSize</code>", "double", "1.3", "Scale multiplier (model and hitbox)"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieBonusHealth</code>", "double", "10", "Flat health added to big variants"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieBonusDamage</code>", "double", "2", "Flat attack damage added to big variants"],
+            ["<code class='text-accent2 whitespace-nowrap'>bigZombieSlowness</code>", "double", "0.7", "Speed multiplier for big variants (below 1 = slower)"],
             ["<code class='text-accent2 whitespace-nowrap'>speedZombieChance</code>", "int", "10", "Percent chance for speed variant"],
-            ["<code class='text-accent2 whitespace-nowrap'>speedZombieSpeedFactor</code>", "double", "1.3", "Speed multiplier for speed zombies"]
+            ["<code class='text-accent2 whitespace-nowrap'>speedZombieSpeedFactor</code>", "double", "1.3", "Speed multiplier for speed zombies"],
+            ["<code class='text-accent2 whitespace-nowrap'>speedZombieMalusHealth</code>", "double", "10", "Flat health subtracted from speed variants"]
           ]
         }
       ]
@@ -390,6 +394,23 @@
           ]
         },
         { "type": "code", "small": true, "topGap": true, "code": "{\n  \"hud\": {\n    \"enabled\": true,\n    \"anchor\": \"TOP_LEFT\",\n    \"offsetX\": 4,\n    \"offsetY\": 4\n  }\n}" }
+      ]
+    },
+    {
+      "id": "threat-particles",
+      "title": "threatParticles",
+      "intro": "Client-side <a href='/features.html#threat-telegraphing' class='text-accent hover:text-accent2 underline'>threat-telegraphing particles</a> on scaled hostiles. Read on the client but hot-reloadable via <code class='text-accent2'>/tribulation reload</code>; Big and Speed zombie cues show at any tier and ignore <code class='text-accent2'>minimumTier</code>.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Emit threat particles"],
+            ["<code class='text-accent2 whitespace-nowrap'>minimumTier</code>", "int", "4", "Lowest tier that trails the generic cursed-mote cue (variant cues ignore this)"],
+            ["<code class='text-accent2 whitespace-nowrap'>particleFrequencyTicks</code>", "int", "40", "Average ticks between particle emissions per mob (higher is sparser)"]
+          ]
+        },
+        { "type": "code", "small": true, "topGap": true, "code": "{\n  \"threatParticles\": {\n    \"enabled\": true,\n    \"minimumTier\": 4,\n    \"particleFrequencyTicks\": 40\n  }\n}" }
       ]
     },
     {

@@ -22,8 +22,18 @@
 | Asset | `.glyph` source | Final asset |
 |---|---|---|
 | HUD difficulty badge (tier-tinted skull) | `art/glyphs/hud-skull-32.glyph` | `assets/tribulation/textures/gui/hud_icon.png` (32×32, blitted at 16×16) |
+| Tier detail panel frame | `art/glyphs/panel-frame-64.glyph` | `assets/tribulation/textures/gui/tier_detail_panel.png` (64×64, drawn nine-sliced) |
 | Heart Fragment item | `art/glyphs/heart-fragment-32.glyph` | `assets/tribulation/textures/item/heart_fragment.png` |
 | Shatter Shard item | `art/glyphs/shatter-shard-32.glyph` | `assets/tribulation/textures/item/shatter_shard.png` |
+| Threat particle — cursed mote (tier 4+) | `art/glyphs/threat-tier-16.glyph` | `assets/tribulation/textures/particle/threat_tier.png` |
+| Threat particle — Big-zombie dust | `art/glyphs/threat-big-16.glyph` | `assets/tribulation/textures/particle/threat_big.png` |
+| Threat particle — Speed-zombie streak | `art/glyphs/threat-speed-16.glyph` | `assets/tribulation/textures/particle/threat_speed.png` |
+
+## Audio (`.sfx` — procedurally synthesized)
+
+| Asset | `.sfx` source | Final asset |
+|---|---|---|
+| Tier-up sting (`tribulation:tier_up`) | `art/audio/tier-up.sfx` | `assets/tribulation/sounds/tier_up.ogg` |
 
 ## Not yet created
 

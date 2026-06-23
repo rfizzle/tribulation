@@ -54,17 +54,17 @@ public final class XpLootHandler {
     // ---- Pure math (no Minecraft world types) ----
 
     /**
-     * Compute the XP multiplier for a mob with the given scaling factor. The
-     * addend on top of 1.0 is capped at {@code maxXpFactor - 1} so the total
-     * multiplier never exceeds {@code maxXpFactor}. Returns 1.0 when disabled,
-     * when the mob has no scaling, or when the cap is &le; 1.
+     * Compute the XP multiplier for a mob with the given scaling factor:
+     * {@code 1 + healthFactor * xpMultiplier}. No separate ceiling is applied —
+     * {@code healthFactor} is already bounded upstream by
+     * {@code statCaps.maxFactorHealth}, so {@code xpMultiplier} is a plain gain
+     * dial. Returns 1.0 when disabled ({@code xpMultiplier <= 0}) or when the
+     * mob has no scaling.
      */
     public static double computeXpMultiplier(double healthFactor, XpAndLoot cfg) {
-        if (cfg == null || !cfg.extraXp) return 1.0;
+        if (cfg == null || cfg.xpMultiplier <= 0) return 1.0;
         if (healthFactor <= 0) return 1.0;
-        double maxAddend = cfg.maxXpFactor - 1.0;
-        if (maxAddend <= 0) return 1.0;
-        return 1.0 + Math.min(healthFactor, maxAddend);
+        return 1.0 + healthFactor * cfg.xpMultiplier;
     }
 
     /**

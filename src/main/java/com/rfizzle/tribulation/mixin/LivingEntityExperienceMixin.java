@@ -41,7 +41,7 @@ public abstract class LivingEntityExperienceMixin {
         if (!(self instanceof Mob mob)) return;
 
         TribulationConfig cfg = Tribulation.getConfig();
-        if (cfg == null || cfg.xpAndLoot == null || !cfg.xpAndLoot.extraXp) return;
+        if (cfg == null || cfg.xpAndLoot == null || cfg.xpAndLoot.xpMultiplier <= 0) return;
 
         int base = cir.getReturnValueI();
         if (base <= 0) return;

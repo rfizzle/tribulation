@@ -426,7 +426,7 @@ public class TribulationConfig {
         bosses.bossDistanceFactor = clampNonNegative("bosses.bossDistanceFactor", bosses.bossDistanceFactor);
         bosses.bossTimeFactor = clampNonNegative("bosses.bossTimeFactor", bosses.bossTimeFactor);
 
-        xpAndLoot.maxXpFactor = clampNonNegative("xpAndLoot.maxXpFactor", xpAndLoot.maxXpFactor);
+        xpAndLoot.xpMultiplier = clampNonNegative("xpAndLoot.xpMultiplier", xpAndLoot.xpMultiplier);
         xpAndLoot.moreLootChance = clampNonNegative("xpAndLoot.moreLootChance", xpAndLoot.moreLootChance);
         xpAndLoot.maxLootChance = clampUnit("xpAndLoot.maxLootChance", xpAndLoot.maxLootChance);
 
@@ -823,8 +823,11 @@ public class TribulationConfig {
     }
 
     public static class XpAndLoot {
-        public boolean extraXp = true;
-        public double maxXpFactor = 2.0;
+        // Bonus XP gain on a scaled mob's difficulty. Dropped XP becomes
+        // base * (1 + healthFactor * xpMultiplier); healthFactor is already
+        // bounded by statCaps.maxFactorHealth, so this needs no separate ceiling.
+        // 0 disables the bonus (vanilla XP); higher values reward tougher mobs more.
+        public double xpMultiplier = 1.0;
         public boolean dropMoreLoot = false;
         public double moreLootChance = 0.02;
         public double maxLootChance = 0.7;

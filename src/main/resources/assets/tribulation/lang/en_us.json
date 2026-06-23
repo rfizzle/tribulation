@@ -169,8 +169,7 @@
     "config.tribulation.bosses.time_factor": "Boss Time Factor",
 
     "config.tribulation.category.xp_and_loot": "XP & Loot",
-    "config.tribulation.xp_and_loot.extra_xp": "Extra XP from Scaled Mobs",
-    "config.tribulation.xp_and_loot.max_xp_factor": "Max XP Factor",
+    "config.tribulation.xp_and_loot.xp_multiplier": "Bonus XP Multiplier",
     "config.tribulation.xp_and_loot.drop_more_loot": "Drop More Loot",
     "config.tribulation.xp_and_loot.more_loot_chance": "More Loot Chance per Level",
     "config.tribulation.xp_and_loot.max_loot_chance": "Max Loot Chance",

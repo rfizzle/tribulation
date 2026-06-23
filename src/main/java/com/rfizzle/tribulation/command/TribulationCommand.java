@@ -416,9 +416,9 @@ public final class TribulationCommand {
                 cfg.bosses.bossTimeFactor,
                 cfg.bosses.bossDistanceFactor));
         lines.add(String.format(Locale.ROOT,
-                "XP bonus: %s (max %.2fx). Extra loot: %s",
-                onOff(cfg.xpAndLoot.extraXp),
-                cfg.xpAndLoot.maxXpFactor,
+                "XP bonus: %s (x%.2f per factor). Extra loot: %s",
+                onOff(cfg.xpAndLoot.xpMultiplier > 0),
+                cfg.xpAndLoot.xpMultiplier,
                 onOff(cfg.xpAndLoot.dropMoreLoot)));
         lines.add(String.format(Locale.ROOT,
                 "Tiers: 1≥%d, 2≥%d, 3≥%d, 4≥%d, 5≥%d",

@@ -1,11 +1,13 @@
 <!--
 Modrinth draft: slug `tribulation-difficulty-overhaul`, project ID `8KuQhMGI`
-(see concord VISION.md §4). Until this listing is publicly live, READMEs and
-the site link GitHub Releases as the canonical download source. Once public:
-link as modrinth.com/mod/tribulation-difficulty-overhaul and badge with
-img.shields.io/modrinth/dt/8KuQhMGI.
-TODO before publishing: upload the 128×128 icon (art/icon-128.png) and a
-gallery (full logo + 3–5 in-game screenshots).
+(see concord VISION.md §4). The listing copy below is final and ready to paste.
+
+PUBLISH-TIME TODO (requires the live Modrinth project — cannot be done in-repo):
+  1. Upload the 128×128 icon (art/icon-128.png).
+  2. Upload a gallery: the full logo plus 3–5 in-game screenshots.
+  3. Once the project is public, swap the canonical download link from GitHub
+     Releases to modrinth.com/mod/tribulation-difficulty-overhaul, and add the
+     img.shields.io/modrinth/dt/8KuQhMGI download badge.
 -->
 
 # Tribulation — Difficulty Overhaul
@@ -38,9 +40,9 @@ vanilla mechanics, sharpened. Zero external dependencies beyond Fabric API.
 
 ## Features
 
-### Three-Axis Mob Scaling
+### Four-Axis Mob Scaling
 
-Mob stats are computed from three independent factors the moment a mob
+Mob stats are computed from four independent factors the moment a mob
 spawns:
 
 | Axis | How It Works | Cap |
@@ -48,11 +50,17 @@ spawns:
 | **Time** | Your cumulative playtime advances a per-player difficulty level (0–250). Higher level = stronger mobs near you. ~1 level per hour of play. | Level 250 |
 | **Distance** | Beyond 1,000 blocks from world spawn, mobs gain bonus health, damage, armor, and toughness. The frontier is dangerous. | +150% |
 | **Height** | Deviation from sea level (Y=62) in either direction adds threat. Deep caves and tall mountains are deadlier. | +50% |
+| **Moon Phase** | On Overworld nights, a triangle curve peaks at the full moon and tapers to zero at the new moon — the same coordinates feel different week to week. | +10% |
 
-All three axes stack. 21 vanilla mob types have individually tuned scaling
-rates and caps — zombies don't scale the same as skeletons or creepers.
-Modded hostile mobs are automatically supported with conservative fallback
-scaling (configurable per-namespace or per-entity).
+All four axes stack. On top of them, a flat per-dimension level offset keeps
+the Nether (+25) and End (+40) scarier than the late-game Overworld, lifting
+both mob stats and ability tiers. 21 vanilla mob types have individually tuned
+scaling rates and caps — zombies don't scale the same as skeletons or
+creepers. Modded hostile mobs are automatically supported with conservative
+fallback scaling (configurable per-namespace or per-entity).
+
+In multiplayer, choose which player level drives a nearby mob — the
+**nearest**, the **average**, or the **maximum** of the players in range.
 
 ### Tier-Gated Mob Abilities
 
@@ -100,9 +108,21 @@ top of normal scaling:
 
 ### Boss Scaling
 
-The Ender Dragon, Wither, and anything tagged `c:bosses` scale with a
-separate, gentler formula — health and damage only, capped at +300%. No
+The Ender Dragon, Wither, Elder Guardian, and anything tagged `c:bosses` scale
+with a separate, gentler formula — health and damage only, capped at +300%. No
 sudden one-shots; endgame bosses just stay relevant.
+
+### Raid & Patrol Scaling
+
+Vanilla's own escalation system scales with you, driven by the tier of the
+targeted players — while bells, Hero of the Village, and the raid bar all
+behave normally.
+
+- **Bigger patrols** — a pillager patrol captain adds extra members as your
+  tier climbs, each spawned through the normal scaling path with
+  tier-appropriate stats, armor, and weapons.
+- **Extra raid waves** — raids targeting high-tier players run additional
+  waves on top of the vanilla count.
 
 ### Death Penalty Systems
 
@@ -118,6 +138,11 @@ want:
 - **Soul Inventory** *(opt-in)* — items are destroyed on death unless they
   carry the Soulbound enchantment
 
+A popped **Totem of Undying** can optionally interact with these penalties via
+the `totems` config: have a totem pop still apply the Death Relief level loss
+(`countsAsDeathRelief`), or shield you from the Hardcore Hearts loss
+(`protectsHearts`).
+
 ### Rewards Scale Too
 
 - **Bonus XP** — scaled mobs drop up to 2× base XP, proportional to their
@@ -132,6 +157,14 @@ white through yellow, orange, and red to dark crimson across tiers, with a
 thin progress bar toward your next level. Flashes gold on level-up. Anchor
 to any screen corner; stacks cleanly with HUDs from the other Concord suite
 mods.
+
+### Difficulty Statistics
+
+Six custom statistics track your difficulty milestones — highest level
+reached, levels lost to death relief, Shatter Shards used, half-hearts lost,
+half-hearts restored, and Tier-5 mobs killed. They live alongside vanilla's
+counters in the **Statistics → Custom** screen, so progress persists across
+sessions.
 
 ## Commands
 

@@ -1,0 +1,35 @@
+# tribulation — Threat cue (generic tier-4+): cursed arcane mote, 16px particle.
+# Soft radial orb on the mod's arcane-purple identity with a crimson/ember core,
+# reading as "scaled / ominous" without competing with equipment glint. Particle
+# alpha is faded over the cue's lifetime in code; the sprite carries the hue ramp.
+# Arcane ramp: m shadow-mid -> n mid -> p arcane base -> q lit-mid -> h highlight,
+# crimson core (v) with an ember-hot center (e).
+size: 16
+
+legend:
+  . transparent
+  m #44188a             # shadow-mid purple (faint outer ring)
+  n #5a2090             # mid purple
+  p arcane              # #7b2fbe arcane base midtone
+  q #9456cf             # lit mid-bright
+  h #b98ee6             # bright lavender highlight
+  v tribulation.crimson # #dc143c crimson core
+  e tribulation.ember   # #ff6b35 ember hot center
+
+frame:
+  ................
+  .....mmnnmm.....
+  ...mnnppppnnm...
+  ..mnppqqqqppnm..
+  ..nppqqhhqqppn..
+  .mnpqhhhhhhqpnm.
+  .mpqqhvvvvhqqpm.
+  .npqhhveevhhqpn.
+  .npqhhveevhhqpn.
+  .mpqqhvvvvhqqpm.
+  .mnpqhhhhhhqpnm.
+  ..nppqqhhqqppn..
+  ..mnppqqqqppnm..
+  ...mnnppppnnm...
+  .....mmnnmm.....
+  ................

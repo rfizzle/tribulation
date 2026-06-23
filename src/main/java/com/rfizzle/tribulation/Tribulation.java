@@ -47,6 +47,7 @@ public class Tribulation implements ModInitializer {
         TribulationNetworking.register();
         TribulationItems.register();
         TribulationSounds.register();
+        com.rfizzle.tribulation.particle.TribulationParticles.register();
         TribulationStats.register();
         TribulationCriteria.register();
         registerTickHandler();

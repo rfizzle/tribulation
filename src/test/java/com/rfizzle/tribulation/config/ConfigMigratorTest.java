@@ -220,7 +220,7 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v4_isIdempotent() {
+    void migrate_v4ToV5_addsThreatParticles() {
         JsonObject json = new JsonObject();
         json.addProperty("configVersion", 4);
         json.add("hardcoreHearts", new JsonObject());
@@ -228,12 +228,43 @@ class ConfigMigratorTest {
         json.add("trialSpawner", new JsonObject());
         json.add("raidScaling", new JsonObject());
 
-        assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(4, json.get("configVersion").getAsInt());
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("threatParticles"), "threatParticles section must be added");
+        assertTrue(json.get("threatParticles").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
     }
 
     @Test
-    void migrate_v0ToV4_runsAllMigrations() {
+    void migrate_v4ToV5_doesNotOverwriteExistingThreatParticles() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 4);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("threatParticles", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("threatParticles").get("enabled").getAsBoolean(),
+                "pre-existing threatParticles content must be preserved");
+    }
+
+    @Test
+    void migrate_v5_isIdempotent() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 5);
+        json.add("hardcoreHearts", new JsonObject());
+        json.add("soulInventory", new JsonObject());
+        json.add("trialSpawner", new JsonObject());
+        json.add("raidScaling", new JsonObject());
+        json.add("threatParticles", new JsonObject());
+
+        assertFalse(ConfigMigrator.migrate(json));
+        assertEquals(5, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v0ToCurrent_runsAllMigrations() {
         JsonObject json = new JsonObject();
         // No configVersion → version 0
 
@@ -244,6 +275,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("soulInventory"));
         assertTrue(json.has("trialSpawner"));
         assertTrue(json.has("raidScaling"));
+        assertTrue(json.has("threatParticles"));
     }
 
     @Test

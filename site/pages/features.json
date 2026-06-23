@@ -374,6 +374,16 @@
                 "Hidden automatically during F1, open screens, and spectator mode. Prefer an exact number? Run <code class='text-accent2'>/tribulation info</code>."
               ],
               "note": "Client config: <code class='text-accent2'>hud.enabled</code>, <code class='text-accent2'>hud.anchor</code>, <code class='text-accent2'>hud.offsetX</code>, <code class='text-accent2'>hud.offsetY</code>"
+            },
+            {
+              "id": "threat-telegraphing",
+              "title": "Threat Telegraphing",
+              "html": [
+                "Dangerous mobs give themselves away. Scaled hostiles at Tier 4 and above trail a faint cursed mote, so you can read threat at a glance even without Jade or WTHIT installed — equipment scaling stays the primary tell, these particles are the secondary hint.",
+                "Big and Speed zombie variants carry their own distinguishable cue — a heavy sooty dust for the Big Zombie's mass, a sharp pale afterimage streak for the Speed Zombie's velocity — and they show it at <em>any</em> tier, since a hulking or blink-fast zombie is dangerous the moment it spawns. Custom particle sprites are authored through the suite's texture pipeline.",
+                "Entirely client-side and free: the cues read tier and variant data the entity already syncs, so there is no server-tick cost. Invisible mobs emit nothing."
+              ],
+              "note": "Client config: <code class='text-accent2'>threatParticles.enabled</code>, <code class='text-accent2'>threatParticles.minimumTier</code>, <code class='text-accent2'>threatParticles.particleFrequencyTicks</code> — hot-reloadable via <code class='text-accent2'>/tribulation reload</code>"
             }
           ]
         },

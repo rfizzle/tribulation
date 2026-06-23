@@ -172,7 +172,24 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
         int panelY = (graphics.guiHeight() - panelH) / 2;
 
         // ---- Frame, watermark, content ----
+        // Safety net: the column reflow keeps the panel within the screen in
+        // normal cases, but the MAX_COLUMNS cap (and column width) can't cover
+        // every extreme — many nearby mob types on a tiny window / high GUI
+        // scale. If the panel still wouldn't fit, scale the whole thing down
+        // uniformly about the screen centre so it can never clip or overflow.
         graphics.setColor(1f, 1f, 1f, 1f);
+        float fitScale = Math.min(1f, Math.min(
+                graphics.guiWidth() * MAX_SCREEN_FRACTION / panelW,
+                graphics.guiHeight() * MAX_SCREEN_FRACTION / panelH));
+        boolean scaled = fitScale < 1f;
+        if (scaled) {
+            float scx = graphics.guiWidth() / 2f;
+            float scy = graphics.guiHeight() / 2f;
+            graphics.pose().pushPose();
+            graphics.pose().translate(scx, scy, 0f);
+            graphics.pose().scale(fitScale, fitScale, 1f);
+            graphics.pose().translate(-scx, -scy, 0f);
+        }
         drawNineSlice(graphics, panelX, panelY, panelW, panelH);
         drawSkullWatermark(graphics, panelX + panelW / 2, panelY + panelH / 2, tierColor);
 
@@ -221,6 +238,9 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
             }
         }
 
+        if (scaled) {
+            graphics.pose().popPose();
+        }
         graphics.setColor(1f, 1f, 1f, 1f);
     }
 

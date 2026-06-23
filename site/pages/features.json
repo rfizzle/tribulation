@@ -376,6 +376,16 @@
               "note": "Client config: <code class='text-accent2'>hud.enabled</code>, <code class='text-accent2'>hud.anchor</code>, <code class='text-accent2'>hud.offsetX</code>, <code class='text-accent2'>hud.offsetY</code>"
             },
             {
+              "id": "tier-detail-panel",
+              "title": "Tier Detail Panel",
+              "html": [
+                "The always-on badge tells you <em>roughly</em> where you stand; hold the <span class='text-bone'>Peek Tier Detail</span> keybind and a framed panel tells you <em>everything</em>. While held it overlays your exact level, your tier as <span class='text-bone'>Tier n / 5</span> in the tier color, a progress bar toward the next level with the precise figures, and the level at which the next tier unlocks. Release to dismiss — it behaves like vanilla's hold-Tab player list, never capturing the mouse or pausing the game.",
+                "Below the progress block it lists, grouped by mob, the abilities that <em>nearby</em> scaled hostiles have at your current tier — Zombie reinforcements and door-breaking, Creeper short fuse, Skeleton sword switch, and so on. It only shows mob types actually around you (a cached proximity check, throttled so it costs nothing per frame), so the list stays short and answers \"what can hurt me right now\". The entries are generated from the same ability registry the server applies, so it can never lie about what the game is doing: disable an ability in config and it vanishes from the panel too.",
+                "The body keeps a comfortable fixed size: whatever fits shows at once, and if a crowd of mob types is around you the list pages through them with a soft cross-fade and page dots — so the panel never overflows or scrolls. Framed in the mod's grim slate theme with a tier-colored accent, drop-shadowed for legibility over any world background. Entirely client-side, hidden during F1, open screens, and spectator mode."
+              ],
+              "note": "Controls → Tribulation → <span class='text-bone'>Peek Tier Detail</span> — unbound by default"
+            },
+            {
               "id": "threat-telegraphing",
               "title": "Threat Telegraphing",
               "html": [

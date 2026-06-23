@@ -105,6 +105,16 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 ---
 
+## Controls
+
+| Control | Default | Description |
+|---------|---------|-------------|
+| **Peek Tier Detail** | _Unbound_ | Hold to overlay a detail panel showing your level, tier, progress to the next level, and the abilities that nearby scaled mobs have at your tier. Release to dismiss. |
+
+Bind it under **Options → Controls → Key Binds**, in the **Tribulation** category. It is unbound by default — assign a key to use it. The panel never captures the mouse or pauses the game (like vanilla's hold-Tab player list) and hides automatically during F1, open screens, and spectator mode.
+
+---
+
 ## Configuration
 
 Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xpAndLoot`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `hud`.

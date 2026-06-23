@@ -14,6 +14,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
 import net.minecraft.world.entity.monster.Bogged;
 import net.minecraft.world.entity.monster.Endermite;
@@ -41,6 +43,35 @@ import java.lang.reflect.Method;
 public class AbilitiesGameTest implements FabricGameTest {
 
     private static final BlockPos SPAWN = new BlockPos(1, 2, 1);
+
+    // ---- Zombie: reinforcements attribute modifier (registry-driven apply) ----
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombie_reinforcementsModifierAtTier1(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, SPAWN);
+        TribulationConfig cfg = new TribulationConfig();
+        AbilityManager.applyAbilities(zombie, 1, "zombie", cfg);
+
+        AttributeInstance inst = zombie.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+        if (inst == null || inst.getModifier(AbilityManager.abilityId("zombie_reinforcements")) == null) {
+            helper.fail("Tier-1 zombie should carry the reinforcements attribute modifier");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombie_reinforcementsAbsentWhenDisabled(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, SPAWN);
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.abilities.zombieReinforcements = false;
+        AbilityManager.applyAbilities(zombie, 1, "zombie", cfg);
+
+        AttributeInstance inst = zombie.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+        if (inst != null && inst.getModifier(AbilityManager.abilityId("zombie_reinforcements")) != null) {
+            helper.fail("Disabled toggle should leave no reinforcements modifier");
+        }
+        helper.succeed();
+    }
 
     // ---- Stray: Slowness II arrows ----
 

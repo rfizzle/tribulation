@@ -687,17 +687,11 @@ public final class ModMenuIntegration implements ModMenuApi {
     private static void addXpAndLoot(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
         ConfigCategory cat = builder.getOrCreateCategory(
                 Component.translatable("config.tribulation.category.xp_and_loot"));
-        cat.addEntry(entry.startBooleanToggle(
-                        Component.translatable("config.tribulation.xp_and_loot.extra_xp"),
-                        config.xpAndLoot.extraXp)
-                .setDefaultValue(true)
-                .setSaveConsumer(v -> config.xpAndLoot.extraXp = v)
-                .build());
         cat.addEntry(entry.startDoubleField(
-                        Component.translatable("config.tribulation.xp_and_loot.max_xp_factor"),
-                        config.xpAndLoot.maxXpFactor)
-                .setDefaultValue(2.0).setMin(0.0)
-                .setSaveConsumer(v -> config.xpAndLoot.maxXpFactor = v)
+                        Component.translatable("config.tribulation.xp_and_loot.xp_multiplier"),
+                        config.xpAndLoot.xpMultiplier)
+                .setDefaultValue(1.0).setMin(0.0)
+                .setSaveConsumer(v -> config.xpAndLoot.xpMultiplier = v)
                 .build());
         cat.addEntry(entry.startBooleanToggle(
                         Component.translatable("config.tribulation.xp_and_loot.drop_more_loot"),

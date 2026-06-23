@@ -69,7 +69,7 @@ A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 
 - Special skeleton variants (Deadeye, Brute) with distinct bow cadence and stat profiles
 - Boss scaling with separate, gentler formula (Ender Dragon, Wither, tagged bosses)
 - Trial spawner scaling from detected-player levels, with an optional ominous upgrade
-- Bonus XP proportional to mob difficulty (up to 2x)
+- Bonus XP proportional to mob difficulty, tunable via `xpMultiplier` (~5x on a fully-scaled mob by default)
 - Per-mob toggle switches for granular control
 - Full compatibility with modded mobs via namespace exclusion and per-entity overrides
 

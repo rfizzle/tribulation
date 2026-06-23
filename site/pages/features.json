@@ -152,7 +152,7 @@
               "title": "Extra XP &amp; Loot",
               "html": ["Scaled mobs reward more experience to compensate for their increased difficulty."],
               "bullets": [
-                "XP multiplied by the mob's scaling factor, up to 2.0×",
+                "Bonus XP proportional to the mob's scaling factor — tunable via <code>xpMultiplier</code> (1.0× by default, reaching ~5× on a fully-scaled mob)",
                 "Optional extra loot drops (off by default) — a chance to drop an additional copy of the loot table"
               ]
             },

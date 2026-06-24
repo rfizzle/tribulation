@@ -248,6 +248,37 @@ if eye_px:
             elif (x, y) in flat:
                 del flat[(x, y)]
 
+# ---- quality touch 1c: gem specular + burgundy anchor in each socket -------
+# Glossy 3D read: a white specular glint at each eye's upper-left light point,
+# and a burgundy-black shadow at the bottom/back of the sphere so the eye seats
+# into the socket's deep black instead of floating in mid-reds.
+EYE_CORE = {'#f0563a', '#d8203a', '#8c1020', '#4a0d10', '#ff6a42'}
+for is_left in (True, False):
+    pts = [(x, y) for (x, y), c in flat.items()
+           if c.lower() in EYE_CORE and ((x < CX) == is_left)]
+    if not pts:
+        continue
+    miny = min(p[1] for p in pts)
+    maxy = max(p[1] for p in pts)
+    h = max(1, maxy - miny)
+    # burgundy-black anchor along the bottom/back of the sphere
+    for (x, y) in pts:
+        t = (y - miny) / h
+        if t > 0.72:
+            flat[(x, y)] = '#190610'
+        elif t > 0.5:
+            flat[(x, y)] = '#380c16'
+    # one pale specular glint at the upper-left light point (inset off the rim)
+    ul = min(pts, key=lambda p: p[0] + p[1] * 1.15)
+    gx, gy = ul[0] + 1, ul[1] + 1
+    if flat.get((gx, gy), '').lower() not in EYE_CORE:
+        gx, gy = ul
+    flat[(gx, gy)] = '#ffffff'
+    if flat.get((gx + 1, gy), '').lower() in EYE_CORE:
+        flat[(gx + 1, gy)] = '#ffd7dd'
+    if flat.get((gx, gy + 1), '').lower() in EYE_CORE:
+        flat[(gx, gy + 1)] = '#ffc2cb'
+
 # ---- quality touch 2: soft contact shadow seating the skull on the brick ---
 FIELD = {COL['br'], COL['br_deep'], COL['br_lit'], COL['mortar'], COL['vig']}
 for (x, y) in list(S.keys()):

@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Mob.class)
 public abstract class MobAbilityMixin {
 
-    @Inject(method = "doHurtTarget", at = @At("RETURN"))
+    @Inject(method = "doHurtTarget(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
     private void tribulation$onHurtTarget(Entity target, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValue()) return;
         Mob self = (Mob) (Object) this;

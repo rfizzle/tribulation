@@ -1,50 +1,60 @@
-# gradle
-.gradle/
-build/
-out/
-classes/
+# concord:gitignore:start
+# Concord-managed — synced from concord; edit there, not here. Root-only build,
+# runtime, and tooling artifacts are anchored with a leading "/" so they can
+# never match a nested package/resource directory of the same name. Put
+# repo-specific ignores OUTSIDE this block.
 
-# loom dev runtime (root-level only — anchored so these never match Java
-# package directories like src/.../config/ or src/.../logs/)
+# Gradle / compile output
+/.gradle/
+/build/
+/out/
+/bin/
+/classes/
+/net/
+
+# Loom dev runtime
 /run/
 /mods/
 /logs/
 /config/
 
-# IDE
+# Generated website (concord template)
+/_site/
+
+# Local AI / planning state
+/.plan/
+.claude/settings.local.json
+.claude/projects/
+.claude/scheduled_tasks.lock
+
+# IDE / editor (global — these names never collide with a source dir)
 .idea/
+.vscode/
+.settings/
+.classpath
+.project
 *.iml
 *.ipr
 *.iws
-.settings/
-.vscode/
-.classpath
-.project
 *.launch
 
 # OS junk
 .DS_Store
 Thumbs.db
 
-# generated website (built by concord template)
-_site/
-
-# local AI / planning state (per concord REPO-LAYOUT standard gitignore)
-.claude/settings.local.json
-.claude/projects/
-.claude/scheduled_tasks.lock
-.plan/
-
-# stray runtime artifacts
-replay_pid*.log
+# JVM crash dumps & loom dev-runtime logs (never source; match anywhere)
 hs_err_pid*.log
+replay_pid*.log
+gametest_output.log
 
-# glyph render output — the .glyph source is committed in art/glyphs/, but the
-# master PNG ships in the asset resource tree, so any PNG rendered into
-# art/glyphs/ is throwaway (previews land in /tmp).
-art/glyphs/*.png
-art/glyphs/*.png.mcmeta
-
-# sfx render report — the .sfx source and master .ogg are committed in
-# art/audio/, but the waveform/spectrogram report PNG is a throwaway preview.
-art/audio/*.report.png
+# Glyph & SFX pipeline byproducts (mc-textures /glyph, mc-audio /sfx). art/ holds
+# the .glyph/.sfx specs — the committed source of truth. Every rendered byproduct
+# is throwaway: the shipping master lives in the mod's src/main/resources/assets/
+# tree (textures/, sounds/), never in art/. Ignore the renders:
+art/glyphs/**/*.png
+art/glyphs/**/*.gif
+art/glyphs/**/*.mcmeta
+art/audio/**/*.ogg
+art/audio/**/*.wav
+art/audio/**/*.report.png
+# concord:gitignore:end

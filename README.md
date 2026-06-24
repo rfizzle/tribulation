@@ -133,9 +133,12 @@ Every value is tunable without restart. Key sections: `general`, `timeScaling`, 
 
 ### Releasing
 
+The pushed `v*` tag is the source of truth — the release workflow derives the
+version from it. Just tag and push:
+
 ```sh
-make release BUMP=patch  # bumps version, tags, and pushes (triggers CI release)
-make release BUMP=minor NO_PUSH=1  # local only
+make release VERSION=1.2.3        # tags v1.2.3 and pushes it (triggers CI release)
+make release VERSION=1.2.3 NO_PUSH=1  # create the tag locally only
 ```
 
 ---

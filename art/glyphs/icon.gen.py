@@ -202,82 +202,101 @@ def lum(h):
     return 0.299 * int(h[0:2], 16) + 0.587 * int(h[2:4], 16) + 0.114 * int(h[4:6], 16)
 
 
-# ---- quality touch 1: ember glow welling out of the eye sockets ------------
-EYE_REDS = {'#f0563a', '#d8203a', '#8c1020', '#4a0d10'}
-eye_px = [(x, y) for (x, y), c in flat.items() if c.lower() in EYE_REDS]
-if eye_px:
-    left = [(x, y) for x, y in eye_px if x < CX]
-    right = [(x, y) for x, y in eye_px if x >= CX]
-    for grp in (left, right):
-        if not grp:
-            continue
-        ecx = sum(x for x, _ in grp) / len(grp)
-        ecy = sum(y for _, y in grp) / len(grp)
-        for y in range(int(ecy - 8), int(ecy + 8)):
-            for x in range(int(ecx - 8), int(ecx + 8)):
-                if not (0 <= x < N and 0 <= y < N):
-                    continue
-                d = math.hypot(x - ecx, y - ecy)
-                cur = flat.get((x, y))
-                if cur is None or cur.lower() in EYE_REDS:
-                    continue
-                if lum(cur) > 70:                # don't wash over lit bone
-                    continue
-                if d <= 2.2:
-                    flat[(x, y)] = '#ff6a42'
-                elif d <= 3.6:
-                    flat[(x, y)] = '#d2203399'
-                elif d <= 4.9:
-                    flat[(x, y)] = '#8c102055'
+# ---- colour blending helpers ----------------------------------------------
+def _rgb(h):
+    h = h.lstrip('#')
+    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
 
-# ---- quality touch 1b: force both sockets to be mirror-identical -----------
-# The hand-traced HUD skull has slightly mismatched left/right sockets; mirror
-# the (cleaner) image-left eye onto the right so the glow, shading and palette
-# are uniform across both — symmetrical lighting, no lopsided socket.
+
+def _hx(r, g, b):
+    cl = lambda v: max(0, min(255, int(round(v))))
+    return '#%02x%02x%02x' % (cl(r), cl(g), cl(b))
+
+
+def blend(h1, h2, t):
+    r1, g1, b1 = _rgb(h1)
+    r2, g2, b2 = _rgb(h2)
+    return _hx(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t)
+
+
+def qcol(h, step=16):
+    r, g, b = _rgb(h)
+    q = lambda v: round(v / step) * step
+    return _hx(q(r), q(g), q(b))
+
+
+# ---- eyes: smooth spherical red gems with a socket-bone glow ----------------
+# Mirror the eye band so both sockets share one shape, then render each eye as a
+# shaded sphere (radial gradient, brightest at the upper-left light point,
+# darkening smoothly toward the back — no harsh horizontal split), with a 1px
+# pinpoint specular and red light spilling onto the surrounding bone.
+EYE_RED = {'#f0563a', '#d8203a', '#8c1020', '#4a0d10'}
+eye_px = [(x, y) for (x, y), c in flat.items() if c.lower() in EYE_RED]
 if eye_px:
     ys = [y for _, y in eye_px]
-    y0, y1 = min(ys) - 4, max(ys) + 4
-    axis = int(round(CX))                       # 64; the 63|64 seam is CX=63.5
-    EYE_HALF = 20
-    for y in range(y0, y1 + 1):
-        for x in range(axis, axis + EYE_HALF):
-            mx = 2 * axis - 1 - x               # mirror across the seam (127 - x)
+    axis = int(round(CX))
+    for y in range(min(ys) - 4, max(ys) + 5):
+        for x in range(axis, axis + 20):
+            mx = 2 * axis - 1 - x
             src = flat.get((mx, y))
             if src is not None:
                 flat[(x, y)] = src
             elif (x, y) in flat:
                 del flat[(x, y)]
 
-# ---- quality touch 1c: gem specular + burgundy anchor in each socket -------
-# Glossy 3D read: a white specular glint at each eye's upper-left light point,
-# and a burgundy-black shadow at the bottom/back of the sphere so the eye seats
-# into the socket's deep black instead of floating in mid-reds.
-EYE_CORE = {'#f0563a', '#d8203a', '#8c1020', '#4a0d10', '#ff6a42'}
-for is_left in (True, False):
-    pts = [(x, y) for (x, y), c in flat.items()
-           if c.lower() in EYE_CORE and ((x < CX) == is_left)]
-    if not pts:
-        continue
-    miny = min(p[1] for p in pts)
-    maxy = max(p[1] for p in pts)
-    h = max(1, maxy - miny)
-    # burgundy-black anchor along the bottom/back of the sphere
-    for (x, y) in pts:
-        t = (y - miny) / h
-        if t > 0.72:
-            flat[(x, y)] = '#190610'
-        elif t > 0.5:
-            flat[(x, y)] = '#380c16'
-    # one pale specular glint at the upper-left light point (inset off the rim)
-    ul = min(pts, key=lambda p: p[0] + p[1] * 1.15)
-    gx, gy = ul[0] + 1, ul[1] + 1
-    if flat.get((gx, gy), '').lower() not in EYE_CORE:
-        gx, gy = ul
-    flat[(gx, gy)] = '#ffffff'
-    if flat.get((gx + 1, gy), '').lower() in EYE_CORE:
-        flat[(gx + 1, gy)] = '#ffd7dd'
-    if flat.get((gx, gy + 1), '').lower() in EYE_CORE:
-        flat[(gx, gy + 1)] = '#ffc2cb'
+left = [(x, y) for (x, y), c in flat.items() if c.lower() in EYE_RED and x < CX]
+if left:
+    lxs, lys = [p[0] for p in left], [p[1] for p in left]
+    elx, ely = (min(lxs) + max(lxs)) / 2.0, (min(lys) + max(lys)) / 2.0
+    R = max(max(lxs) - min(lxs), max(lys) - min(lys)) / 2.0 + 0.5
+    Lx, Ly, Lz = -0.55, -0.50, 0.67
+    _l = math.sqrt(Lx * Lx + Ly * Ly + Lz * Lz)
+    Lx, Ly, Lz = Lx / _l, Ly / _l, Lz / _l
+
+    def red_ramp(i):
+        for thr, col in ((1.02, '#ff9468'), (0.86, '#f4593c'), (0.66, '#dc2238'),
+                         (0.46, '#a8182a'), (0.28, '#70101f'), (0.14, '#460c16')):
+            if i > thr:
+                return col
+        return '#2a0810'
+
+    for cx, cy in ((elx, ely), (2 * CX - elx, ely)):
+        # red light spilling onto the surrounding socket bone, in a few discrete
+        # rings (kept off the deep socket black) so the palette stays small
+        for y in range(int(cy - R - 6), int(cy + R + 7)):
+            for x in range(int(cx - R - 6), int(cx + R + 7)):
+                if not (0 <= x < N and 0 <= y < N):
+                    continue
+                d = math.hypot(x - cx, y - cy)
+                cur = flat.get((x, y))
+                if cur is None or d <= R + 0.5 or lum(cur) < 52:
+                    continue
+                if d <= R + 2.2:
+                    t = 0.40
+                elif d <= R + 4.0:
+                    t = 0.24
+                elif d <= R + 6.0:
+                    t = 0.12
+                else:
+                    continue
+                flat[(x, y)] = qcol(blend(cur, '#d11f30', t))
+        # the gem: a smooth radial sphere; track the brightest texel for the glint
+        spec, best = None, -9.0
+        for y in range(int(cy - R - 1), int(cy + R + 2)):
+            for x in range(int(cx - R - 1), int(cx + R + 2)):
+                if not (0 <= x < N and 0 <= y < N):
+                    continue
+                dx, dy = (x - cx) / R, (y - cy) / R
+                rr = dx * dx + dy * dy
+                if rr <= 1.0:
+                    ndl = max(0.0, dx * Lx + dy * Ly + math.sqrt(1 - rr) * Lz)
+                    flat[(x, y)] = red_ramp(0.24 + ndl)
+                    if ndl > best:
+                        best, spec = ndl, (x, y)
+                elif rr <= 1.30:
+                    flat[(x, y)] = '#1c0610'        # dark rim seats it in the socket
+        if spec:
+            flat[spec] = '#ffffff'                  # pinpoint specular highlight
 
 # ---- quality touch 2: soft contact shadow seating the skull on the brick ---
 FIELD = {COL['br'], COL['br_deep'], COL['br_lit'], COL['mortar'], COL['vig']}

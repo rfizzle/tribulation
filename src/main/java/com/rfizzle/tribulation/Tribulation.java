@@ -98,6 +98,10 @@ public class Tribulation implements ModInitializer {
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 applyLevelTick(player, state, cfg, TICK_INTERVAL);
+                // Push the advancing tick counter every interval so the HUD badge
+                // and tier panel animate between level-ups, not just on join and
+                // level boundaries. This carries any level gain from the call above.
+                TribulationNetworking.syncLevel(player);
             }
         });
     }
@@ -115,7 +119,6 @@ public class Tribulation implements ModInitializer {
         if (levelsGained > 0) {
             int newLevel = state.getLevel(player.getUUID());
             int newTier = TierManager.getTier(newLevel, cfg.tiers);
-            TribulationNetworking.syncLevel(player);
             TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
             if (newTier != oldTier) {
                 onTierCrossed(player, newTier);

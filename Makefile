@@ -15,7 +15,7 @@ help:
 	@echo "  refresh-deps Refresh Gradle dependencies"
 	@echo "  clean        Remove build outputs"
 	@echo "  version      Print the base and git-derived computed version"
-	@echo "  release      Cut a release (usage: make release BUMP=patch|minor|major [NO_PUSH=1])"
+	@echo "  release      Tag v<version> and push it to trigger the release (usage: make release VERSION=X.Y.Z [NO_PUSH=1])"
 	@echo "  site         Build the website from site/ with the shared concord template"
 	@echo "  site-serve   Build and serve the website locally with live reload"
 	@echo "  sync         Refresh .ai/skills + .ai/commands from the concord checkout (CONCORD_DIR=../concord)"
@@ -49,8 +49,9 @@ version:
 	@echo "computed: $$($(GRADLE) -q printVersion 2>/dev/null || echo '(gradle failed; falling back to base)')"
 
 release:
-	@test -n "$(BUMP)" || (echo "Usage: make release BUMP=patch|minor|major [NO_PUSH=1]" && exit 1)
-	@scripts/release.sh $(BUMP) $(if $(NO_PUSH),--no-push,)
+	@test -n "$(VERSION)" || (echo "Usage: make release VERSION=X.Y.Z [NO_PUSH=1]" && exit 1)
+	git tag "v$(VERSION)"
+	@$(if $(NO_PUSH),echo "Tagged v$(VERSION) — push it with: git push origin v$(VERSION)",git push origin "v$(VERSION)")
 
 site:
 	SITE_DIR=$(PWD)/site npx -y @11ty/eleventy@3.0.0 --config=../concord/template/eleventy.config.cjs --input=../concord/template/src --output=_site

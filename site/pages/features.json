@@ -168,12 +168,11 @@
               ]
             },
             {
-              "id": "xp-loot",
-              "title": "Extra XP &amp; Loot",
+              "id": "bonus-xp",
+              "title": "Bonus XP",
               "html": ["Scaled mobs reward more experience to compensate for their increased difficulty."],
               "bullets": [
-                "Bonus XP proportional to the mob's scaling factor — tunable via <code>xpMultiplier</code> (1.0× by default, reaching ~5× on a fully-scaled mob)",
-                "Optional extra loot drops (off by default) — a chance to drop an additional copy of the loot table"
+                "Bonus XP proportional to the mob's scaling factor — tunable via <code>xpMultiplier</code> (1.0× by default, reaching ~5× on a fully-scaled mob)"
               ]
             },
             {

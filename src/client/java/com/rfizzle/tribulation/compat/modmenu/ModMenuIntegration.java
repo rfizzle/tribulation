@@ -58,7 +58,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addSpecialZombies(builder, entry, current);
             addSpecialSkeletons(builder, entry, current);
             addBosses(builder, entry, current);
-            addXpAndLoot(builder, entry, current);
+            addXp(builder, entry, current);
             addTrialSpawner(builder, entry, current);
             addRaidScaling(builder, entry, current);
             addThreatParticles(builder, entry, current);
@@ -703,32 +703,14 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .build());
     }
 
-    private static void addXpAndLoot(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+    private static void addXp(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
         ConfigCategory cat = builder.getOrCreateCategory(
-                Component.translatable("config.tribulation.category.xp_and_loot"));
+                Component.translatable("config.tribulation.category.xp"));
         cat.addEntry(entry.startDoubleField(
-                        Component.translatable("config.tribulation.xp_and_loot.xp_multiplier"),
-                        config.xpAndLoot.xpMultiplier)
+                        Component.translatable("config.tribulation.xp.xp_multiplier"),
+                        config.xp.xpMultiplier)
                 .setDefaultValue(1.0).setMin(0.0)
-                .setSaveConsumer(v -> config.xpAndLoot.xpMultiplier = v)
-                .build());
-        cat.addEntry(entry.startBooleanToggle(
-                        Component.translatable("config.tribulation.xp_and_loot.drop_more_loot"),
-                        config.xpAndLoot.dropMoreLoot)
-                .setDefaultValue(false)
-                .setSaveConsumer(v -> config.xpAndLoot.dropMoreLoot = v)
-                .build());
-        cat.addEntry(entry.startDoubleField(
-                        Component.translatable("config.tribulation.xp_and_loot.more_loot_chance"),
-                        config.xpAndLoot.moreLootChance)
-                .setDefaultValue(0.02).setMin(0.0)
-                .setSaveConsumer(v -> config.xpAndLoot.moreLootChance = v)
-                .build());
-        cat.addEntry(entry.startDoubleField(
-                        Component.translatable("config.tribulation.xp_and_loot.max_loot_chance"),
-                        config.xpAndLoot.maxLootChance)
-                .setDefaultValue(0.7).setMin(0.0).setMax(1.0)
-                .setSaveConsumer(v -> config.xpAndLoot.maxLootChance = v)
+                .setSaveConsumer(v -> config.xp.xpMultiplier = v)
                 .build());
     }
 

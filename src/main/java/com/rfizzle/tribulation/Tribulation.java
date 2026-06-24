@@ -12,7 +12,6 @@ import com.rfizzle.tribulation.event.RaidScalingHandler;
 import com.rfizzle.tribulation.event.ShardDropHandler;
 import com.rfizzle.tribulation.event.SilverfishAbilityHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
-import com.rfizzle.tribulation.event.XpLootHandler;
 import com.rfizzle.tribulation.item.TribulationItems;
 import com.rfizzle.tribulation.sound.TribulationSounds;
 import com.rfizzle.tribulation.stat.TribulationStats;
@@ -57,7 +56,6 @@ public class Tribulation implements ModInitializer {
         HardcoreHeartsHandler.register();
         SoulInventoryHandler.register();
         ShardDropHandler.register();
-        XpLootHandler.register();
         SilverfishAbilityHandler.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 TribulationCommand.register(dispatcher));

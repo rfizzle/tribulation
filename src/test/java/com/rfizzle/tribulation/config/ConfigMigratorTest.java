@@ -250,17 +250,68 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v5_isIdempotent() {
+    void migrate_v5ToV6_renamesXpAndLootToXpAndDropsLootFields() {
         JsonObject json = new JsonObject();
         json.addProperty("configVersion", 5);
+        JsonObject legacy = new JsonObject();
+        legacy.addProperty("xpMultiplier", 2.5);
+        legacy.addProperty("dropMoreLoot", true);
+        legacy.addProperty("moreLootChance", 0.1);
+        legacy.addProperty("maxLootChance", 0.9);
+        json.add("xpAndLoot", legacy);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.has("xpAndLoot"), "legacy xpAndLoot key must be removed");
+        assertTrue(json.has("xp"), "renamed xp section must be present");
+        JsonObject xp = json.getAsJsonObject("xp");
+        assertEquals(2.5, xp.get("xpMultiplier").getAsDouble(), 1e-9,
+                "xpMultiplier must carry forward under the new key");
+        assertFalse(xp.has("dropMoreLoot"), "extra-loot fields must be dropped");
+        assertFalse(xp.has("moreLootChance"));
+        assertFalse(xp.has("maxLootChance"));
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v5ToV6_withoutXpAndLoot_addsEmptyXpSection() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 5);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("xp"), "xp section must be added even with no legacy block");
+        assertFalse(json.getAsJsonObject("xp").has("xpMultiplier"),
+                "fillDefaults supplies the default; the migration only seeds an empty object");
+    }
+
+    @Test
+    void migrate_v5ToV6_doesNotOverwriteExistingXp() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 5);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("xpMultiplier", 3.0);
+        json.add("xp", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertEquals(3.0, json.getAsJsonObject("xp").get("xpMultiplier").getAsDouble(), 1e-9,
+                "pre-existing xp content must be preserved");
+    }
+
+    @Test
+    void migrate_v6_isIdempotent() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 6);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
         json.add("raidScaling", new JsonObject());
         json.add("threatParticles", new JsonObject());
+        json.add("xp", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(5, json.get("configVersion").getAsInt());
+        assertEquals(6, json.get("configVersion").getAsInt());
     }
 
     @Test
@@ -276,6 +327,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("trialSpawner"));
         assertTrue(json.has("raidScaling"));
         assertTrue(json.has("threatParticles"));
+        assertTrue(json.has("xp"));
     }
 
     @Test

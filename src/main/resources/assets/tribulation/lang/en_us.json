@@ -168,11 +168,8 @@
     "config.tribulation.bosses.distance_factor": "Boss Distance Factor",
     "config.tribulation.bosses.time_factor": "Boss Time Factor",
 
-    "config.tribulation.category.xp_and_loot": "XP & Loot",
-    "config.tribulation.xp_and_loot.xp_multiplier": "Bonus XP Multiplier",
-    "config.tribulation.xp_and_loot.drop_more_loot": "Drop More Loot",
-    "config.tribulation.xp_and_loot.more_loot_chance": "More Loot Chance per Level",
-    "config.tribulation.xp_and_loot.max_loot_chance": "Max Loot Chance",
+    "config.tribulation.category.xp": "XP",
+    "config.tribulation.xp.xp_multiplier": "Bonus XP Multiplier",
 
     "config.tribulation.category.hardcore_hearts": "Hardcore Hearts",
     "config.tribulation.hardcore_hearts.enabled": "Enabled",

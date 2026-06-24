@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 5;
+    static final int CURRENT_VERSION = 6;
 
     @FunctionalInterface
     interface Migration {
@@ -64,6 +64,24 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("threatParticles")) {
                     json.add("threatParticles", new JsonObject());
+                }
+            },
+            // v5 → v6: rename xpAndLoot → xp and drop the extra-loot fields. The
+            // section now governs XP rewards only; loot adjustments are out of
+            // scope for a difficulty mod. Carry xpMultiplier forward under the
+            // new key so existing tuning is preserved.
+            json -> {
+                JsonElement legacy = json.remove("xpAndLoot");
+                if (!json.has("xp")) {
+                    JsonObject xp = new JsonObject();
+                    if (legacy != null && legacy.isJsonObject()) {
+                        JsonElement mult = legacy.getAsJsonObject().get("xpMultiplier");
+                        if (mult != null && mult.isJsonPrimitive()
+                                && mult.getAsJsonPrimitive().isNumber()) {
+                            xp.add("xpMultiplier", mult);
+                        }
+                    }
+                    json.add("xp", xp);
                 }
             }
     };

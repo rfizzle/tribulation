@@ -332,20 +332,18 @@ Default weapon tiers (`wear% / enchant% / maxEnchLevel`, materials):
 
 ---
 
-## 8. Bonus XP and Extra Loot
+## 8. Bonus XP
 
-Scaled mobs reward proportionally more XP and, optionally, duplicate loot.
+Scaled mobs reward proportionally more XP to compensate for their increased difficulty.
 
 ### Behavior
 
-**XP** (`xpAndLoot.xpMultiplier`, default `1.0`): `LivingEntityExperienceMixin` hooks `LivingEntity#getExperienceReward` and multiplies a mob's base XP by `1 + healthFactor × xpMultiplier`, where `healthFactor` is the mob's MAX_HEALTH axis sum. There is no separate XP ceiling — `healthFactor` is already bounded by `statCaps.maxFactorHealth`, so `xpMultiplier` is a plain gain dial (a fully-scaled reference zombie reaches ~3.5× XP at the default; a mob at the global health cap reaches ~5×). `xpMultiplier=0` disables the bonus. The result is rounded to the nearest int; only `Mob`s with positive scaling are affected.
-
-**Extra loot** (`xpAndLoot.dropMoreLoot`, default **false**): on `AFTER_DEATH`, `XpLootHandler` rolls `min(healthFactor × moreLootChance, maxLootChance)` (defaults `moreLootChance=0.02`, `maxLootChance=0.7`). On success it scans freshly-spawned `ItemEntity`s (age ≤1 tick, within 1.5 blocks) and duplicates one at random.
+**XP** (`xp.xpMultiplier`, default `1.0`): `LivingEntityExperienceMixin` hooks `LivingEntity#getExperienceReward` and multiplies a mob's base XP by `1 + healthFactor × xpMultiplier`, where `healthFactor` is the mob's MAX_HEALTH axis sum. There is no separate XP ceiling — `healthFactor` is already bounded by `statCaps.maxFactorHealth`, so `xpMultiplier` is a plain gain dial (a fully-scaled reference zombie reaches ~3.5× XP at the default; a mob at the global health cap reaches ~5×). `xpMultiplier=0` disables the bonus. The result is rounded to the nearest int; only `Mob`s with positive scaling are affected.
 
 ### Scope
 
 - XP scaling reads the persistent health modifier (via `getExperienceReward`, not `dropExperience`), so it survives chunk reload/restart, shows in `/xp query`, and stacks correctly with Looting modifiers.
-- Loot duplication is off by default.
+- Item loot is left untouched — the mod does not modify any vanilla loot table or drop.
 
 ---
 
@@ -611,7 +609,7 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 
 ## 22. Configuration
 
-Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **5**; `ConfigMigrator` migrates older files on load (v0→v5: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
+Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **6**; `ConfigMigrator` migrates older files on load (v0→v6: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles, v6 renames `xpAndLoot`→`xp` and drops the extra-loot fields). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
 
 ### General
 
@@ -717,10 +715,7 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `bosses.bossMaxFactor` | double | 3.0 |
 | `bosses.bossDistanceFactor` | double | 0.1 |
 | `bosses.bossTimeFactor` | double | 0.3 |
-| `xpAndLoot.xpMultiplier` | double | 1.0 |
-| `xpAndLoot.dropMoreLoot` | bool | false |
-| `xpAndLoot.moreLootChance` | double | 0.02 |
-| `xpAndLoot.maxLootChance` | double | 0.7 |
+| `xp.xpMultiplier` | double | 1.0 |
 
 ### Equipment
 

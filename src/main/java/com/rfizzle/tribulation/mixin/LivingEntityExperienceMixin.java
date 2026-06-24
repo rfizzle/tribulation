@@ -2,7 +2,7 @@ package com.rfizzle.tribulation.mixin;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
-import com.rfizzle.tribulation.event.XpLootHandler;
+import com.rfizzle.tribulation.event.XpRewardHandler;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -41,7 +41,7 @@ public abstract class LivingEntityExperienceMixin {
         if (!(self instanceof Mob mob)) return;
 
         TribulationConfig cfg = Tribulation.getConfig();
-        if (cfg == null || cfg.xpAndLoot == null || cfg.xpAndLoot.xpMultiplier <= 0) return;
+        if (cfg == null || cfg.xp == null || cfg.xp.xpMultiplier <= 0) return;
 
         int base = cir.getReturnValueI();
         if (base <= 0) return;
@@ -49,7 +49,7 @@ public abstract class LivingEntityExperienceMixin {
         double factor = ScalingEngine.readHealthScalingFactor(mob);
         if (factor <= 0) return;
 
-        int scaled = XpLootHandler.applyXpMultiplier(base, factor, cfg.xpAndLoot);
+        int scaled = XpRewardHandler.applyXpMultiplier(base, factor, cfg.xp);
         if (scaled != base) {
             cir.setReturnValue(scaled);
         }

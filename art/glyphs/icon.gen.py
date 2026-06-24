@@ -230,6 +230,24 @@ if eye_px:
                 elif d <= 4.9:
                     flat[(x, y)] = '#8c102055'
 
+# ---- quality touch 1b: force both sockets to be mirror-identical -----------
+# The hand-traced HUD skull has slightly mismatched left/right sockets; mirror
+# the (cleaner) image-left eye onto the right so the glow, shading and palette
+# are uniform across both — symmetrical lighting, no lopsided socket.
+if eye_px:
+    ys = [y for _, y in eye_px]
+    y0, y1 = min(ys) - 4, max(ys) + 4
+    axis = int(round(CX))                       # 64; the 63|64 seam is CX=63.5
+    EYE_HALF = 20
+    for y in range(y0, y1 + 1):
+        for x in range(axis, axis + EYE_HALF):
+            mx = 2 * axis - 1 - x               # mirror across the seam (127 - x)
+            src = flat.get((mx, y))
+            if src is not None:
+                flat[(x, y)] = src
+            elif (x, y) in flat:
+                del flat[(x, y)]
+
 # ---- quality touch 2: soft contact shadow seating the skull on the brick ---
 FIELD = {COL['br'], COL['br_deep'], COL['br_lit'], COL['mortar'], COL['vig']}
 for (x, y) in list(S.keys()):

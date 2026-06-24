@@ -18,9 +18,7 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 
 **Full Logo (`art/logo.png`):** A stone-framed hourglass sits within a cracked circular stone border wrapped with dark, thorny vines. The upper chamber holds a glowing red pixel heart; the lower chamber is filled with fallen hearts, skulls, and bones — life draining away. A crimson-red glow emanates from behind the hourglass. The background is dark red-brown brickwork splattered with blood, scattered with bones and skeletal remains. Below, "TRIBULATION" in a blocky pixel font on a stone tablet, with "MINECRAFT DIFFICULTY OVERHAUL" subtitle.
 
-**Icon (`art/icon-128.png`):** The hourglass and stone frame isolated. The heart-to-skulls motif is clearly visible. Dark red glow radiating outward. Thorny vines wrap the stone border. No text.
-
-**In-Game Icon (`assets/tribulation/icon.png`):** A pixel-art skull with a red upward-pointing flame/arrow behind it — white skull, crimson backdrop, suggesting danger and escalation.
+**Icon (`art/glyphs/hud-skull-32.glyph`):** A bone-white skull with hollow, red-glowing eye sockets and bared teeth, wrapped in a hard ink outline on transparency — the same tier-tinted skull that marks the HUD difficulty badge. No text. This single glyph is the source for every icon surface: the in-jar mod icon (`assets/tribulation/icon.png`, shown in Mod Menu and as the EMI/REI/JEI source-mod icon) and the website favicon/nav (`site/assets/icon.png`, `site/assets/apple-touch-icon.png`).
 
 ### Color Palette
 

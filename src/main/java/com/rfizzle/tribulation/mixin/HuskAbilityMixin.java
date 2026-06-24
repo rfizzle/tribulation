@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Husk.class)
 public abstract class HuskAbilityMixin {
 
-    @Inject(method = "doHurtTarget", at = @At("RETURN"))
+    @Inject(method = "doHurtTarget(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
     private void tribulation$upgradeHunger(Entity target, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValue()) return;
         if (!(target instanceof LivingEntity living)) return;

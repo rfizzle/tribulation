@@ -19,7 +19,10 @@ public final class ShardInfoFormatter {
     public static List<String> infoLines() {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) cfg = new TribulationConfig();
+        return infoLines(cfg);
+    }
 
+    static List<String> infoLines(TribulationConfig cfg) {
         List<String> lines = new ArrayList<>();
 
         lines.add(String.format(Locale.ROOT,

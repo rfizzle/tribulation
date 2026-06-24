@@ -15,7 +15,7 @@
 | Asset | Source | Final / derived copies |
 |---|---|---|
 | Full logo | `art/logo.png` — `.png` master (not glyph-based) | `site/assets/logo.png` |
-| Mod icon | `art/glyphs/hud-skull-32.glyph` → `art/icon-128.png` (128 native), `art/icon-512.png` (512 store master) | `assets/tribulation/icon.png` (256, in-jar — Mod Menu, and the EMI/REI/JEI source-mod icon), `site/assets/icon.png` (256, favicon/nav), `site/assets/apple-touch-icon.png` (180) |
+| Mod icon | `art/glyphs/icon.gen.py` → `art/glyphs/icon.glyph` → `art/icon-128.png` (128 native), `art/icon-512.png` (512 store master) | `assets/tribulation/icon.png` (256, in-jar — Mod Menu, and the EMI/REI/JEI source-mod icon), `site/assets/icon.png` (256, favicon/nav), `site/assets/apple-touch-icon.png` (180) |
 
 ## In-game pixel art
 

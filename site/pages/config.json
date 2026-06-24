@@ -344,18 +344,15 @@
       ]
     },
     {
-      "id": "xp-and-loot",
-      "title": "xpAndLoot",
-      "intro": "Rewards for killing scaled mobs.",
+      "id": "xp",
+      "title": "xp",
+      "intro": "Bonus XP for killing scaled mobs.",
       "blocks": [
         {
           "type": "table",
           "headers": ["Key", "Type", "Default", "Description"],
           "rows": [
-            ["<code class='text-accent2 whitespace-nowrap'>xpMultiplier</code>", "double", "1.0", "Bonus XP gain on mob difficulty: dropped XP = base × (1 + healthFactor × xpMultiplier). 0 disables the bonus"],
-            ["<code class='text-accent2 whitespace-nowrap'>dropMoreLoot</code>", "boolean", "false", "Enable extra loot drops"],
-            ["<code class='text-accent2 whitespace-nowrap'>moreLootChance</code>", "double", "0.02", "Base extra loot chance per level"],
-            ["<code class='text-accent2 whitespace-nowrap'>maxLootChance</code>", "double", "0.7", "Maximum extra loot probability"]
+            ["<code class='text-accent2 whitespace-nowrap'>xpMultiplier</code>", "double", "1.0", "Bonus XP gain on mob difficulty: dropped XP = base × (1 + healthFactor × xpMultiplier). 0 disables the bonus"]
           ]
         }
       ]

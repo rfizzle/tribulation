@@ -35,7 +35,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 5;
+    public int configVersion = 6;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -53,7 +53,7 @@ public class TribulationConfig {
     public SpecialZombies specialZombies = new SpecialZombies();
     public SpecialSkeletons specialSkeletons = new SpecialSkeletons();
     public Bosses bosses = new Bosses();
-    public XpAndLoot xpAndLoot = new XpAndLoot();
+    public Xp xp = new Xp();
     public Tiers tiers = new Tiers();
     public Map<String, Boolean> mobToggles = defaultMobToggles();
     public Abilities abilities = new Abilities();
@@ -235,7 +235,7 @@ public class TribulationConfig {
         if (specialZombies == null) specialZombies = new SpecialZombies();
         if (specialSkeletons == null) specialSkeletons = new SpecialSkeletons();
         if (bosses == null) bosses = new Bosses();
-        if (xpAndLoot == null) xpAndLoot = new XpAndLoot();
+        if (xp == null) xp = new Xp();
         if (tiers == null) tiers = new Tiers();
         if (abilities == null) abilities = new Abilities();
         if (armorEquipment == null) armorEquipment = new ArmorEquipment();
@@ -426,9 +426,7 @@ public class TribulationConfig {
         bosses.bossDistanceFactor = clampNonNegative("bosses.bossDistanceFactor", bosses.bossDistanceFactor);
         bosses.bossTimeFactor = clampNonNegative("bosses.bossTimeFactor", bosses.bossTimeFactor);
 
-        xpAndLoot.xpMultiplier = clampNonNegative("xpAndLoot.xpMultiplier", xpAndLoot.xpMultiplier);
-        xpAndLoot.moreLootChance = clampNonNegative("xpAndLoot.moreLootChance", xpAndLoot.moreLootChance);
-        xpAndLoot.maxLootChance = clampUnit("xpAndLoot.maxLootChance", xpAndLoot.maxLootChance);
+        xp.xpMultiplier = clampNonNegative("xp.xpMultiplier", xp.xpMultiplier);
 
         if (tiers.tier1 < 0) tiers.tier1 = 0;
         if (tiers.tier2 < tiers.tier1) tiers.tier2 = tiers.tier1;
@@ -822,15 +820,12 @@ public class TribulationConfig {
         public double bossTimeFactor = 0.3;
     }
 
-    public static class XpAndLoot {
+    public static class Xp {
         // Bonus XP gain on a scaled mob's difficulty. Dropped XP becomes
         // base * (1 + healthFactor * xpMultiplier); healthFactor is already
         // bounded by statCaps.maxFactorHealth, so this needs no separate ceiling.
         // 0 disables the bonus (vanilla XP); higher values reward tougher mobs more.
         public double xpMultiplier = 1.0;
-        public boolean dropMoreLoot = false;
-        public double moreLootChance = 0.02;
-        public double maxLootChance = 0.7;
     }
 
     public static class Tiers {

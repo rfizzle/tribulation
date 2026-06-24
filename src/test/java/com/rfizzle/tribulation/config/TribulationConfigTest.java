@@ -141,7 +141,7 @@ class TribulationConfigTest {
         assertNotNull(loaded.shards);
         assertNotNull(loaded.specialZombies);
         assertNotNull(loaded.bosses);
-        assertNotNull(loaded.xpAndLoot);
+        assertNotNull(loaded.xp);
         assertNotNull(loaded.tiers);
         assertNotNull(loaded.abilities);
         assertEquals(250, loaded.general.maxLevel);

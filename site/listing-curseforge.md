@@ -28,7 +28,7 @@ longer you play, the further you explore, and the deeper you dig — the harder
 the world fights back. Every system is formula-driven, fully configurable,
 and persists across server restarts.
 
-**Vanilla+ by design.** No custom mobs, no new dimensions — vanilla mobs,
+**An overhaul, not a content pack.** No custom mobs, no new dimensions — vanilla mobs,
 vanilla mechanics, sharpened. Zero external dependencies beyond Fabric API.
 
 ## At a glance
@@ -224,7 +224,7 @@ Config generates at `config/tribulation.json` on first launch.
 ## Companion mods
 
 Tribulation is part of [Concord](https://github.com/rfizzle/concord) — a
-Vanilla+ collection. Install any, combine all:
+modular collection of system overhauls. Install any, combine all:
 
 - [Meridian](https://meridian.rfizzle.com) — Chart your enchantments.
 - [Mercantile](https://mercantile.rfizzle.com) — Every villager remembers.

@@ -208,7 +208,7 @@ if (FabricLoader.getInstance().isModLoaded("tribulation")) {
 
 ## Part of Concord
 
-Part of [Concord](https://github.com/rfizzle/concord) — a Vanilla+ collection.
+Part of [Concord](https://github.com/rfizzle/concord) — a modular collection of system overhauls.
 Install any, combine all.
 
 - [Meridian](https://meridian.rfizzle.com) — Chart your enchantments.

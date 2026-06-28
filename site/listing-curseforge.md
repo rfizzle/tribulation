@@ -1,19 +1,8 @@
-<!--
-CurseForge listing: slug `tribulation-difficulty-overhaul`. The copy below is
-identical to the Modrinth listing (site/listing-modrinth.md) and must be kept in
-sync with it — only the cross-promo line, the Links cross-reference, and the
-publish-time notes below differ between the two files.
-
-PUBLISH-TIME TODO (requires the live CurseForge project — cannot be done in-repo):
-  1. Upload the icon (art/icon-128.png) and a gallery: the full logo plus 3–5
-     in-game screenshots.
-  2. Set the category, Minecraft version (1.21.1), and mod loader (Fabric).
-  3. Mark Fabric API as a required dependency.
--->
-
 # Tribulation — Difficulty Overhaul
 
 **_Survive what comes next._**
+
+![Tribulation logo](https://raw.githubusercontent.com/rfizzle/tribulation/master/art/logo.png)
 
 **Also on [Modrinth](https://modrinth.com/mod/tribulation-difficulty-overhaul)
 and [GitHub Releases](https://github.com/rfizzle/tribulation/releases).**

@@ -1,18 +1,8 @@
-<!--
-Modrinth draft: slug `tribulation-difficulty-overhaul`, project ID `8KuQhMGI`
-(see concord VISION.md §4). The listing copy below is final and ready to paste.
-
-PUBLISH-TIME TODO (requires the live Modrinth project — cannot be done in-repo):
-  1. Upload the 128×128 icon (art/icon-128.png).
-  2. Upload a gallery: the full logo plus 3–5 in-game screenshots.
-  3. Once the project is public, swap the canonical download link from GitHub
-     Releases to modrinth.com/mod/tribulation-difficulty-overhaul, and add the
-     img.shields.io/modrinth/dt/8KuQhMGI download badge.
--->
-
 # Tribulation — Difficulty Overhaul
 
 **_Survive what comes next._**
+
+![Tribulation logo](https://raw.githubusercontent.com/rfizzle/tribulation/master/art/logo.png)
 
 **Also on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul)
 and [GitHub Releases](https://github.com/rfizzle/tribulation/releases).**

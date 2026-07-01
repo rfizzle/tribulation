@@ -64,6 +64,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addThreatParticles(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
+                current.validate();
                 current.save();
                 Tribulation.reloadConfig();
             });

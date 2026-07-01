@@ -1,0 +1,1 @@
+A standalone Minecraft 1.21.1 Fabric mod overhauling difficulty and scaling. The world pushes back the longer and farther you survive — formula-driven mob scaling by time, distance, depth, and moon phase, with tiered gear and hardened raids. Part of the Concord collection.

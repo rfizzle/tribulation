@@ -138,7 +138,7 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
                     .registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
             var soulboundKey = net.minecraft.resources.ResourceKey.create(
                     net.minecraft.core.registries.Registries.ENCHANTMENT,
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("tribulation", "soulbound"));
+                    Tribulation.id("soulbound"));
             var holderOpt = registry.getHolder(soulboundKey);
 
             if (holderOpt.isEmpty()) {

@@ -13,9 +13,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -130,22 +131,37 @@ public class TribulationConfig {
     }
 
     void save(Path path) {
+        // Write to a sibling .tmp then atomically rename, so a crash mid-write can
+        // never leave a truncated tribulation.json (which would load as defaults and
+        // silently wipe the player's settings). Fall back to a plain move where
+        // atomic moves aren't supported, and clean up the orphan tmp on failure.
+        Path tmp = path.resolveSibling(path.getFileName() + ".tmp");
         try {
             Path parent = path.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            try (Writer writer = Files.newBufferedWriter(path)) {
-                GSON.toJson(this, writer);
+            Files.writeString(tmp, GSON.toJson(this));
+            try {
+                Files.move(tmp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
             Tribulation.LOGGER.error("Failed to save config to {}", path, e);
+            try {
+                Files.deleteIfExists(tmp);
+            } catch (IOException cleanup) {
+                Tribulation.LOGGER.warn("Failed to clean up orphan config tmp {}", tmp, cleanup);
+            }
         }
     }
 
     public MobScaling getMobScaling(String mobKey) {
         MobScaling result = scaling.get(mobKey);
-        return result != null ? result : scaling.getOrDefault("zombie", new MobScaling());
+        if (result != null) return result;
+        MobScaling zombie = scaling.get("zombie");
+        return zombie != null ? zombie : new MobScaling();
     }
 
     public boolean isMobEnabled(String mobKey) {
@@ -312,7 +328,13 @@ public class TribulationConfig {
         }
     }
 
-    private void validate() {
+    /**
+     * Bounds every numeric field to its valid range, logging each correction.
+     * Called after load (post-deserialize) and again on ModMenu save, so the
+     * on-disk file can never hold out-of-range values no matter how it was
+     * populated.
+     */
+    public void validate() {
         if (general.maxLevel < 1) {
             Tribulation.LOGGER.warn("general.maxLevel must be >= 1, got {}; clamped to 1", general.maxLevel);
             general.maxLevel = 1;

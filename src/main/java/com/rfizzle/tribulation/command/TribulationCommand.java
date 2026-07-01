@@ -289,7 +289,7 @@ public final class TribulationCommand {
         int heartsLost = state.getHeartsLost(player.getUUID());
         int currentMax = 20 - heartsLost;
         if (heartsLost == 0) {
-            src.sendSuccess(() -> Component.literal("You have not lost any hearts."), false);
+            src.sendSuccess(() -> Component.translatable("item.tribulation.heart_fragment.full"), false);
         } else {
             src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
                     "You have lost %d half-hearts (%d/%d max HP)",

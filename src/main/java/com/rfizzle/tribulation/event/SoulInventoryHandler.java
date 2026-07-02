@@ -9,10 +9,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,14 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 public final class SoulInventoryHandler {
+
+    /**
+     * Convention tag shared across Concord mods for keep-on-death enchantments
+     * (e.g. {@code meridian:tether}). Any enchant in this tag qualifies an item
+     * for the soul inventory, in addition to the configured enchantment id.
+     */
+    public static final TagKey<Enchantment> SOULBOUND_ENCHANTMENTS =
+            TagKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath("c", "soulbound"));
 
     private static final Map<UUID, List<SlotEntry>> SOULBOUND_STASH = new WeakHashMap<>();
 
@@ -54,7 +64,7 @@ public final class SoulInventoryHandler {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
 
-            if (soulboundHolder.isPresent() && hasSoulbound(stack, soulboundHolder.get())) {
+            if (isSoulbound(stack, soulboundHolder)) {
                 stashed.add(new SlotEntry(i, stack.copy()));
             }
             inv.setItem(i, ItemStack.EMPTY);
@@ -94,13 +104,13 @@ public final class SoulInventoryHandler {
     static Optional<Holder.Reference<Enchantment>> resolveSoulboundEnchantment(ServerPlayer player, TribulationConfig cfg) {
         String enchantId = cfg.soulInventory.soulboundEnchantment;
         if (enchantId == null || enchantId.isBlank()) {
-            Tribulation.LOGGER.warn("soulInventory.soulboundEnchantment is empty; all items will be voided");
+            // Blank is a supported tag-only mode: items qualify via #c:soulbound alone.
             return Optional.empty();
         }
 
         ResourceLocation rl = ResourceLocation.tryParse(enchantId);
         if (rl == null) {
-            Tribulation.LOGGER.warn("Invalid soulboundEnchantment ID '{}'; all items will be voided", enchantId);
+            Tribulation.LOGGER.warn("Invalid soulboundEnchantment ID '{}'; only #c:soulbound enchants will be kept", enchantId);
             return Optional.empty();
         }
 
@@ -110,14 +120,27 @@ public final class SoulInventoryHandler {
         Optional<Holder.Reference<Enchantment>> holder = registry.getHolder(key);
 
         if (holder.isEmpty()) {
-            Tribulation.LOGGER.warn("Soulbound enchantment '{}' not found in registry; all items will be voided", enchantId);
+            Tribulation.LOGGER.warn("Soulbound enchantment '{}' not found in registry; only #c:soulbound enchants will be kept", enchantId);
         }
 
         return holder;
     }
 
-    static boolean hasSoulbound(ItemStack stack, Holder<Enchantment> enchantment) {
-        return EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack) > 0;
+    /**
+     * An item is soulbound if it carries the configured soulbound enchantment
+     * or any enchantment in {@code #c:soulbound} (e.g. Meridian's Tether).
+     * Reads the crafting view of the enchantments, so enchanted books (stored
+     * enchantments) qualify too.
+     */
+    static boolean isSoulbound(ItemStack stack, Optional<Holder.Reference<Enchantment>> configured) {
+        ItemEnchantments enchantments = EnchantmentHelper.getEnchantmentsForCrafting(stack);
+        for (Holder<Enchantment> enchantment : enchantments.keySet()) {
+            if (enchantment.is(SOULBOUND_ENCHANTMENTS)
+                    || (configured.isPresent() && enchantment.is(configured.get().key()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -129,13 +152,12 @@ public final class SoulInventoryHandler {
         if (cfg == null || !cfg.soulInventory.enabled) return 0;
 
         Optional<Holder.Reference<Enchantment>> holder = resolveSoulboundEnchantment(player, cfg);
-        if (holder.isEmpty()) return 0;
 
         int count = 0;
         Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack stack = inv.getItem(i);
-            if (!stack.isEmpty() && hasSoulbound(stack, holder.get())) {
+            if (!stack.isEmpty() && isSoulbound(stack, holder)) {
                 count++;
             }
         }

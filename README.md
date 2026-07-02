@@ -52,7 +52,7 @@ At 5 level thresholds (50/100/150/200/250), mobs unlock special behaviors:
 - **Death Relief** — Lose 2 levels on death (rubber-band mechanic, configurable)
 - **Shatter Shards** — Rare mob drops (0.5%) that reduce your level by 5 on use
 - **Hardcore Hearts** *(opt-in)* — Permanently lose max health on each death; restore with Heart Fragments
-- **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment
+- **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment (or any enchantment in the `#c:soulbound` convention tag, e.g. Meridian's Tether)
 - **Totem interaction** — Configure how a popped Totem of Undying interacts with the penalties via the `totems` section: `countsAsDeathRelief` (whether a totem pop still applies the Death Relief level loss) and `protectsHearts` (whether a totem pop shields you from the Hardcore Hearts loss)
 
 ### Statistics

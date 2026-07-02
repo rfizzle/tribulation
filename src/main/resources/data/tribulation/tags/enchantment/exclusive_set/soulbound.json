@@ -1,6 +1,10 @@
 {
     "values": [
         "tribulation:soulbound",
-        "minecraft:vanishing_curse"
+        "minecraft:vanishing_curse",
+        {
+            "id": "meridian:tether",
+            "required": false
+        }
     ]
 }

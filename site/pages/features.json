@@ -367,6 +367,7 @@
               "bullets": [
                 "Enchantment ID: <code class='text-accent2'>tribulation:soulbound</code>",
                 "Configurable to use any external enchantment ID",
+                "Any enchantment in the <code class='text-accent2'>#c:soulbound</code> convention tag also qualifies — Meridian's Tether works out of the box",
                 "Option to also destroy XP on death",
                 "Totem pop: never triggered (inventory is safe)",
                 "Respects the vanilla <code class='text-accent2'>keepInventory</code> gamerule when configured"

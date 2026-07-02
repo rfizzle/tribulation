@@ -202,4 +202,76 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
                     .set(originalKeepInv, helper.getLevel().getServer());
         }
     }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void soulInventory_configuredEnchantCounts(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.soulInventory.enabled;
+        cfg.soulInventory.enabled = true;
+
+        try {
+            ItemStack soulboundSword = new ItemStack(Items.IRON_SWORD);
+            soulboundSword.enchant(soulboundHolder(helper), 1);
+            player.getInventory().setItem(0, soulboundSword);
+            player.getInventory().setItem(1, new ItemStack(Items.STONE_SWORD));
+
+            int count = com.rfizzle.tribulation.event.SoulInventoryHandler.countSoulboundItems(player);
+            helper.assertValueEqual(count, 1, "soulbound item count via configured enchant id");
+        } finally {
+            cfg.soulInventory.enabled = savedEnabled;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * With the configured id blanked out (as if pointing at nothing), the
+     * {@code #c:soulbound} convention tag alone must still qualify items —
+     * this is the path Meridian's Tether enchant rides in on.
+     */
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void soulInventory_conventionTagCounts(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.soulInventory.enabled;
+        String savedEnchant = cfg.soulInventory.soulboundEnchantment;
+        cfg.soulInventory.enabled = true;
+        cfg.soulInventory.soulboundEnchantment = "";
+
+        try {
+            var soulbound = soulboundHolder(helper);
+            helper.assertTrue(
+                    soulbound.is(com.rfizzle.tribulation.event.SoulInventoryHandler.SOULBOUND_ENCHANTMENTS),
+                    "tribulation:soulbound must be in #c:soulbound");
+
+            ItemStack soulboundSword = new ItemStack(Items.IRON_SWORD);
+            soulboundSword.enchant(soulbound, 1);
+            player.getInventory().setItem(0, soulboundSword);
+            player.getInventory().setItem(1, new ItemStack(Items.STONE_SWORD));
+
+            int count = com.rfizzle.tribulation.event.SoulInventoryHandler.countSoulboundItems(player);
+            helper.assertValueEqual(count, 1, "soulbound item count via #c:soulbound tag");
+        } finally {
+            cfg.soulInventory.enabled = savedEnabled;
+            cfg.soulInventory.soulboundEnchantment = savedEnchant;
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    private static net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> soulboundHolder(GameTestHelper helper) {
+        var registry = helper.getLevel().getServer().registryAccess()
+                .registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+        return registry.getHolderOrThrow(net.minecraft.resources.ResourceKey.create(
+                net.minecraft.core.registries.Registries.ENCHANTMENT, Tribulation.id("soulbound")));
+    }
 }

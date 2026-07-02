@@ -273,6 +273,20 @@ public final class TribulationAPI {
     }
 
     /**
+     * Whether Tribulation's soul-inventory is enabled and owns keep-on-death
+     * handling for enchants in {@code #c:soulbound}. Sibling mods with their
+     * own keep-on-death mechanic (e.g. Meridian's Tether) probe this to stand
+     * down when {@code true}, so exactly one mod captures a given death.
+     * Config is hot-reloadable — re-query per death rather than caching.
+     *
+     * @return {@code true} when the soul-inventory feature is enabled
+     */
+    public static boolean isSoulInventoryActive() {
+        TribulationConfig cfg = Tribulation.getConfig();
+        return cfg != null && cfg.soulInventory.enabled;
+    }
+
+    /**
      * Get a read-only summary of the scaling a mob received at spawn: its
      * frozen tier, whether the boss formula was used, and the health/damage
      * modifier sums currently attached. Cheap reads — the values come from the

@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v7_isIdempotent() {
+    void migrate_v8_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 7);
+        json.addProperty("configVersion", 8);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -310,9 +310,36 @@ class ConfigMigratorTest {
         json.add("threatParticles", new JsonObject());
         json.add("xp", new JsonObject());
         json.add("bloodMoon", new JsonObject());
+        json.add("champions", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(7, json.get("configVersion").getAsInt());
+        assertEquals(8, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v7ToV8_addsChampions() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 7);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("champions"), "champions section must be added");
+        assertTrue(json.get("champions").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v7ToV8_doesNotOverwriteExistingChampions() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 7);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("champions", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("champions").get("enabled").getAsBoolean(),
+                "pre-existing champions content must be preserved");
     }
 
     @Test
@@ -329,6 +356,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("raidScaling"));
         assertTrue(json.has("threatParticles"));
         assertTrue(json.has("xp"));
+        assertTrue(json.has("champions"));
     }
 
     @Test

@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -38,6 +39,8 @@ public final class TribulationParticleEmitter {
     /** Scan radius around the local player, in blocks (AC: visible within ~16). */
     private static final double RADIUS = 16.0;
     private static final double RADIUS_SQR = RADIUS * RADIUS;
+    /** Mean ticks between champion-aura motes; fixed so the aura stays subtle. */
+    private static final int CHAMPION_AURA_INTERVAL_TICKS = 5;
 
     private TribulationParticleEmitter() {}
 
@@ -48,7 +51,10 @@ public final class TribulationParticleEmitter {
 
     private static void onClientTick(Minecraft client) {
         TribulationConfig cfg = Tribulation.getConfig();
-        if (cfg == null || !cfg.threatParticles.enabled) return;
+        if (cfg == null) return;
+        boolean threatCues = cfg.threatParticles.enabled;
+        boolean championAura = cfg.champions.enabled && cfg.champions.particleAura;
+        if (!threatCues && !championAura) return;
         if (client.isPaused()) return;
 
         ClientLevel level = client.level;
@@ -65,6 +71,18 @@ public final class TribulationParticleEmitter {
 
         for (Mob mob : mobs) {
             if (mob.distanceToSqr(player) > RADIUS_SQR) continue;
+
+            // Champion aura is independent of the tier/variant threat cues:
+            // every champion telegraphs, whatever its tier. Vanilla soul-fire
+            // motes — the affix visuals are data-driven, not custom-textured.
+            if (championAura
+                    && mob.hasAttached(TribulationAttachments.CHAMPION_AFFIXES)
+                    && !mob.isInvisible()
+                    && random.nextInt(CHAMPION_AURA_INTERVAL_TICKS) == 0) {
+                emitChampionAura(level, mob, random);
+            }
+
+            if (!threatCues) continue;
 
             Integer tierObj = mob.getAttached(TribulationAttachments.SCALED_TIER);
             int tier = tierObj == null ? 0 : tierObj;
@@ -130,6 +148,15 @@ public final class TribulationParticleEmitter {
             }
         }
         level.addParticle(type, x, y, z, xd, yd, zd);
+    }
+
+    /** A slow-rising soul-fire mote hugging the champion's silhouette. */
+    private static void emitChampionAura(ClientLevel level, Mob mob, RandomSource random) {
+        double width = mob.getBbWidth();
+        double x = mob.getX() + (random.nextDouble() - 0.5) * width * 1.2;
+        double z = mob.getZ() + (random.nextDouble() - 0.5) * width * 1.2;
+        double y = mob.getY() + random.nextDouble() * mob.getBbHeight();
+        level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 0.0, 0.02, 0.0);
     }
 
     private static SimpleParticleType particleFor(ThreatCue.Type cue) {

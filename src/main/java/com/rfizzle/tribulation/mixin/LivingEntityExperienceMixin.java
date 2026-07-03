@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.mixin;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.champion.ChampionManager;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.event.XpRewardHandler;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
@@ -41,15 +42,20 @@ public abstract class LivingEntityExperienceMixin {
         if (!(self instanceof Mob mob)) return;
 
         TribulationConfig cfg = Tribulation.getConfig();
-        if (cfg == null || cfg.xp == null || cfg.xp.xpMultiplier <= 0) return;
+        if (cfg == null) return;
 
         int base = cir.getReturnValueI();
         if (base <= 0) return;
 
-        double factor = ScalingEngine.readHealthScalingFactor(mob);
-        if (factor <= 0) return;
+        int scaled = base;
+        if (cfg.xp != null && cfg.xp.xpMultiplier > 0) {
+            double factor = ScalingEngine.readHealthScalingFactor(mob);
+            if (factor > 0) {
+                scaled = XpRewardHandler.applyXpMultiplier(scaled, factor, cfg.xp);
+            }
+        }
+        scaled = ChampionManager.applyChampionXp(scaled, ChampionManager.isChampion(mob), cfg.champions);
 
-        int scaled = XpRewardHandler.applyXpMultiplier(base, factor, cfg.xp);
         if (scaled != base) {
             cir.setReturnValue(scaled);
         }

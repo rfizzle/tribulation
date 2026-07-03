@@ -793,6 +793,87 @@ class TribulationConfigTest {
     }
 
     @Test
+    void defaultConfig_championsHasValidDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertNotNull(cfg.champions);
+        assertTrue(cfg.champions.enabled);
+        assertEquals(50, cfg.champions.levelThreshold);
+        assertEquals(0.05, cfg.champions.championChance);
+        assertEquals(2, cfg.champions.maxAffixes);
+        assertTrue(cfg.champions.healthMultiplier >= 1.0);
+        assertTrue(cfg.champions.damageMultiplier >= 1.0);
+        assertTrue(cfg.champions.xpMultiplier >= 1.0);
+        assertTrue(cfg.champions.bonusLootRolls >= 0);
+        assertNotNull(cfg.champions.affixes);
+        assertTrue(cfg.champions.affixes.vampiric);
+        assertTrue(cfg.champions.affixes.explosive);
+        assertTrue(cfg.champions.affixes.knockbackAura);
+        assertTrue(cfg.champions.affixes.thorns);
+        assertTrue(cfg.champions.affixes.regenerating);
+    }
+
+    @Test
+    void validate_clampsChampionFields() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.champions.championChance = 1.5;
+        cfg.champions.levelThreshold = -10;
+        cfg.champions.maxAffixes = 0;
+        cfg.champions.healthMultiplier = 0.5;
+        cfg.champions.damageMultiplier = -1.0;
+        cfg.champions.xpMultiplier = 0.0;
+        cfg.champions.bonusLootRolls = -2;
+        cfg.champions.affixes.vampiricHealFraction = 2.0;
+        cfg.champions.affixes.explosivePower = -3.0;
+        cfg.champions.affixes.knockbackAuraIntervalTicks = 0;
+
+        cfg.validate();
+
+        assertEquals(1.0, cfg.champions.championChance);
+        assertEquals(0, cfg.champions.levelThreshold);
+        assertEquals(1, cfg.champions.maxAffixes);
+        assertEquals(1.0, cfg.champions.healthMultiplier);
+        assertEquals(1.0, cfg.champions.damageMultiplier);
+        assertEquals(1.0, cfg.champions.xpMultiplier);
+        assertEquals(0, cfg.champions.bonusLootRolls);
+        assertEquals(1.0, cfg.champions.affixes.vampiricHealFraction);
+        assertEquals(0.0, cfg.champions.affixes.explosivePower);
+        assertEquals(1, cfg.champions.affixes.knockbackAuraIntervalTicks);
+    }
+
+    @Test
+    void load_missingChampions_fillsDefaults(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, "{}");
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertNotNull(loaded.champions);
+        assertTrue(loaded.champions.enabled);
+        assertNotNull(loaded.champions.affixes);
+        assertEquals(50, loaded.champions.levelThreshold);
+    }
+
+    @Test
+    void roundTrip_championsPreservesValues(@TempDir Path tmp) {
+        Path path = tmp.resolve("tribulation.json");
+        TribulationConfig original = new TribulationConfig();
+        original.champions.enabled = false;
+        original.champions.levelThreshold = 120;
+        original.champions.championChance = 0.2;
+        original.champions.affixes.explosive = false;
+        original.champions.affixes.thornsFraction = 0.75;
+        original.save(path);
+
+        TribulationConfig reloaded = TribulationConfig.load(path);
+
+        assertFalse(reloaded.champions.enabled);
+        assertEquals(120, reloaded.champions.levelThreshold);
+        assertEquals(0.2, reloaded.champions.championChance);
+        assertFalse(reloaded.champions.affixes.explosive);
+        assertEquals(0.75, reloaded.champions.affixes.thornsFraction);
+    }
+
+    @Test
     void defaultConfig_threatParticlesHasValidDefaults() {
         TribulationConfig cfg = new TribulationConfig();
         assertNotNull(cfg.threatParticles);

@@ -111,6 +111,7 @@ public class MobScalingGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
         double savedRange = cfg.general.mobDetectionRange;
 
         // Night at day 0 is phase 0 (Full Moon). 18000 is midnight. setDayTime
@@ -127,6 +128,7 @@ public class MobScalingGameTest implements FabricGameTest {
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
         // Seat the player on the zombie's block and shrink the range so the moon
         // bonus is measured against a known level-0 player, not a persistent
         // player leaking in from an adjacent test's structure (~8 blocks away,
@@ -150,6 +152,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
             cfg.general.mobDetectionRange = savedRange;
             helper.getLevel().setDayTime(savedTime);
             helper.getLevel().updateSkyBrightness();
@@ -176,12 +179,14 @@ public class MobScalingGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
         boolean savedMoon = cfg.moonPhaseScaling.enabled;
         double savedRange = cfg.general.mobDetectionRange;
         Integer savedOffset = cfg.dimensionOffsets.get("minecraft:overworld");
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
         cfg.moonPhaseScaling.enabled = false;
         // Seat the player on the zombie's block and shrink the range so the fold
         // sees only this test's player, not one leaking in from an adjacent
@@ -201,6 +206,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
             cfg.moonPhaseScaling.enabled = savedMoon;
             cfg.general.mobDetectionRange = savedRange;
             if (savedOffset == null) {
@@ -255,9 +261,11 @@ public class MobScalingGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
 
         Zombie zombie;
         try {
@@ -269,6 +277,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
         }
 
         Zombie z = zombie;
@@ -302,12 +311,14 @@ public class MobScalingGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
         double savedRange = cfg.general.mobDetectionRange;
 
         cfg.general.scalingMode = mode;
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
         // AVERAGE/MAX fold over every player in range, and gametests run concurrently
         // in one shared level with structures only ~8 blocks apart. Shrink the range
         // so the fold sees only this test's own players (seated on the spawn, distSq≈0)
@@ -332,6 +343,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
             cfg.general.mobDetectionRange = savedRange;
             for (ServerPlayer p : players) {
                 p.discard();

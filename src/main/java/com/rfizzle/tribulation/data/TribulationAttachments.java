@@ -24,6 +24,20 @@ public final class TribulationAttachments {
                     .syncWith(ByteBufCodecs.VAR_INT, AttachmentSyncPredicate.all())
     );
 
+    /**
+     * The affix ids of a champion mob, set server-side by
+     * {@link com.rfizzle.tribulation.champion.ChampionManager} at spawn.
+     * Presence of the attachment is the "is champion" flag. Persisted so a
+     * champion survives chunk reload without re-rolling, and synced to
+     * tracking clients so the aura particles render without a custom packet.
+     */
+    public static final AttachmentType<java.util.List<String>> CHAMPION_AFFIXES = AttachmentRegistry.create(
+            Tribulation.id("champion_affixes"),
+            builder -> builder
+                    .persistent(Codec.STRING.listOf())
+                    .syncWith(ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), AttachmentSyncPredicate.all())
+    );
+
     private TribulationAttachments() {}
 
     public static void register() {

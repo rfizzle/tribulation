@@ -131,6 +131,43 @@
         },
         {
           "type": "sub",
+          "id": "champions",
+          "title": "Champion Mobs",
+          "intro": "Above a configurable player level (50 by default), hostile spawns roll a 5% chance to become a <strong>champion</strong>: a named elite carrying 1–2 affixes, ×1.5 health and ×1.25 damage on top of normal scaling, a soul-fire particle aura, ×3 XP, and an extra roll of its own loot table on death.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "lgColumns": 3,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Vampiric",
+                  "html": ["Heals for 50% of the melee damage it deals. Whittling it down means keeping it off you."]
+                },
+                {
+                  "title": "Explosive",
+                  "html": ["Explodes on death — hurts anything nearby, never breaks blocks. Back off before the killing blow."]
+                },
+                {
+                  "title": "Repulsing",
+                  "html": ["A periodic knockback pulse shoves nearby players away, breaking melee rhythm and footing."]
+                },
+                {
+                  "title": "Thorned",
+                  "html": ["Reflects 30% of melee damage taken back at the attacker. Ranged play trivializes it; melee pays a toll."]
+                },
+                {
+                  "title": "Regenerating",
+                  "html": ["Steadily regenerates health while players are near — a DPS check rather than a war of attrition."]
+                }
+              ]
+            },
+            { "type": "note", "html": "Everything is tunable under the <code class='text-accent2'>champions</code> config section — roll chance, level threshold, max affixes, stat/XP multipliers, bonus loot rolls, and a per-affix toggle for each entry in the pool — with <code class='text-accent2'>enabled</code> as the master switch. <code class='text-accent2'>/tribulation inspect</code> reports a mob's champion status and affixes. Bosses never roll as champions." }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "scaled-mobs",
           "title": "Scaled Mob Types",
           "intro": "21 vanilla hostile mobs have individually tuned scaling rates and caps for six attributes. Each can be toggled on or off independently.",

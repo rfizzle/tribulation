@@ -2,6 +2,8 @@ package com.rfizzle.tribulation.command;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
+import com.rfizzle.tribulation.champion.ChampionAffix;
+import com.rfizzle.tribulation.champion.ChampionManager;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.compat.common.MobScalingDataCollector;
@@ -643,6 +645,7 @@ public final class TribulationCommand {
                 "HP: %.1f / %.1f",
                 mob.getHealth(), mob.getMaxHealth()));
         lines.add("Variant: " + variant.label());
+        lines.add("Champion: " + describeChampion(mob));
 
         double healthFactor = ScalingEngine.readHealthScalingFactor(mob);
         lines.add(String.format(Locale.ROOT,
@@ -664,6 +667,21 @@ public final class TribulationCommand {
             lines.addAll(modifierLines);
         }
         return lines;
+    }
+
+    /**
+     * Render champion status for {@code /tribulation inspect}: "no" for a
+     * normal mob, else a comma-joined affix id list ("yes (vampiric, thorns)").
+     */
+    static String describeChampion(Mob mob) {
+        List<ChampionAffix> affixes = ChampionManager.getAffixes(mob);
+        if (affixes.isEmpty()) return "no";
+        StringBuilder sb = new StringBuilder("yes (");
+        for (int i = 0; i < affixes.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(affixes.get(i).id());
+        }
+        return sb.append(')').toString();
     }
 
     // ---- Small pure helpers ----

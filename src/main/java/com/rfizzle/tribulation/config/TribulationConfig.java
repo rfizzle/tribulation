@@ -36,7 +36,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 7;
+    public int configVersion = 8;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -61,6 +61,7 @@ public class TribulationConfig {
     public Abilities abilities = new Abilities();
     public ArmorEquipment armorEquipment = new ArmorEquipment();
     public WeaponEquipment weaponEquipment = new WeaponEquipment();
+    public Champions champions = new Champions();
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public RaidScaling raidScaling = new RaidScaling();
     public ThreatParticles threatParticles = new ThreatParticles();
@@ -285,6 +286,9 @@ public class TribulationConfig {
         if (hud == null) hud = new Hud();
         if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
 
+        if (champions == null) champions = new Champions();
+        if (champions.affixes == null) champions.affixes = new Champions.Affixes();
+
         if (trialSpawner == null) trialSpawner = new TrialSpawnerConfig();
         if (trialSpawner.ominousUpgrade == null) trialSpawner.ominousUpgrade = new TrialSpawnerConfig.OminousUpgrade();
 
@@ -493,6 +497,27 @@ public class TribulationConfig {
             weaponEquipment.weaponDropChance = 2.0;
         }
         weaponEquipment.damageCeiling = clampNonNegative("weaponEquipment.damageCeiling", weaponEquipment.damageCeiling);
+
+        champions.championChance = clampUnit("champions.championChance", champions.championChance);
+        if (champions.levelThreshold < 0) {
+            Tribulation.LOGGER.warn("champions.levelThreshold must be >= 0, got {}; clamped to 0", champions.levelThreshold);
+            champions.levelThreshold = 0;
+        }
+        champions.maxAffixes = clampAtLeast("champions.maxAffixes", champions.maxAffixes, 1);
+        champions.healthMultiplier = clampAtLeastOne("champions.healthMultiplier", champions.healthMultiplier);
+        champions.damageMultiplier = clampAtLeastOne("champions.damageMultiplier", champions.damageMultiplier);
+        champions.xpMultiplier = clampAtLeastOne("champions.xpMultiplier", champions.xpMultiplier);
+        if (champions.bonusLootRolls < 0) {
+            Tribulation.LOGGER.warn("champions.bonusLootRolls must be >= 0, got {}; clamped to 0", champions.bonusLootRolls);
+            champions.bonusLootRolls = 0;
+        }
+        champions.affixes.vampiricHealFraction = clampUnit("champions.affixes.vampiricHealFraction", champions.affixes.vampiricHealFraction);
+        champions.affixes.explosivePower = clampNonNegative("champions.affixes.explosivePower", champions.affixes.explosivePower);
+        champions.affixes.knockbackAuraStrength = clampNonNegative("champions.affixes.knockbackAuraStrength", champions.affixes.knockbackAuraStrength);
+        champions.affixes.knockbackAuraRadius = clampNonNegative("champions.affixes.knockbackAuraRadius", champions.affixes.knockbackAuraRadius);
+        champions.affixes.knockbackAuraIntervalTicks = clampAtLeast("champions.affixes.knockbackAuraIntervalTicks", champions.affixes.knockbackAuraIntervalTicks, 1);
+        champions.affixes.thornsFraction = clampNonNegative("champions.affixes.thornsFraction", champions.affixes.thornsFraction);
+        champions.affixes.regenHealthPerSecond = clampNonNegative("champions.affixes.regenHealthPerSecond", champions.affixes.regenHealthPerSecond);
 
         trialSpawner.ominousUpgrade.chance = (float) clampUnit("trialSpawner.ominousUpgrade.chance", trialSpawner.ominousUpgrade.chance);
         if (trialSpawner.ominousUpgrade.minimumTier < 0) {
@@ -981,6 +1006,44 @@ public class TribulationConfig {
 
     public enum MaterialRollMode {
         PER_MOB, PER_SLOT
+    }
+
+    /**
+     * Elite champion spawns. Above {@code levelThreshold} (effective player
+     * level at spawn) a non-boss hostile rolls champion status with
+     * probability {@code championChance}. A champion gains 1..{@code maxAffixes}
+     * affixes from the pool below, {@code healthMultiplier}/{@code damageMultiplier}
+     * on top of normal scaling, a visible name tag and particle aura, boosted
+     * XP ({@code xpMultiplier}) and {@code bonusLootRolls} extra rolls of its
+     * own loot table on death. {@code enabled} is the master off-switch.
+     */
+    public static class Champions {
+        public boolean enabled = true;
+        public int levelThreshold = 50;
+        public double championChance = 0.05;
+        public int maxAffixes = 2;
+        public double healthMultiplier = 1.5;
+        public double damageMultiplier = 1.25;
+        public double xpMultiplier = 3.0;
+        public int bonusLootRolls = 1;
+        public boolean showNameTag = true;
+        public boolean particleAura = true;
+        public Affixes affixes = new Affixes();
+
+        public static class Affixes {
+            public boolean vampiric = true;
+            public double vampiricHealFraction = 0.5;
+            public boolean explosive = true;
+            public double explosivePower = 2.0;
+            public boolean knockbackAura = true;
+            public double knockbackAuraStrength = 0.8;
+            public double knockbackAuraRadius = 4.0;
+            public int knockbackAuraIntervalTicks = 60;
+            public boolean thorns = true;
+            public double thornsFraction = 0.3;
+            public boolean regenerating = true;
+            public double regenHealthPerSecond = 1.0;
+        }
     }
 
     public static class TrialSpawnerConfig {

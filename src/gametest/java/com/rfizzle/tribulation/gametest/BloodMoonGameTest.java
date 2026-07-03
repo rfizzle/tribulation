@@ -45,6 +45,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         boolean savedDist = cfg.distanceScaling.enabled;
         boolean savedHeight = cfg.heightScaling.enabled;
         boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
         double savedRange = cfg.general.mobDetectionRange;
         boolean savedBmEnabled = cfg.bloodMoon.enabled;
         double savedBmMult = cfg.bloodMoon.moonBonusMultiplier;
@@ -60,6 +61,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         cfg.distanceScaling.enabled = false;
         cfg.heightScaling.enabled = false;
         cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
         cfg.general.mobDetectionRange = 2.0;
         cfg.bloodMoon.enabled = true;
         cfg.bloodMoon.moonBonusMultiplier = 3.0;
@@ -82,6 +84,7 @@ public class BloodMoonGameTest implements FabricGameTest {
             cfg.distanceScaling.enabled = savedDist;
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
             cfg.general.mobDetectionRange = savedRange;
             cfg.bloodMoon.enabled = savedBmEnabled;
             cfg.bloodMoon.moonBonusMultiplier = savedBmMult;

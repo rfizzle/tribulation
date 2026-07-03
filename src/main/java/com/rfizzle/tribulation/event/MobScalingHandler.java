@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.event;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.ability.AbilityManager;
+import com.rfizzle.tribulation.champion.ChampionManager;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.data.TribulationAttachments;
@@ -20,6 +21,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
@@ -134,6 +136,13 @@ public final class MobScalingHandler {
 
         if (cfg.weaponEquipment.enabled) {
             ScalingEngine.clampToCeiling(mob, ScalingEngine.ATTR_DAMAGE, cfg.weaponEquipment.damageCeiling);
+        }
+
+        // Champion roll layers on top of the fully scaled (and ceiling-clamped)
+        // stats. Enemy (not Monster) so hostiles outside the Monster hierarchy —
+        // hoglins, slimes, ghasts, phantoms — roll too; bosses returned earlier.
+        if (mob instanceof Enemy) {
+            ChampionManager.tryApply(mob, playerLevel, cfg, world.getRandom());
         }
 
         // Modifying max health does not raise current HP; top the mob off so

@@ -60,6 +60,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addSpecialSkeletons(builder, entry, current);
             addBosses(builder, entry, current);
             addXp(builder, entry, current);
+            addChampions(builder, entry, current);
             addTrialSpawner(builder, entry, current);
             addRaidScaling(builder, entry, current);
             addThreatParticles(builder, entry, current);
@@ -72,6 +73,145 @@ public final class ModMenuIntegration implements ModMenuApi {
 
             return builder.build();
         };
+    }
+
+    private static void addChampions(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.champions"));
+        TribulationConfig.Champions champions = config.champions;
+        TribulationConfig.Champions.Affixes affixes = champions.affixes;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.enabled"),
+                        champions.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> champions.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.champions.level_threshold"),
+                        champions.levelThreshold)
+                .setDefaultValue(50).setMin(0)
+                .setSaveConsumer(v -> champions.levelThreshold = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.champion_chance"),
+                        champions.championChance)
+                .setDefaultValue(0.05).setMin(0.0).setMax(1.0)
+                .setSaveConsumer(v -> champions.championChance = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.champions.max_affixes"),
+                        champions.maxAffixes)
+                .setDefaultValue(2).setMin(1)
+                .setSaveConsumer(v -> champions.maxAffixes = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.health_multiplier"),
+                        champions.healthMultiplier)
+                .setDefaultValue(1.5).setMin(1.0)
+                .setSaveConsumer(v -> champions.healthMultiplier = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.damage_multiplier"),
+                        champions.damageMultiplier)
+                .setDefaultValue(1.25).setMin(1.0)
+                .setSaveConsumer(v -> champions.damageMultiplier = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.xp_multiplier"),
+                        champions.xpMultiplier)
+                .setDefaultValue(3.0).setMin(1.0)
+                .setSaveConsumer(v -> champions.xpMultiplier = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.champions.bonus_loot_rolls"),
+                        champions.bonusLootRolls)
+                .setDefaultValue(1).setMin(0)
+                .setSaveConsumer(v -> champions.bonusLootRolls = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.show_name_tag"),
+                        champions.showNameTag)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> champions.showNameTag = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.particle_aura"),
+                        champions.particleAura)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> champions.particleAura = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.affix_vampiric"),
+                        affixes.vampiric)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> affixes.vampiric = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.vampiric_heal_fraction"),
+                        affixes.vampiricHealFraction)
+                .setDefaultValue(0.5).setMin(0.0).setMax(1.0)
+                .setSaveConsumer(v -> affixes.vampiricHealFraction = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.affix_explosive"),
+                        affixes.explosive)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> affixes.explosive = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.explosive_power"),
+                        affixes.explosivePower)
+                .setDefaultValue(2.0).setMin(0.0)
+                .setSaveConsumer(v -> affixes.explosivePower = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.affix_knockback_aura"),
+                        affixes.knockbackAura)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> affixes.knockbackAura = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.knockback_aura_strength"),
+                        affixes.knockbackAuraStrength)
+                .setDefaultValue(0.8).setMin(0.0)
+                .setSaveConsumer(v -> affixes.knockbackAuraStrength = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.knockback_aura_radius"),
+                        affixes.knockbackAuraRadius)
+                .setDefaultValue(4.0).setMin(0.0)
+                .setSaveConsumer(v -> affixes.knockbackAuraRadius = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.champions.knockback_aura_interval"),
+                        affixes.knockbackAuraIntervalTicks)
+                .setDefaultValue(60).setMin(1)
+                .setSaveConsumer(v -> affixes.knockbackAuraIntervalTicks = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.affix_thorns"),
+                        affixes.thorns)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> affixes.thorns = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.thorns_fraction"),
+                        affixes.thornsFraction)
+                .setDefaultValue(0.3).setMin(0.0)
+                .setSaveConsumer(v -> affixes.thornsFraction = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.champions.affix_regenerating"),
+                        affixes.regenerating)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> affixes.regenerating = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.champions.regen_health_per_second"),
+                        affixes.regenHealthPerSecond)
+                .setDefaultValue(1.0).setMin(0.0)
+                .setSaveConsumer(v -> affixes.regenHealthPerSecond = v)
+                .build());
     }
 
     private static void addGeneral(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {

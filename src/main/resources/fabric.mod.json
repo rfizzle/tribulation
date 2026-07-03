@@ -50,7 +50,11 @@
         "jei": "*"
     },
     "mixins": [
-        "tribulation.mixins.json"
+        "tribulation.mixins.json",
+        {
+            "config": "tribulation.client.mixins.json",
+            "environment": "client"
+        }
     ],
     "depends": {
         "fabricloader": ">=0.16.10",

@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 8;
+    static final int CURRENT_VERSION = 9;
 
     @FunctionalInterface
     interface Migration {
@@ -94,6 +94,13 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("champions")) {
                     json.add("champions", new JsonObject());
+                }
+            },
+            // v8 → v9: add biomeOffsets map. fillDefaults() seeds the default
+            // deep_dark entry into the empty object, mirroring dimensionOffsets.
+            json -> {
+                if (!json.has("biomeOffsets")) {
+                    json.add("biomeOffsets", new JsonObject());
                 }
             }
     };

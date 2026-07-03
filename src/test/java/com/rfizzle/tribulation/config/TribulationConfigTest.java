@@ -923,4 +923,74 @@ class TribulationConfigTest {
         assertEquals(0, loaded.threatParticles.minimumTier);
         assertEquals(1, loaded.threatParticles.particleFrequencyTicks);
     }
+
+    // ---- Biome offsets ----
+
+    @Test
+    void defaultConfig_biomeOffsetsSeedsDeepDarkOnly() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertEquals(Map.of("minecraft:deep_dark", 30), cfg.biomeOffsets);
+    }
+
+    @Test
+    void load_missingBiomeOffsets_fillsDefaults(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, "{}");
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertEquals(Integer.valueOf(30), loaded.biomeOffsets.get("minecraft:deep_dark"));
+        assertTrue(loaded.hasBiomeOffsets());
+    }
+
+    @Test
+    void load_negativeBiomeOffset_clampedToZero(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "biomeOffsets": { "minecraft:swamp": -10 } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertEquals(Integer.valueOf(0), loaded.biomeOffsets.get("minecraft:swamp"));
+    }
+
+    @Test
+    void load_invalidBiomeOffsetKey_skippedNotFatal(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "biomeOffsets": { "not a valid id!!": 20, "#c:is_swamp": 15, "minecraft:swamp": 5 } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertFalse(loaded.biomeOffsets.containsKey("not a valid id!!"),
+                "unparseable key must be dropped");
+        assertEquals(Integer.valueOf(15), loaded.biomeOffsets.get("#c:is_swamp"));
+        assertEquals(Integer.valueOf(5), loaded.biomeOffsets.get("minecraft:swamp"));
+    }
+
+    @Test
+    void roundTrip_biomeOffsetsPreservesValues(@TempDir Path tmp) {
+        Path path = tmp.resolve("tribulation.json");
+        TribulationConfig original = new TribulationConfig();
+        original.biomeOffsets.put("#c:is_swamp", 12);
+        original.save(path);
+
+        TribulationConfig reloaded = TribulationConfig.load(path);
+
+        assertEquals(Integer.valueOf(12), reloaded.biomeOffsets.get("#c:is_swamp"));
+        assertEquals(Integer.valueOf(30), reloaded.biomeOffsets.get("minecraft:deep_dark"));
+    }
+
+    @Test
+    void isValidBiomeOffsetKey_acceptsIdsAndTags() {
+        assertTrue(TribulationConfig.isValidBiomeOffsetKey("minecraft:deep_dark"));
+        assertTrue(TribulationConfig.isValidBiomeOffsetKey("#c:is_swamp"));
+        assertTrue(TribulationConfig.isValidBiomeOffsetKey("deep_dark"));
+        assertFalse(TribulationConfig.isValidBiomeOffsetKey(""));
+        assertFalse(TribulationConfig.isValidBiomeOffsetKey("#"));
+        assertFalse(TribulationConfig.isValidBiomeOffsetKey("bad id with spaces"));
+        assertFalse(TribulationConfig.isValidBiomeOffsetKey(null));
+    }
 }

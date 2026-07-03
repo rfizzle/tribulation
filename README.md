@@ -33,6 +33,8 @@ Every hostile mob's stats are computed from four independent factors at spawn ti
 - **Height** — Deviation from sea level (Y=62) in either direction adds threat (caps at +50%).
 - **Moon phase** — On Overworld nights, mob threat rises toward the full moon and tapers to zero at the new moon (caps at +10%); optionally surface-only.
 
+Upstream of the four axes, per-dimension and per-biome level offsets add a flat boost to the effective level — the Nether (+25), the End (+40), and the Deep Dark (+30) by default. Biome offsets accept plain biome IDs or `#`-prefixed biome tags, so modded biomes and whole categories can carry their own boost.
+
 21 vanilla mob types have individually tuned scaling rates and caps. Modded hostile mobs get conservative fallback scaling automatically.
 
 ### Tier-Gated Abilities
@@ -118,7 +120,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

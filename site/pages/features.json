@@ -73,6 +73,30 @@
         },
         {
           "type": "sub",
+          "id": "biome-offset",
+          "title": "Biome Offset",
+          "intro": "The same flat boost, keyed on biome instead of dimension — so the Deep Dark, a swamp, or a modded horror biome is inherently more threatening as a destination, not just as a set of coordinates.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "How It Works",
+                  "html": ["Applied upstream of the four axes exactly like the dimension offset, stacking additively with it before the <code class='text-accent2'>maxLevel</code> clamp — so it raises both mob stats and ability tiers together. <code class='text-accent2'>/tribulation debug</code> reports the active biome offset at the player's position."]
+                },
+                {
+                  "title": "Configuration",
+                  "html": ["The <code class='text-accent2'>biomeOffsets</code> map accepts plain biome IDs (<code class='text-accent2'>minecraft:deep_dark</code>) and <code class='text-accent2'>#</code>-prefixed biome tags, so modded biomes and whole categories work. An exact ID entry wins over tags; among overlapping tags the largest offset applies. Only the Deep Dark carries a default (<span class='text-bone'>+30</span>) — everything else is opt-in tuning."]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "moon-phase",
           "title": "Moon-Phase Threat",
           "intro": "A thematic weekly rhythm layered on top of the position axes. The lunar cycle nudges nighttime danger up toward the full moon and back down toward the new moon, so the same coordinates feel different week to week.",

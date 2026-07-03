@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v8_isIdempotent() {
+    void migrate_v9_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 8);
+        json.addProperty("configVersion", 9);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -311,9 +311,36 @@ class ConfigMigratorTest {
         json.add("xp", new JsonObject());
         json.add("bloodMoon", new JsonObject());
         json.add("champions", new JsonObject());
+        json.add("biomeOffsets", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(8, json.get("configVersion").getAsInt());
+        assertEquals(9, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v8ToV9_addsBiomeOffsets() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 8);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("biomeOffsets"), "biomeOffsets map must be added");
+        assertTrue(json.get("biomeOffsets").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v8ToV9_doesNotOverwriteExistingBiomeOffsets() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 8);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("minecraft:swamp", 15);
+        json.add("biomeOffsets", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertEquals(15, json.getAsJsonObject("biomeOffsets").get("minecraft:swamp").getAsInt(),
+                "pre-existing biomeOffsets content must be preserved");
     }
 
     @Test
@@ -357,6 +384,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("threatParticles"));
         assertTrue(json.has("xp"));
         assertTrue(json.has("champions"));
+        assertTrue(json.has("biomeOffsets"));
     }
 
     @Test

@@ -8,9 +8,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.biome.Biome;
 
 import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -36,7 +38,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 8;
+    public int configVersion = 9;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -44,6 +46,7 @@ public class TribulationConfig {
     public MoonPhaseScaling moonPhaseScaling = new MoonPhaseScaling();
     public BloodMoon bloodMoon = new BloodMoon();
     public Map<String, Integer> dimensionOffsets = defaultDimensionOffsets();
+    public Map<String, Integer> biomeOffsets = defaultBiomeOffsets();
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
@@ -181,6 +184,39 @@ public class TribulationConfig {
         if (dimensionOffsets == null || dimension == null) return 0;
         Integer offset = dimensionOffsets.get(dimension.toString());
         return offset != null ? offset : 0;
+    }
+
+    /**
+     * Parsed lookup structure for {@link #biomeOffsets}, rebuilt lazily when
+     * the map's contents change (config reload swaps the whole object, but
+     * tests mutate the map in place). {@code transient} so Gson never
+     * serializes it.
+     */
+    private transient volatile BiomeOffsetResolver biomeOffsetResolver;
+
+    /** True when at least one biome offset entry is configured — lets the spawn hot path skip the biome lookup entirely. */
+    public boolean hasBiomeOffsets() {
+        return biomeOffsets != null && !biomeOffsets.isEmpty();
+    }
+
+    /**
+     * Flat level offset added to the effective scaling level for mobs in the
+     * given biome, stacking additively with {@link #getDimensionOffset} (see
+     * {@link com.rfizzle.tribulation.scaling.ScalingEngine#getEffectiveLevel}).
+     * Keys in {@link #biomeOffsets} are biome IDs ({@code minecraft:deep_dark})
+     * or {@code #}-prefixed biome tags; an exact ID entry wins over tags, and
+     * the largest offset among matching tags applies otherwise. Returns
+     * {@code 0} for unlisted biomes, so scaling elsewhere is unaffected.
+     */
+    public int getBiomeOffset(Holder<Biome> biome) {
+        Map<String, Integer> offsets = biomeOffsets;
+        if (offsets == null || offsets.isEmpty() || biome == null) return 0;
+        BiomeOffsetResolver resolver = biomeOffsetResolver;
+        if (resolver == null || !resolver.matches(offsets)) {
+            resolver = BiomeOffsetResolver.build(offsets);
+            biomeOffsetResolver = resolver;
+        }
+        return resolver.offsetFor(biome);
     }
 
     /**
@@ -323,6 +359,15 @@ public class TribulationConfig {
             }
         }
 
+        if (biomeOffsets == null) {
+            biomeOffsets = defaultBiomeOffsets();
+        } else {
+            Map<String, Integer> defaults = defaultBiomeOffsets();
+            for (Map.Entry<String, Integer> entry : defaults.entrySet()) {
+                biomeOffsets.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+
         if (unlistedHostileMobs == null) {
             unlistedHostileMobs = new UnlistedHostileMobs();
         }
@@ -376,6 +421,25 @@ public class TribulationConfig {
                     entry.setValue(0);
                 } else if (offset < 0) {
                     Tribulation.LOGGER.warn("dimensionOffsets.{} must be >= 0, got {}; clamped to 0", entry.getKey(), offset);
+                    entry.setValue(0);
+                }
+            }
+        }
+
+        if (biomeOffsets != null) {
+            biomeOffsets.entrySet().removeIf(entry -> {
+                if (!isValidBiomeOffsetKey(entry.getKey())) {
+                    Tribulation.LOGGER.warn("biomeOffsets key '{}' is not a valid biome id or #tag; entry skipped", entry.getKey());
+                    return true;
+                }
+                return false;
+            });
+            for (Map.Entry<String, Integer> entry : biomeOffsets.entrySet()) {
+                Integer offset = entry.getValue();
+                if (offset == null) {
+                    entry.setValue(0);
+                } else if (offset < 0) {
+                    Tribulation.LOGGER.warn("biomeOffsets.{} must be >= 0, got {}; clamped to 0", entry.getKey(), offset);
                     entry.setValue(0);
                 }
             }
@@ -700,6 +764,26 @@ public class TribulationConfig {
         map.put("minecraft:the_nether", 25);
         map.put("minecraft:the_end", 40);
         return map;
+    }
+
+    /**
+     * Baseline threat offsets per biome, stacking additively with the
+     * dimension offset. Keys are biome {@link ResourceLocation} strings or
+     * {@code #}-prefixed biome tags (so modded biomes and whole categories
+     * work). Only the Deep Dark carries a default — everything else is
+     * opt-in tuning.
+     */
+    private static Map<String, Integer> defaultBiomeOffsets() {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put("minecraft:deep_dark", 30);
+        return map;
+    }
+
+    /** A biome offset key is a biome ID or a {@code #}-prefixed biome tag. */
+    static boolean isValidBiomeOffsetKey(String key) {
+        if (key == null || key.isEmpty()) return false;
+        String id = key.startsWith("#") ? key.substring(1) : key;
+        return !id.isEmpty() && ResourceLocation.tryParse(id) != null;
     }
 
     public static class General {

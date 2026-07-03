@@ -40,6 +40,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -566,6 +567,11 @@ public final class TribulationCommand {
                 "Dimension offset: %+d  (%s)",
                 cfg.getDimensionOffset(world.dimension().location()),
                 world.dimension().location()));
+        Holder<Biome> biome = world.getBiome(target.blockPosition());
+        lines.add(String.format(Locale.ROOT,
+                "Biome offset: %+d  (%s)",
+                cfg.getBiomeOffset(biome),
+                biome.unwrapKey().map(key -> key.location().toString()).orElse("unknown")));
         lines.add(String.format(Locale.ROOT,
                 "Distance from spawn: %.1f blocks  →  factor %+.3f",
                 horizontalDistance, rawDistanceFactor));

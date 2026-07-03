@@ -292,9 +292,10 @@ public final class ScalingEngine {
     }
 
     /**
-     * Add a per-dimension baseline offset to a resolved player level and clamp
-     * the result to {@code maxLevel}. This is the only place an effective level
-     * is capped to {@code maxLevel} — stored levels are capped upstream in
+     * Add a flat baseline offset (the dimension and biome offsets, summed) to
+     * a resolved player level and clamp the result to {@code maxLevel}. This
+     * is the only place an effective level is capped to {@code maxLevel} —
+     * stored levels are capped upstream in
      * {@link PlayerDifficultyState#setLevel}, but the offset is the one thing
      * that can push a stored level past the ceiling. Negative offsets are
      * treated as zero (config validation already clamps them; the guard keeps
@@ -328,8 +329,13 @@ public final class ScalingEngine {
         // else, so a concurrent reload can't mix generations. The offset is added
         // only once a player level is actually resolved — the "no player nearby"
         // paths return 0 unchanged, since there is no nearest player to offset and
-        // mobs out of detection range never scale anyway.
+        // mobs out of detection range never scale anyway. The biome offset stacks
+        // additively with the dimension offset; the hasBiomeOffsets() guard keeps
+        // the biome lookup off the hot path when the feature is unconfigured.
         int offset = cfg.getDimensionOffset(world.dimension().location());
+        if (cfg.hasBiomeOffsets()) {
+            offset += cfg.getBiomeOffset(world.getBiome(entity.blockPosition()));
+        }
         int maxLevel = cfg.general.maxLevel;
 
         TribulationConfig.ScalingMode mode = cfg.general.scalingMode;

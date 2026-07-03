@@ -353,6 +353,13 @@ class ScalingEngineTest {
         assertEquals(250, ScalingEngine.applyDimensionOffset(240, 40, 250));
     }
 
+    @Test
+    void dimensionAndBiomeOffsets_stackAdditivelyUnderMaxLevel() {
+        // getEffectiveLevel passes dimensionOffset + biomeOffset as one sum.
+        assertEquals(95, ScalingEngine.applyDimensionOffset(40, 25 + 30, 250));
+        assertEquals(250, ScalingEngine.applyDimensionOffset(200, 25 + 30, 250));
+    }
+
     // ---- Modifier IDs + classification ----
 
     @Test

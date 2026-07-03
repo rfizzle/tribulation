@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v9_isIdempotent() {
+    void migrate_v10_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 9);
+        json.addProperty("configVersion", 10);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -312,9 +312,36 @@ class ConfigMigratorTest {
         json.add("bloodMoon", new JsonObject());
         json.add("champions", new JsonObject());
         json.add("biomeOffsets", new JsonObject());
+        json.add("packTactics", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(9, json.get("configVersion").getAsInt());
+        assertEquals(10, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v9ToV10_addsPackTactics() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 9);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("packTactics"), "packTactics section must be added");
+        assertTrue(json.get("packTactics").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v9ToV10_doesNotOverwriteExistingPackTactics() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 9);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("packTactics", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("packTactics").get("enabled").getAsBoolean(),
+                "pre-existing packTactics content must be preserved");
     }
 
     @Test
@@ -385,6 +412,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("xp"));
         assertTrue(json.has("champions"));
         assertTrue(json.has("biomeOffsets"));
+        assertTrue(json.has("packTactics"));
     }
 
     @Test

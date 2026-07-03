@@ -253,6 +253,12 @@
     "config.tribulation.raid_scaling.extra_wave_tier_threshold": "Extra Wave Tier Threshold",
     "config.tribulation.raid_scaling.extra_wave_count": "Extra Wave Count",
 
+    "config.tribulation.category.pack_tactics": "Pack Tactics",
+    "config.tribulation.pack_tactics.enabled": "Pack Tactics",
+    "config.tribulation.pack_tactics.tier_threshold": "Pack Tactics Tier Threshold",
+    "config.tribulation.pack_tactics.alert_radius": "Shared Aggro Radius",
+    "config.tribulation.pack_tactics.group_size_bonus": "Spawn Group Size Bonus",
+
     "config.tribulation.category.threat_particles": "Threat Telegraphing",
     "config.tribulation.threat_particles.enabled": "Threat Particles",
     "config.tribulation.threat_particles.minimum_tier": "Minimum Tier for Particles",

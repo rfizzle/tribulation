@@ -148,7 +148,7 @@ Each player carries a difficulty **level** (0–`maxLevel`, default 250) that ad
 
 `Tribulation` registers a `ServerTickEvents.END_SERVER_TICK` handler that fires every 20 ticks (1 s). When `timeScaling.enabled` and at least one player is online, every online player's tick counter advances by 20. Crossing `levelUpTicks` (default 72000 ticks = 1 hour) grants one level, carrying the remainder. At `maxLevel` the counter is zeroed and no further levels are gained.
 
-On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`. Crossing a tier boundary additionally fires the tier advancement and the tier-up sting (§19, §24).
+On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`. Crossing a tier boundary additionally fires the tier advancement and the tier-up sting (§20, §25).
 
 ### Persistence
 
@@ -258,7 +258,7 @@ Variant modifiers use distinct `tribulation:variant_*` IDs so they never collide
 ### Implementation Notes
 
 - `Attributes.SCALE` natively drives both the rendered model and the entity bounding box in 1.21, syncing through the existing attribute packet — no TrackedData or renderer mixin.
-- Variants are detectable via `/tribulation inspect` (Big wins if both ID families are somehow present, for deterministic output) and drive the variant threat particles (§18).
+- Variants are detectable via `/tribulation inspect` (Big wins if both ID families are somehow present, for deterministic output) and drive the variant threat particles (§19).
 
 ---
 
@@ -383,7 +383,25 @@ Vanilla's built-in escalation — pillager patrols and raids — scales with the
 
 ---
 
-## 11. Death Relief
+## 11. Pack Tactics
+
+At or above a configurable tier threshold, the classic pack mobs stop fighting alone: hurting one alerts its packmates, and natural spawn groups grow. Below the threshold — and for any type not on the eligible list — behavior is fully vanilla. Eligible types default to `minecraft:zombie`, `minecraft:skeleton`, `minecraft:spider`; the list resolves against the entity-type registry once per config generation (unknown IDs are logged and ignored) so hot-path checks are a set lookup.
+
+### Shared aggro
+
+`PackTacticsHandler` listens on `ServerLivingEntityEvents.AFTER_DAMAGE` — alerting happens only on the damage event, so there is no per-tick cost outside combat. When a non-spectator player damages an eligible mob whose frozen `SCALED_TIER` is ≥ `tierThreshold`, one bounded AABB query collects same-type mobs within `alertRadius` of the victim. A packmate is retargeted onto the attacker only if it has line-of-sight to the **victim** (no alerting through walls — it "saw the attack") and is not already fighting a living target (an engaged mob is never yanked off another player). At most 16 packmates are alerted per hit.
+
+### Larger spawn groups
+
+`NaturalSpawnerGroupSizeMixin` redirects the `minCount`/`maxCount` field reads in `NaturalSpawner#spawnCategoryForPosition`'s group-size pick (`minCount + nextInt(1 + maxCount − minCount)`), boosting each read by `spawnGroupBonus(tier)` — which shifts the whole group size by exactly the bonus while leaving the random bound untouched. The tier is the effective tier at the spawn position (`ScalingEngine.getEffectiveLevelAt`, the position-based twin of the entity resolver). Mob caps are unaffected, so total density stays bounded.
+
+### Config
+
+`packTactics.enabled` (true), `tierThreshold` (3), `alertRadius` (16.0, clamped to [0, 64]), `groupSizeBonus` (2, clamped to [0, 16]), `eligibleMobs` (zombie/skeleton/spider).
+
+---
+
+## 12. Death Relief
 
 A rubber-band penalty that lowers difficulty on death.
 
@@ -399,7 +417,7 @@ A successful application syncs the level, fires `TribulationLevelCallback`, and 
 
 ---
 
-## 12. Shatter Shards
+## 13. Shatter Shards
 
 A rare mob drop that voluntarily lowers difficulty.
 
@@ -419,7 +437,7 @@ A rare mob drop that voluntarily lowers difficulty.
 
 ---
 
-## 13. Hardcore Hearts (opt-in)
+## 14. Hardcore Hearts (opt-in)
 
 Permanent max-health loss on death, recoverable with Heart Fragments.
 
@@ -444,7 +462,7 @@ SAS     S = tribulation:shatter_shard, A = minecraft:golden_apple → 1 heart_fr
 
 ---
 
-## 14. Soul Inventory (opt-in)
+## 15. Soul Inventory (opt-in)
 
 Death destroys the inventory unless items carry the Soulbound enchantment.
 
@@ -462,7 +480,7 @@ Death destroys the inventory unless items carry the Soulbound enchantment.
 
 ---
 
-## 15. Totem Interaction
+## 16. Totem Interaction
 
 `LivingEntityTotemMixin` hooks `checkTotemDeathProtection`. When a player is saved by a totem:
 - If `deathRelief.enabled` **and** `totems.countsAsDeathRelief` (default false), death relief is applied as if the player had died.
@@ -472,7 +490,7 @@ By default a totem fully shields the player from both penalties.
 
 ---
 
-## 16. HUD Difficulty Badge
+## 17. HUD Difficulty Badge
 
 A persistent client HUD element showing difficulty level/tier, following the Concord shared HUD standard.
 
@@ -484,12 +502,12 @@ The element occupies **priority 1** (topmost) in the shared HUD strip and contri
 
 ### Implementation Notes
 
-- The badge conveys the level only via its progress bar and tint — the underlying level value comes from `ClientTribulationState`, synced from the server via `TribulationLevelPayload(level, progressTicks, goalTicks)`. The exact number is available on demand through the tier detail panel (§17) or `/tribulation info`.
+- The badge conveys the level only via its progress bar and tint — the underlying level value comes from `ClientTribulationState`, synced from the server via `TribulationLevelPayload(level, progressTicks, goalTicks)`. The exact number is available on demand through the tier detail panel (§18) or `/tribulation info`.
 - `TribulationAPI.isHudVisible()` / `getHudHeight()` expose the element's state (reflection-backed, cached `MethodHandle`s) so sibling Concord mods stack below it without hardcoding its height.
 
 ---
 
-## 17. Tier Detail Panel (Peek)
+## 18. Tier Detail Panel (Peek)
 
 A hold-to-peek client overlay that shows the full difficulty picture on demand.
 
@@ -507,7 +525,7 @@ The panel keeps a fixed body size: when more mob types are present than fit, it 
 
 ---
 
-## 18. Threat Telegraphing Particles
+## 19. Threat Telegraphing Particles
 
 Dangerous mobs give themselves away with a faint particle cue — a secondary threat tell alongside equipment scaling, readable without Jade/WTHIT.
 
@@ -530,7 +548,7 @@ Three custom `SimpleParticleType`s are registered into `BuiltInRegistries.PARTIC
 
 ---
 
-## 19. Advancements
+## 20. Advancements
 
 A dedicated `tribulation` advancement tab records progression milestones, evaluated server-side (works on dedicated servers). Generated by `TribulationAdvancementProvider` (datagen).
 
@@ -547,11 +565,11 @@ A dedicated `tribulation` advancement tab records progression milestones, evalua
 | `tribulation:heart_fragment_used` | Mended | restore a heart with a Heart Fragment |
 | `tribulation:tier_five_mob_killed` | Giant Slayer | kill a mob scaled to the maximum tier |
 
-The tier ladder is chained (each tier parents the previous, off `root`); the four milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the four leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§24).
+The tier ladder is chained (each tier parents the previous, off `root`); the four milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the four leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§25).
 
 ---
 
-## 20. Public API — `TribulationAPI`
+## 21. Public API — `TribulationAPI`
 
 `com.rfizzle.tribulation.api.TribulationAPI` is the stable (`@Stable`) soft-dependency surface. All methods are safe to call when guarded by `FabricLoader.isModLoaded("tribulation")`.
 
@@ -577,7 +595,7 @@ Drop-chance providers (`ArmorDropChanceProvider`, `WeaponDropChanceProvider`) ar
 
 ---
 
-## 21. Commands
+## 22. Commands
 
 ### `/tribulation` Command Tree
 
@@ -607,9 +625,9 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 
 ---
 
-## 22. Configuration
+## 23. Configuration
 
-Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **6**; `ConfigMigrator` migrates older files on load (v0→v6: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles, v6 renames `xpAndLoot`→`xp` and drops the extra-loot fields). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
+Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **10**; `ConfigMigrator` migrates older files on load (v0→v10: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles, v6 renames `xpAndLoot`→`xp` and drops the extra-loot fields, v7 adds blood-moon, v8 adds champions, v9 adds biome-offsets, v10 adds pack-tactics). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
 
 ### General
 
@@ -732,7 +750,7 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `weaponEquipment.damageCeiling` | double | 20.0 |
 | `weaponEquipment.tiers.*` | WeaponTier | per §7 |
 
-### Trial Spawner, Raid, Abilities, HUD & Particles
+### Trial Spawner, Raid, Pack Tactics, Abilities, HUD & Particles
 
 | Key | Type | Default |
 |---|---|---|
@@ -744,6 +762,11 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `raidScaling.patrolBonusRate` | int | 2 |
 | `raidScaling.extraWaveTierThreshold` | int | 4 |
 | `raidScaling.extraWaveCount` | int | 1 |
+| `packTactics.enabled` | bool | true |
+| `packTactics.tierThreshold` | int | 3 |
+| `packTactics.alertRadius` | double `[0,64]` | 16.0 |
+| `packTactics.groupSizeBonus` | int `[0,16]` | 2 |
+| `packTactics.eligibleMobs` | string list | zombie, skeleton, spider |
 | `abilities.*` | bool | true (29 flags, one per ability in §4) |
 | `hud.enabled` | bool | true |
 | `hud.anchor` | enum | TOP_LEFT |
@@ -756,7 +779,7 @@ Drop-chance fields accept `[0, 2]` — a value ≥1.0 requests a guaranteed + pr
 
 ---
 
-## 23. Compatibility
+## 24. Compatibility
 
 ### Required
 - Fabric Loader ≥0.16.10, Fabric API, Minecraft ~1.21.1, Java ≥21. **Zero hard third-party dependencies.**
@@ -776,7 +799,7 @@ Tribulation is a single self-contained jar; users should remove any prior mob-sc
 
 ---
 
-## 24. Sound Design
+## 25. Sound Design
 
 Tribulation registers **one** custom `SoundEvent`, `tribulation:tier_up` (`TribulationSounds`), backed by `assets/tribulation/sounds/tier_up.ogg` with subtitle `tribulation.subtitle.tier_up` and a `/sfx` synthesis source at `art/audio/tier-up.sfx` (a rising arpeggio milestone sting). It plays for the **single** leveling player — sent via a targeted `ClientboundSoundPacket` (`SoundSource.PLAYERS`), not a broadcast — when `Tribulation.onTierCrossed` fires on a tier change, layered over the HUD badge's gold flash and the tier advancement toast.
 
@@ -791,7 +814,7 @@ All other feedback is visual (HUD tint flash, threat particles, chat/action-bar 
 
 ---
 
-## 25. Localization
+## 26. Localization
 
 All user-facing text uses translation keys in `assets/tribulation/lang/en_us.json`.
 
@@ -811,13 +834,13 @@ Parameterized messages use `%s`-style placeholders. Command output (`/info`, `/d
 
 ---
 
-## 26. Statistics
+## 27. Statistics
 
 Custom stats registered by `TribulationStats` and awarded across the systems above: `highest_level_reached`, `levels_lost_to_death_relief`, `shatter_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
 
 ---
 
-## 27. Persistence & Networking Architecture
+## 28. Persistence & Networking Architecture
 
 - **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost. Backed by a `ConcurrentHashMap`, serialized in sorted-UUID order. Survives restarts.
 - **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier (synced to the client for threat particles); the `tribulation_processed`, `tribulation_variant_processed`, `tribulation_skeleton_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`, and `tribulation_patrol_processed` scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
@@ -825,16 +848,16 @@ Custom stats registered by `TribulationStats` and awarded across the systems abo
 
 ---
 
-## 28. Testing Strategy
+## 29. Testing Strategy
 
 ### Unit Tests (`src/test/`, fabric-loader-junit)
 Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, dimension-offset and moon-factor math, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie- and skeleton-variant rolls, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color, threat-cue decisions.
 
 ### Gametests (`src/gametest/`, Fabric Gametest API)
-`MobScalingGameTest`, `DeathPenaltiesGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest` — verify end-to-end behavior on a running server (scaling application, penalty flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, particle registration, stat awards).
+`MobScalingGameTest`, `DeathPenaltiesGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `PackTacticsGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest` — verify end-to-end behavior on a running server (scaling application, penalty flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, pack-tactics shared aggro, particle registration, stat awards).
 
 ---
 
-## 29. Future Considerations
+## 30. Future Considerations
 - Tier threshold icon set and death-penalty mode icons (DESIGN §3) are designed but not yet rendered in-game.
 - No custom blocks ship; the mod's footprint is intentionally behavioral.

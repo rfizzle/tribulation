@@ -324,6 +324,29 @@
         },
         {
           "type": "sub",
+          "id": "pack-tactics",
+          "title": "Pack Tactics",
+          "intro": "At or above a configurable tier threshold (default tier 3), the classic pack mobs — zombies, skeletons, and spiders — stop fighting alone. Below the threshold behavior is fully vanilla; the eligible-mob list, radius, threshold, and group bonus are all configurable.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Shared Aggro",
+                  "html": ["Hurting an eligible mob alerts same-type mobs within a configurable radius (default 16 blocks) onto the attacker. Packmates must have line-of-sight to the victim — no alerting through walls — and a mob already fighting a living target is never pulled off it."]
+                },
+                {
+                  "title": "Larger Spawn Groups",
+                  "html": ["Natural spawn groups of eligible types grow by a configurable bonus (default +2) where the local tier meets the threshold. Mob caps still apply, so total density stays bounded."]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "zombie-variants",
           "title": "Zombie Variants",
           "intro": "Zombies have a chance to spawn as special variants with distinct visual and mechanical differences.",

@@ -38,7 +38,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 9;
+    public int configVersion = 10;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -67,6 +67,7 @@ public class TribulationConfig {
     public Champions champions = new Champions();
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public RaidScaling raidScaling = new RaidScaling();
+    public PackTactics packTactics = new PackTactics();
     public ThreatParticles threatParticles = new ThreatParticles();
     public Hud hud = new Hud();
 
@@ -329,6 +330,11 @@ public class TribulationConfig {
         if (trialSpawner.ominousUpgrade == null) trialSpawner.ominousUpgrade = new TrialSpawnerConfig.OminousUpgrade();
 
         if (raidScaling == null) raidScaling = new RaidScaling();
+
+        if (packTactics == null) packTactics = new PackTactics();
+        if (packTactics.eligibleMobs == null) {
+            packTactics.eligibleMobs = PackTactics.defaultEligibleMobs();
+        }
 
         if (threatParticles == null) threatParticles = new ThreatParticles();
 
@@ -599,6 +605,20 @@ public class TribulationConfig {
         if (raidScaling.extraWaveCount < 0) {
             Tribulation.LOGGER.warn("raidScaling.extraWaveCount must be >= 0, got {}; clamped to 0", raidScaling.extraWaveCount);
             raidScaling.extraWaveCount = 0;
+        }
+
+        packTactics.tierThreshold = clampAtLeast("packTactics.tierThreshold", packTactics.tierThreshold, 0);
+        packTactics.alertRadius = clampNonNegative("packTactics.alertRadius", packTactics.alertRadius);
+        if (packTactics.alertRadius > PackTactics.MAX_ALERT_RADIUS) {
+            Tribulation.LOGGER.warn("packTactics.alertRadius must be <= {}, got {}; clamped to {}",
+                    PackTactics.MAX_ALERT_RADIUS, packTactics.alertRadius, PackTactics.MAX_ALERT_RADIUS);
+            packTactics.alertRadius = PackTactics.MAX_ALERT_RADIUS;
+        }
+        packTactics.groupSizeBonus = clampAtLeast("packTactics.groupSizeBonus", packTactics.groupSizeBonus, 0);
+        if (packTactics.groupSizeBonus > PackTactics.MAX_GROUP_SIZE_BONUS) {
+            Tribulation.LOGGER.warn("packTactics.groupSizeBonus must be <= {}, got {}; clamped to {}",
+                    PackTactics.MAX_GROUP_SIZE_BONUS, packTactics.groupSizeBonus, PackTactics.MAX_GROUP_SIZE_BONUS);
+            packTactics.groupSizeBonus = PackTactics.MAX_GROUP_SIZE_BONUS;
         }
 
         if (threatParticles.particleFrequencyTicks < 1) {
@@ -1175,6 +1195,48 @@ public class TribulationConfig {
         public int extraWaves(int maxTier) {
             if (!enabled || maxTier < extraWaveTierThreshold) return 0;
             return extraWaveCount;
+        }
+    }
+
+    /**
+     * Tier-gated pack tactics for the classic pack mobs. Above
+     * {@code tierThreshold}, hurting an eligible mob alerts same-type mobs
+     * within {@code alertRadius} (line-of-sight to the victim required) onto
+     * the attacker, and natural spawn groups of eligible types grow by
+     * {@code groupSizeBonus}. Below the threshold behavior is fully vanilla;
+     * {@code enabled = false} is the master off-switch. {@code eligibleMobs}
+     * lists entity type IDs; unknown IDs are logged and ignored.
+     */
+    public static class PackTactics {
+        public static final double MAX_ALERT_RADIUS = 64.0;
+        public static final int MAX_GROUP_SIZE_BONUS = 16;
+
+        public boolean enabled = true;
+        public int tierThreshold = 3;
+        public double alertRadius = 16.0;
+        public int groupSizeBonus = 2;
+        public List<String> eligibleMobs = defaultEligibleMobs();
+
+        static List<String> defaultEligibleMobs() {
+            return new ArrayList<>(List.of(
+                    "minecraft:zombie", "minecraft:skeleton", "minecraft:spider"));
+        }
+
+        /**
+         * Whether pack tactics apply at the given tier. Pure arithmetic —
+         * covered by unit tests.
+         */
+        public boolean isActiveAtTier(int tier) {
+            return enabled && tier >= tierThreshold;
+        }
+
+        /**
+         * Extra members added to a natural spawn group at the given tier:
+         * {@code groupSizeBonus} when active, else 0. Pure arithmetic —
+         * covered by unit tests.
+         */
+        public int spawnGroupBonus(int tier) {
+            return isActiveAtTier(tier) ? groupSizeBonus : 0;
         }
     }
 

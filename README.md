@@ -49,6 +49,10 @@ At 5 level thresholds (50/100/150/200/250), mobs unlock special behaviors:
 | 4 | 200 | Skeleton flame arrows, Vindicator damage resistance |
 | 5 | 250 | Zombie sprinting, Creeper charged (25%), Spider leap attack |
 
+### Pack Tactics
+
+At or above a configurable tier threshold (default tier 3), the classic pack mobs — zombies, skeletons, and spiders — fight together: hurting one alerts same-type mobs within 16 blocks (line-of-sight required) onto the attacker, and their natural spawn groups grow by +2. Radius, threshold, bonus, and the eligible-mob list are configurable via the `packTactics` section.
+
 ### Death Penalties
 
 - **Death Relief** — Lose 2 levels on death (rubber-band mechanic, configurable)
@@ -120,7 +124,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

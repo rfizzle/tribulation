@@ -511,6 +511,26 @@
       ]
     },
     {
+      "id": "pack-tactics",
+      "title": "packTactics",
+      "intro": "Tier-gated pack tactics for the classic pack mobs. At or above the tier threshold, hurting an eligible mob alerts same-type mobs within the radius (line-of-sight to the victim required) onto the attacker, and natural spawn groups of eligible types grow by the configured bonus. Below the threshold behavior is fully vanilla.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Master switch. When false, targeting and spawn group sizes stay fully vanilla."],
+            ["<code class='text-accent2 whitespace-nowrap'>tierThreshold</code>", "int", "3", "Lowest tier at which pack tactics apply. Shared aggro uses the victim's frozen scaled tier; the spawn-group bonus uses the effective tier at the spawn position."],
+            ["<code class='text-accent2 whitespace-nowrap'>alertRadius</code>", "double", "16.0", "Radius (blocks) around the hurt mob searched for same-type packmates. Clamped to [0, 64]; 0 disables shared aggro."],
+            ["<code class='text-accent2 whitespace-nowrap'>groupSizeBonus</code>", "int", "2", "Extra members added to natural spawn groups of eligible types above the threshold. Clamped to [0, 16]; mob caps still apply."],
+            ["<code class='text-accent2 whitespace-nowrap'>eligibleMobs</code>", "string list", "zombie, skeleton, spider", "Entity type IDs the feature applies to. Unknown IDs are logged and ignored."]
+          ]
+        },
+        { "type": "code", "small": true, "code": "{\n  \"packTactics\": {\n    \"enabled\": true,\n    \"tierThreshold\": 3,\n    \"alertRadius\": 16.0,\n    \"groupSizeBonus\": 2,\n    \"eligibleMobs\": [\"minecraft:zombie\", \"minecraft:skeleton\", \"minecraft:spider\"]\n  }\n}" }
+      ]
+    },
+    {
       "id": "abilities",
       "title": "abilities",
       "intro": "Toggle individual tier-gated abilities on or off. All default to <code class='text-accent2'>true</code>.",

@@ -63,6 +63,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addChampions(builder, entry, current);
             addTrialSpawner(builder, entry, current);
             addRaidScaling(builder, entry, current);
+            addPackTactics(builder, entry, current);
             addThreatParticles(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
@@ -1021,6 +1022,39 @@ public final class ModMenuIntegration implements ModMenuApi {
                         rs.extraWaveCount)
                 .setDefaultValue(1).setMin(0)
                 .setSaveConsumer(v -> rs.extraWaveCount = v)
+                .build());
+    }
+
+    private static void addPackTactics(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.pack_tactics"));
+        TribulationConfig.PackTactics pt = config.packTactics;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.pack_tactics.enabled"),
+                        pt.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> pt.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.pack_tactics.tier_threshold"),
+                        pt.tierThreshold)
+                .setDefaultValue(3).setMin(0)
+                .setSaveConsumer(v -> pt.tierThreshold = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.pack_tactics.alert_radius"),
+                        pt.alertRadius)
+                .setDefaultValue(16.0).setMin(0.0)
+                .setMax(TribulationConfig.PackTactics.MAX_ALERT_RADIUS)
+                .setSaveConsumer(v -> pt.alertRadius = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.pack_tactics.group_size_bonus"),
+                        pt.groupSizeBonus)
+                .setDefaultValue(2).setMin(0)
+                .setMax(TribulationConfig.PackTactics.MAX_GROUP_SIZE_BONUS)
+                .setSaveConsumer(v -> pt.groupSizeBonus = v)
                 .build());
     }
 

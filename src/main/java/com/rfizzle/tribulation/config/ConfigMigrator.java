@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 9;
+    static final int CURRENT_VERSION = 10;
 
     @FunctionalInterface
     interface Migration {
@@ -101,6 +101,13 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("biomeOffsets")) {
                     json.add("biomeOffsets", new JsonObject());
+                }
+            },
+            // v9 → v10: add packTactics section. fillDefaults() seeds the
+            // default eligible-mob list into the empty object.
+            json -> {
+                if (!json.has("packTactics")) {
+                    json.add("packTactics", new JsonObject());
                 }
             }
     };

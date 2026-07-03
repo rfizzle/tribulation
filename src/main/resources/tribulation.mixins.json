@@ -19,6 +19,7 @@
         "LocalMobCapCalculatorMixin",
         "MobAbilityMixin",
         "MobCountsAccessor",
+        "NaturalSpawnerGroupSizeMixin",
         "NaturalSpawnerSpawnStateMixin",
         "RaidScalingMixin",
         "RavagerRoarMixin",

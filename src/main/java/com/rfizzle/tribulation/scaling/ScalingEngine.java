@@ -316,6 +316,15 @@ public final class ScalingEngine {
      * or if the range is disabled.
      */
     public static int getEffectiveLevel(Entity entity, ServerLevel world) {
+        return getEffectiveLevelAt(world, entity.getX(), entity.getY(), entity.getZ());
+    }
+
+    /**
+     * Position-based twin of {@link #getEffectiveLevel(Entity, ServerLevel)}
+     * for callers that have no entity yet (e.g. the natural-spawn group-size
+     * hook, which resolves the tier before any mob is constructed).
+     */
+    public static int getEffectiveLevelAt(ServerLevel world, double x, double y, double z) {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) return 0;
         double range = cfg.general.mobDetectionRange;
@@ -334,13 +343,13 @@ public final class ScalingEngine {
         // the biome lookup off the hot path when the feature is unconfigured.
         int offset = cfg.getDimensionOffset(world.dimension().location());
         if (cfg.hasBiomeOffsets()) {
-            offset += cfg.getBiomeOffset(world.getBiome(entity.blockPosition()));
+            offset += cfg.getBiomeOffset(world.getBiome(BlockPos.containing(x, y, z)));
         }
         int maxLevel = cfg.general.maxLevel;
 
         TribulationConfig.ScalingMode mode = cfg.general.scalingMode;
         if (mode == TribulationConfig.ScalingMode.NEAREST) {
-            Player nearest = world.getNearestPlayer(entity, range);
+            Player nearest = world.getNearestPlayer(x, y, z, range, false);
             if (nearest instanceof ServerPlayer sp) {
                 return applyDimensionOffset(state.getLevel(sp.getUUID()), offset, maxLevel);
             }
@@ -349,7 +358,7 @@ public final class ScalingEngine {
 
         // AVERAGE or MAX: fold over every player in range, excluding spectators so
         // an admin spectating near a base can't skew the result. This matches the
-        // NEAREST path, whose world.getNearestPlayer(entity, range) applies the
+        // NEAREST path, whose world.getNearestPlayer(x, y, z, range, false) applies the
         // same NO_SPECTATORS predicate — creative players still count in all three
         // modes. Iterate this level's own player list (already dimension-scoped,
         // backing list — no allocation) rather than the whole-server list, since
@@ -361,7 +370,7 @@ public final class ScalingEngine {
 
         for (ServerPlayer sp : world.players()) {
             if (EntitySelector.NO_SPECTATORS.test(sp)
-                    && sp.distanceToSqr(entity) <= rangeSq) {
+                    && sp.distanceToSqr(x, y, z) <= rangeSq) {
                 int level = state.getLevel(sp.getUUID());
                 max = Math.max(max, level);
                 sum += level;

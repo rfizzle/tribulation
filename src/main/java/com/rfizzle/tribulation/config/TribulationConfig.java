@@ -36,12 +36,13 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 6;
+    public int configVersion = 7;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
     public HeightScaling heightScaling = new HeightScaling();
     public MoonPhaseScaling moonPhaseScaling = new MoonPhaseScaling();
+    public BloodMoon bloodMoon = new BloodMoon();
     public Map<String, Integer> dimensionOffsets = defaultDimensionOffsets();
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
@@ -242,6 +243,7 @@ public class TribulationConfig {
         if (distanceScaling == null) distanceScaling = new DistanceScaling();
         if (heightScaling == null) heightScaling = new HeightScaling();
         if (moonPhaseScaling == null) moonPhaseScaling = new MoonPhaseScaling();
+        if (bloodMoon == null) bloodMoon = new BloodMoon();
         if (statCaps == null) statCaps = new StatCaps();
         if (totems == null) totems = new Totems();
         if (deathRelief == null) deathRelief = new DeathRelief();
@@ -358,6 +360,10 @@ public class TribulationConfig {
         heightScaling.maxHeightFactor = clampNonNegative("heightScaling.maxHeightFactor", heightScaling.maxHeightFactor);
 
         moonPhaseScaling.maxBonus = clampNonNegative("moonPhaseScaling.maxBonus", moonPhaseScaling.maxBonus);
+
+        bloodMoon.chance = clampUnit("bloodMoon.chance", bloodMoon.chance);
+        bloodMoon.moonBonusMultiplier = clampAtLeastOne("bloodMoon.moonBonusMultiplier", bloodMoon.moonBonusMultiplier);
+        bloodMoon.spawnCapMultiplier = clampAtLeastOne("bloodMoon.spawnCapMultiplier", bloodMoon.spawnCapMultiplier);
 
         if (dimensionOffsets != null) {
             for (Map.Entry<String, Integer> entry : dimensionOffsets.entrySet()) {
@@ -574,6 +580,14 @@ public class TribulationConfig {
         return value;
     }
 
+    private static double clampAtLeastOne(String name, double value) {
+        if (value < 1.0) {
+            Tribulation.LOGGER.warn("{} must be >= 1.0, got {}; clamped to 1.0", name, value);
+            return 1.0;
+        }
+        return value;
+    }
+
     private static int clampAtLeast(String name, int value, int min) {
         if (value < min) {
             Tribulation.LOGGER.warn("{} must be >= {}, got {}; clamped to {}", name, min, value, min);
@@ -704,6 +718,25 @@ public class TribulationConfig {
         public double maxBonus = 0.1;
         public boolean surfaceOnly = false;
         public double surfaceY = 63.0;
+    }
+
+    /**
+     * Rare full-moon event nights. {@code enabled} is the master off-switch for
+     * the whole feature; each mechanic underneath has its own knob. The roll
+     * happens once per full-moon night at nightfall in the Overworld with
+     * probability {@code chance}. While active, the moon scaling axis is
+     * multiplied by {@code moonBonusMultiplier}, hostile spawn caps by
+     * {@code spawnCapMultiplier}, sleeping is blocked when {@code blockSleep},
+     * and clients receive the red-sky tint and nightfall warning sting when
+     * {@code clientEffects}. Everything reverts at dawn.
+     */
+    public static class BloodMoon {
+        public boolean enabled = true;
+        public double chance = 0.25;
+        public double moonBonusMultiplier = 3.0;
+        public double spawnCapMultiplier = 2.0;
+        public boolean blockSleep = true;
+        public boolean clientEffects = true;
     }
 
     public static class StatCaps {

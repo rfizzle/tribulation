@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 6;
+    static final int CURRENT_VERSION = 7;
 
     @FunctionalInterface
     interface Migration {
@@ -82,6 +82,12 @@ final class ConfigMigrator {
                         }
                     }
                     json.add("xp", xp);
+                }
+            },
+            // v6 → v7: add bloodMoon section.
+            json -> {
+                if (!json.has("bloodMoon")) {
+                    json.add("bloodMoon", new JsonObject());
                 }
             }
     };

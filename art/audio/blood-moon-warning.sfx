@@ -1,0 +1,28 @@
+{
+  "name": "blood-moon-warning",
+  "sample_rate": 44100,
+  "peak_dbfs": -1.0,
+  "subtitle": "tribulation.subtitle.blood_moon_warning",
+  "seed": 13,
+  "layers": [
+    {
+      "waveform": "saw",
+      "from": 130.81, "to": 92.5, "glide": "exp",
+      "start": 0.0, "duration": 1.6, "gain": 0.85,
+      "env": {"attack": 0.12, "decay": 0.3, "sustain": 0.7, "release": 0.35},
+      "filter": {"type": "lowpass", "cutoff": 900}
+    },
+    {
+      "waveform": "sine",
+      "freq": 46.25,
+      "start": 0.25, "duration": 1.45, "gain": 0.7,
+      "env": {"attack": 0.4, "decay": 0.2, "sustain": 0.8, "release": 0.4}
+    },
+    {
+      "waveform": "noise",
+      "start": 0.0, "duration": 1.7, "gain": 0.18,
+      "env": {"attack": 0.5, "decay": 0.3, "sustain": 0.6, "release": 0.4},
+      "filter": {"type": "lowpass", "cutoff": 350}
+    }
+  ]
+}

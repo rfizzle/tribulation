@@ -8,6 +8,7 @@ import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.config.TribulationConfig.StatCaps;
 import com.rfizzle.tribulation.config.TribulationConfig.Tiers;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.event.BloodMoonHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
@@ -420,6 +421,29 @@ public final class ScalingEngine {
         return true;
     }
 
+    /**
+     * Amplify the raw moon factor by the Blood Moon multiplier. Pure math —
+     * the world-aware wrapper is {@link #effectiveMoonFactor}. The amplified
+     * value still flows through the per-attribute and global caps, so a large
+     * multiplier cannot push a mob past the configured ceilings.
+     */
+    public static double amplifyMoonFactor(double rawMoonFactor, double multiplier) {
+        if (rawMoonFactor <= 0 || multiplier <= 1.0) return rawMoonFactor;
+        return rawMoonFactor * multiplier;
+    }
+
+    /**
+     * The moon factor actually applied at this position: the phase-curve value
+     * gated by {@link #moonAppliesAt}, amplified during an active Blood Moon.
+     * Shared by {@link #compute} and the {@code /tribulation debug} output so
+     * both always report the same number.
+     */
+    public static double effectiveMoonFactor(ServerLevel world, Entity entity, TribulationConfig config) {
+        if (!moonAppliesAt(world, entity, config.moonPhaseScaling)) return 0.0;
+        double raw = computeMoonFactor(world.getMoonPhase(), config.moonPhaseScaling.maxBonus);
+        return amplifyMoonFactor(raw, BloodMoonHandler.moonMultiplier(world, config));
+    }
+
     // ---- Full compute ----
 
     /**
@@ -444,9 +468,7 @@ public final class ScalingEngine {
         double rawHeightFactor = heightAppliesInDimension(world, config.heightScaling)
                 ? computeHeightFactor(mobY, config.heightScaling)
                 : 0.0;
-        double rawMoonFactor = moonAppliesAt(world, mob, config.moonPhaseScaling)
-                ? computeMoonFactor(world.getMoonPhase(), config.moonPhaseScaling.maxBonus)
-                : 0.0;
+        double rawMoonFactor = effectiveMoonFactor(world, mob, config);
 
         double distLevels = distanceAppliesInDimension(world, config.distanceScaling)
                 ? computeDistanceLevels(horizDist, config.distanceScaling.startingDistance, config.distanceScaling.increasingDistance)

@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation.client;
 
+import com.rfizzle.tribulation.network.BloodMoonPayload;
 import com.rfizzle.tribulation.network.TribulationLevelPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
@@ -12,6 +13,10 @@ public final class ClientNetworkHandler {
                 ClientTribulationState.setLevel(payload.level());
                 ClientTribulationState.setProgress(payload.progressTicks(), payload.goalTicks());
             });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(BloodMoonPayload.TYPE, (payload, context) -> {
+            context.client().execute(() ->
+                    ClientTribulationState.setBloodMoonActive(payload.active()));
         });
     }
 }

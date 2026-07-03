@@ -300,18 +300,19 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v6_isIdempotent() {
+    void migrate_v7_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 6);
+        json.addProperty("configVersion", 7);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
         json.add("raidScaling", new JsonObject());
         json.add("threatParticles", new JsonObject());
         json.add("xp", new JsonObject());
+        json.add("bloodMoon", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(6, json.get("configVersion").getAsInt());
+        assertEquals(7, json.get("configVersion").getAsInt());
     }
 
     @Test
@@ -328,6 +329,32 @@ class ConfigMigratorTest {
         assertTrue(json.has("raidScaling"));
         assertTrue(json.has("threatParticles"));
         assertTrue(json.has("xp"));
+    }
+
+    @Test
+    void migrate_v6ToV7_addsBloodMoon() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 6);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("bloodMoon"), "bloodMoon section must be added");
+        assertTrue(json.get("bloodMoon").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v6ToV7_doesNotOverwriteExistingBloodMoon() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 6);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", false);
+        json.add("bloodMoon", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.getAsJsonObject("bloodMoon").get("enabled").getAsBoolean(),
+                "pre-existing bloodMoon content must be preserved");
     }
 
     @Test

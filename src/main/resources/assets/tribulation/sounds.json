@@ -4,5 +4,11 @@
         "sounds": [
             "tribulation:tier_up"
         ]
+    },
+    "blood_moon_warning": {
+        "subtitle": "tribulation.subtitle.blood_moon_warning",
+        "sounds": [
+            "tribulation:blood_moon_warning"
+        ]
     }
 }

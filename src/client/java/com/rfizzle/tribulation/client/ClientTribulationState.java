@@ -6,6 +6,7 @@ public final class ClientTribulationState {
     private static long levelUpTimestamp = -1;
     private static int progressTicks = 0;
     private static int goalTicks = 1;
+    private static boolean bloodMoonActive = false;
 
     private ClientTribulationState() {}
 
@@ -48,11 +49,20 @@ public final class ClientTribulationState {
         return f;
     }
 
+    public static boolean isBloodMoonActive() {
+        return bloodMoonActive;
+    }
+
+    public static void setBloodMoonActive(boolean active) {
+        bloodMoonActive = active;
+    }
+
     public static void reset() {
         level = -1;
         previousLevel = -1;
         levelUpTimestamp = -1;
         progressTicks = 0;
         goalTicks = 1;
+        bloodMoonActive = false;
     }
 }

@@ -31,7 +31,8 @@
             "com.rfizzle.tribulation.gametest.RaidScalingGameTest",
             "com.rfizzle.tribulation.gametest.AdvancementsGameTest",
             "com.rfizzle.tribulation.gametest.AbilitiesGameTest",
-            "com.rfizzle.tribulation.gametest.ParticleRegistrationGameTest"
+            "com.rfizzle.tribulation.gametest.ParticleRegistrationGameTest",
+            "com.rfizzle.tribulation.gametest.BloodMoonGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
         "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],

@@ -419,4 +419,26 @@ class ScalingEngineTest {
         // nonTrib 14 + buff 10 == ceiling 24 exactly → surplus 0, no trim.
         assertEquals(1.0, ScalingEngine.ceilingKeepRatio(10.0, 14.0, 24.0), EPS);
     }
+
+    // ---- amplifyMoonFactor (Blood Moon) ----
+
+    @Test
+    void amplifyMoonFactor_multiplies() {
+        assertEquals(0.3, ScalingEngine.amplifyMoonFactor(0.1, 3.0), EPS);
+    }
+
+    @Test
+    void amplifyMoonFactor_multiplierOfOne_isIdentity() {
+        assertEquals(0.1, ScalingEngine.amplifyMoonFactor(0.1, 1.0), EPS);
+    }
+
+    @Test
+    void amplifyMoonFactor_multiplierBelowOne_isIdentity() {
+        assertEquals(0.1, ScalingEngine.amplifyMoonFactor(0.1, 0.5), EPS);
+    }
+
+    @Test
+    void amplifyMoonFactor_zeroRaw_staysZero() {
+        assertEquals(0.0, ScalingEngine.amplifyMoonFactor(0.0, 3.0), EPS);
+    }
 }

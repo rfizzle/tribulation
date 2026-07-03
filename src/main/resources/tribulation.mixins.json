@@ -8,13 +8,18 @@
         "AbstractSkeletonMixin",
         "BoggedAbilityMixin",
         "BreakDoorGoalMixin",
+        "ChunkMapAccessor",
         "CreeperAccessor",
         "DoorInteractGoalAccessor",
         "GuardianBeamMixin",
         "HuskAbilityMixin",
         "LivingEntityExperienceMixin",
         "LivingEntityTotemMixin",
+        "LocalMobCapCalculatorAccessor",
+        "LocalMobCapCalculatorMixin",
         "MobAbilityMixin",
+        "MobCountsAccessor",
+        "NaturalSpawnerSpawnStateMixin",
         "RaidScalingMixin",
         "RavagerRoarMixin",
         "SoulInventoryMixin",
@@ -23,6 +28,11 @@
         "TrialSpawnerDataMixin",
         "TrialSpawnerMixin",
         "WitchAbilityMixin"
+    ],
+    "client": [
+        "client.BloodMoonFogMixin",
+        "client.BloodMoonMoonTintMixin",
+        "client.BloodMoonSkyColorMixin"
     ],
     "injectors": {
         "defaultRequire": 1

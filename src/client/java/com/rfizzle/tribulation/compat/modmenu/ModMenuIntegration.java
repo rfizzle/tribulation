@@ -44,6 +44,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addGeneral(builder, entry, current);
             addHud(builder, entry, current);
             addScalingSources(builder, entry, current);
+            addBloodMoon(builder, entry, current);
             addStatCaps(builder, entry, current);
             addTiers(builder, entry, current);
             addAbilities(builder, entry, current);
@@ -272,6 +273,48 @@ public final class ModMenuIntegration implements ModMenuApi {
                         config.moonPhaseScaling.surfaceY)
                 .setDefaultValue(63.0)
                 .setSaveConsumer(v -> config.moonPhaseScaling.surfaceY = v)
+                .build());
+    }
+
+    private static void addBloodMoon(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.blood_moon"));
+        TribulationConfig.BloodMoon bm = config.bloodMoon;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.blood_moon.enabled"),
+                        bm.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> bm.enabled = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.blood_moon.chance"),
+                        bm.chance)
+                .setDefaultValue(0.25).setMin(0.0).setMax(1.0)
+                .setSaveConsumer(v -> bm.chance = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.blood_moon.moon_bonus_multiplier"),
+                        bm.moonBonusMultiplier)
+                .setDefaultValue(3.0).setMin(1.0)
+                .setSaveConsumer(v -> bm.moonBonusMultiplier = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.blood_moon.spawn_cap_multiplier"),
+                        bm.spawnCapMultiplier)
+                .setDefaultValue(2.0).setMin(1.0)
+                .setSaveConsumer(v -> bm.spawnCapMultiplier = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.blood_moon.block_sleep"),
+                        bm.blockSleep)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> bm.blockSleep = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.blood_moon.client_effects"),
+                        bm.clientEffects)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> bm.clientEffects = v)
                 .build());
     }
 

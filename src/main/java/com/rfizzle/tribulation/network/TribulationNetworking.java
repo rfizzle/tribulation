@@ -12,6 +12,11 @@ public final class TribulationNetworking {
 
     public static void register() {
         PayloadTypeRegistry.playS2C().register(TribulationLevelPayload.TYPE, TribulationLevelPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(BloodMoonPayload.TYPE, BloodMoonPayload.STREAM_CODEC);
+    }
+
+    public static void syncBloodMoon(ServerPlayer player, boolean active) {
+        ServerPlayNetworking.send(player, new BloodMoonPayload(active));
     }
 
     public static void syncLevel(ServerPlayer player) {

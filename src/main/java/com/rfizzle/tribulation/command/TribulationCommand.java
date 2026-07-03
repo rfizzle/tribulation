@@ -5,7 +5,9 @@ import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.MobScaling;
 import com.rfizzle.tribulation.compat.common.MobScalingDataCollector;
+import com.rfizzle.tribulation.data.BloodMoonState;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.event.BloodMoonHandler;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
@@ -100,6 +102,13 @@ public final class TribulationCommand {
                                                         .executes(TribulationCommand::runHeartsRestore)))
                                         .then(Commands.literal("reset")
                                                 .executes(TribulationCommand::runHeartsReset))))
+                        .then(Commands.literal("bloodmoon")
+                                .requires(src -> src.hasPermission(2))
+                                .executes(TribulationCommand::runBloodMoonStatus)
+                                .then(Commands.literal("start")
+                                        .executes(TribulationCommand::runBloodMoonStart))
+                                .then(Commands.literal("stop")
+                                        .executes(TribulationCommand::runBloodMoonStop)))
                         .then(Commands.literal("inventory")
                                 .requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("player", EntityArgument.player())
@@ -182,6 +191,10 @@ public final class TribulationCommand {
         CommandSourceStack src = ctx.getSource();
         try {
             Tribulation.reloadConfig();
+            // Re-gate the client tint against the fresh config (e.g. an admin
+            // toggling bloodMoon.clientEffects mid-event takes effect now, not
+            // at dawn).
+            BloodMoonHandler.broadcast(src.getServer(), Tribulation.getConfig());
             src.sendSuccess(() -> Component.literal("Reloaded Tribulation config"), true);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
@@ -253,9 +266,7 @@ public final class TribulationCommand {
         double rawHeightFactor = ScalingEngine.heightAppliesInDimension(world, cfg.heightScaling)
                 ? ScalingEngine.computeHeightFactor(target.getY(), cfg.heightScaling)
                 : 0.0;
-        double rawMoonFactor = ScalingEngine.moonAppliesAt(world, target, cfg.moonPhaseScaling)
-                ? ScalingEngine.computeMoonFactor(world.getMoonPhase(), cfg.moonPhaseScaling.maxBonus)
-                : 0.0;
+        double rawMoonFactor = ScalingEngine.effectiveMoonFactor(world, target, cfg);
 
         for (String line : formatDebug(target, world, cfg, level, effectiveLevel, refScaling, horizDist, rawDistFactor, rawHeightFactor, rawMoonFactor)) {
             src.sendSuccess(() -> Component.literal(line), false);
@@ -351,6 +362,54 @@ public final class TribulationCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int runBloodMoonStatus(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg == null) {
+            src.sendFailure(Component.literal("Tribulation config not loaded"));
+            return 0;
+        }
+        BloodMoonState state = BloodMoonState.getOrCreate(src.getServer());
+        ServerLevel overworld = src.getServer().overworld();
+        src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                "Blood Moon: %s (feature %s, chance %.0f%%, moon phase %d, %s)",
+                state.isActive() ? "ACTIVE" : "inactive",
+                onOff(cfg.bloodMoon.enabled),
+                cfg.bloodMoon.chance * 100.0,
+                overworld.getMoonPhase(),
+                overworld.isDay() ? "day" : "night")), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int runBloodMoonStart(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg == null || !cfg.bloodMoon.enabled) {
+            src.sendFailure(Component.literal("Blood Moon is disabled"));
+            return 0;
+        }
+        BloodMoonState state = BloodMoonState.getOrCreate(src.getServer());
+        if (state.isActive()) {
+            src.sendFailure(Component.literal("A Blood Moon is already active"));
+            return 0;
+        }
+        BloodMoonHandler.start(src.getServer(), state, cfg);
+        src.sendSuccess(() -> Component.literal("Started a Blood Moon"), true);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int runBloodMoonStop(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        BloodMoonState state = BloodMoonState.getOrCreate(src.getServer());
+        if (!state.isActive()) {
+            src.sendFailure(Component.literal("No Blood Moon is active"));
+            return 0;
+        }
+        BloodMoonHandler.end(src.getServer(), state, Tribulation.getConfig());
+        src.sendSuccess(() -> Component.literal("Stopped the Blood Moon"), true);
+        return Command.SINGLE_SUCCESS;
+    }
+
     // ---- Formatting helpers (package-private for tests) ----
 
     /**
@@ -392,6 +451,14 @@ public final class TribulationCommand {
                     cfg.heightScaling.maxHeightFactor,
                     cfg.heightScaling.excludeInOtherDimensions ? " (overworld only)" : ""));
         }
+        lines.add(String.format(Locale.ROOT,
+                "Blood Moon: %s (chance %.0f%%, moon ×%.1f, spawn caps ×%.1f, sleep block %s, visuals %s)",
+                onOff(cfg.bloodMoon.enabled),
+                cfg.bloodMoon.chance * 100.0,
+                cfg.bloodMoon.moonBonusMultiplier,
+                cfg.bloodMoon.spawnCapMultiplier,
+                onOff(cfg.bloodMoon.blockSleep),
+                onOff(cfg.bloodMoon.clientEffects)));
         lines.add(String.format(Locale.ROOT,
                 "Stat caps: health=%.2f, damage=%.2f, speed=%.2f, protection=%.2f, followRange=%.2f",
                 cfg.statCaps.maxFactorHealth, cfg.statCaps.maxFactorDamage,
@@ -507,9 +574,13 @@ public final class TribulationCommand {
                 heightDelta, rawHeightFactor));
 
         if (rawMoonFactor > 0) {
+            boolean bloodMoon = BloodMoonHandler.isActive(world);
             lines.add(String.format(Locale.ROOT,
-                    "Moon phase: %d  →  factor %+.3f",
-                    world.getMoonPhase(), rawMoonFactor));
+                    "Moon phase: %d  →  factor %+.3f%s",
+                    world.getMoonPhase(), rawMoonFactor,
+                    bloodMoon
+                            ? String.format(Locale.ROOT, "  (BLOOD MOON ×%.1f)", cfg.bloodMoon.moonBonusMultiplier)
+                            : ""));
         } else if (cfg.moonPhaseScaling.enabled) {
             String reason;
             if (cfg.moonPhaseScaling.maxBonus <= 0) {

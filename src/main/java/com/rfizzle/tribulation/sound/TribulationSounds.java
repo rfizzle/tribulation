@@ -18,6 +18,11 @@ public final class TribulationSounds {
     public static final Holder<SoundEvent> TIER_UP = Registry.registerForHolder(
             BuiltInRegistries.SOUND_EVENT, TIER_UP_ID, SoundEvent.createVariableRangeEvent(TIER_UP_ID));
 
+    /** Ominous nightfall sting sent to Overworld players when a Blood Moon begins. */
+    public static final ResourceLocation BLOOD_MOON_WARNING_ID = Tribulation.id("blood_moon_warning");
+    public static final Holder<SoundEvent> BLOOD_MOON_WARNING = Registry.registerForHolder(
+            BuiltInRegistries.SOUND_EVENT, BLOOD_MOON_WARNING_ID, SoundEvent.createVariableRangeEvent(BLOOD_MOON_WARNING_ID));
+
     private TribulationSounds() {}
 
     /** Triggers static initialization so the sound event registers before the registry freezes. */

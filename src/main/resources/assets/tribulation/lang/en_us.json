@@ -7,6 +7,8 @@
     "message.tribulation.level_up": "Your difficulty has risen to level %s.",
     "message.tribulation.level_up_tier": "Your difficulty has risen to level %s (Tier %s).",
     "message.tribulation.level_max": "You have reached the maximum difficulty level.",
+    "message.tribulation.blood_moon_rises": "A Blood Moon rises...",
+    "message.tribulation.blood_moon_no_sleep": "You cannot sleep during a Blood Moon.",
 
     "key.categories.tribulation": "Tribulation",
     "key.tribulation.tier_detail": "Peek Tier Detail",
@@ -57,6 +59,14 @@
     "config.tribulation.moon_scaling.max_bonus": "Full Moon Bonus",
     "config.tribulation.moon_scaling.surface_only": "Surface Only",
     "config.tribulation.moon_scaling.surface_y": "Surface Y Threshold",
+
+    "config.tribulation.category.blood_moon": "Blood Moon",
+    "config.tribulation.blood_moon.enabled": "Blood Moon Events",
+    "config.tribulation.blood_moon.chance": "Chance per Full Moon",
+    "config.tribulation.blood_moon.moon_bonus_multiplier": "Moon Bonus Multiplier",
+    "config.tribulation.blood_moon.spawn_cap_multiplier": "Spawn Cap Multiplier",
+    "config.tribulation.blood_moon.block_sleep": "Block Sleeping",
+    "config.tribulation.blood_moon.client_effects": "Sky Tint & Warning Sound",
 
     "config.tribulation.category.stat_caps": "Stat Caps",
     "config.tribulation.stat_caps.health": "Max Health Factor",
@@ -255,5 +265,6 @@
     "advancements.tribulation.tier_five_mob_killed.title": "Giant Slayer",
     "advancements.tribulation.tier_five_mob_killed.description": "Kill a Tier-5 scaled mob.",
 
-    "tribulation.subtitle.tier_up": "Difficulty tier rises"
+    "tribulation.subtitle.tier_up": "Difficulty tier rises",
+    "tribulation.subtitle.blood_moon_warning": "Blood Moon rises"
 }

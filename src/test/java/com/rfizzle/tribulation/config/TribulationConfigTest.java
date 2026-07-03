@@ -57,6 +57,37 @@ class TribulationConfigTest {
     }
 
     @Test
+    void defaultBloodMoon_hasValidValues() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertTrue(cfg.bloodMoon.enabled);
+        assertTrue(cfg.bloodMoon.chance >= 0 && cfg.bloodMoon.chance <= 1);
+        assertTrue(cfg.bloodMoon.moonBonusMultiplier >= 1.0);
+        assertTrue(cfg.bloodMoon.spawnCapMultiplier >= 1.0);
+    }
+
+    @Test
+    void validate_clampsBloodMoonFields() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.bloodMoon.chance = 1.5;
+        cfg.bloodMoon.moonBonusMultiplier = 0.5;
+        cfg.bloodMoon.spawnCapMultiplier = -2.0;
+
+        cfg.validate();
+
+        assertEquals(1.0, cfg.bloodMoon.chance);
+        assertEquals(1.0, cfg.bloodMoon.moonBonusMultiplier);
+        assertEquals(1.0, cfg.bloodMoon.spawnCapMultiplier);
+    }
+
+    @Test
+    void validate_clampsNegativeBloodMoonChance() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.bloodMoon.chance = -0.1;
+        cfg.validate();
+        assertEquals(0.0, cfg.bloodMoon.chance);
+    }
+
+    @Test
     void defaultConfig_populatesAllMobScalingEntries() {
         TribulationConfig cfg = new TribulationConfig();
         assertEquals(TribulationConfig.MOB_KEYS.length, cfg.scaling.size());

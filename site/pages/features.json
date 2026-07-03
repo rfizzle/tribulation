@@ -98,6 +98,39 @@
         },
         {
           "type": "sub",
+          "id": "blood-moon",
+          "title": "Blood Moon Nights",
+          "intro": "A rare event night that turns the moon axis from a quiet stat curve into something you plan around. At nightfall on a full moon, the Overworld rolls a configurable chance (25% by default) to become a Blood Moon until dawn.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Amplified Moon Bonus",
+                  "html": ["The moon-axis factor is multiplied by <code class='text-accent2'>moonBonusMultiplier</code> (3× by default) for every mob spawned during the event. Global stat caps still apply, so the amplified bonus can never push a mob past the configured ceilings."]
+                },
+                {
+                  "title": "Raised Spawn Caps",
+                  "html": ["Hostile (MONSTER) spawn caps — both the global per-category cap and the per-player local cap — are multiplied by <code class='text-accent2'>spawnCapMultiplier</code> (2× by default), so the night is measurably denser. Nether and End caps stay vanilla."]
+                },
+                {
+                  "title": "No Sleeping Through It",
+                  "html": ["With <code class='text-accent2'>blockSleep</code> on, beds refuse until dawn with an on-screen message. The event always ends at daybreak and everything reverts."]
+                },
+                {
+                  "title": "You'll Know It's Coming",
+                  "html": ["With <code class='text-accent2'>clientEffects</code> on, the sky, fog, and moon are tinted blood red for the duration and an ominous warning sting plays at nightfall. State is synced to clients, so it works on dedicated servers, and it survives a server restart mid-night."]
+                }
+              ]
+            },
+            { "type": "note", "html": "Each piece is individually toggleable under the <code class='text-accent2'>bloodMoon</code> config section, with <code class='text-accent2'>enabled</code> as the master switch. Admins can inspect or force events with <code class='text-accent2'>/tribulation bloodmoon [start|stop]</code>, and <code class='text-accent2'>/tribulation debug</code> flags the amplified moon factor during an event." }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "scaled-mobs",
           "title": "Scaled Mob Types",
           "intro": "21 vanilla hostile mobs have individually tuned scaling rates and caps for six attributes. Each can be toggled on or off independently.",

@@ -5,6 +5,7 @@ import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.command.TribulationCommand;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.event.BloodMoonHandler;
 import com.rfizzle.tribulation.event.DeathReliefHandler;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
@@ -51,6 +52,7 @@ public class Tribulation implements ModInitializer {
         TribulationCriteria.register();
         registerTickHandler();
         MobScalingHandler.register();
+        BloodMoonHandler.register();
         RaidScalingHandler.register();
         DeathReliefHandler.register();
         HardcoreHeartsHandler.register();
@@ -78,6 +80,7 @@ public class Tribulation implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
             TribulationNetworking.syncLevel(player);
+            TribulationNetworking.syncBloodMoon(player, BloodMoonHandler.syncedStateFor(config));
         });
     }
 

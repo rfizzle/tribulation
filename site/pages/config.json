@@ -134,6 +134,22 @@
       ]
     },
     {
+      "id": "biome-offsets",
+      "title": "biomeOffsets",
+      "intro": "A flat level offset per biome, added to the effective level used for mob stat scaling and tier-gated abilities — the biome counterpart to <code class='text-accent2'>dimensionOffsets</code>, and the two stack additively. Keys are biome IDs or <code class='text-accent2'>#</code>-prefixed biome tags; an exact biome-ID entry wins over tags, and among overlapping tags the largest offset applies. Like the dimension offset, it never touches the player's stored level, HUD readout, tier notifications, or death penalties.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:deep_dark</code>", "integer", "30", "Levels added to mobs spawning in the Deep Dark"]
+          ]
+        },
+        { "type": "note", "html": "Keys are biome <code class='text-accent2'>ResourceLocation</code> strings (<code class='text-accent2'>minecraft:deep_dark</code>) or biome tags (<code class='text-accent2'>#c:is_swamp</code>), so modded biomes and whole categories can be tuned too. Values are non-negative integers (negatives are clamped to 0 on load); invalid keys warn and are skipped. The effective level after the offsets is still capped by <code class='text-accent2'>general.maxLevel</code>, and <code class='text-accent2'>/tribulation debug</code> reports the active biome offset at the player's position." },
+        { "type": "code", "small": true, "code": "{\n  \"biomeOffsets\": {\n    \"minecraft:deep_dark\": 30,\n    \"terralith:haunted_forest\": 20,\n    \"#c:is_swamp\": 10\n  }\n}" }
+      ]
+    },
+    {
       "id": "stat-caps",
       "title": "statCaps",
       "intro": "Hard ceilings on the total scaling factor for each attribute (all axes combined).",

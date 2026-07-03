@@ -29,11 +29,6 @@
         "TrialSpawnerMixin",
         "WitchAbilityMixin"
     ],
-    "client": [
-        "client.BloodMoonFogMixin",
-        "client.BloodMoonMoonTintMixin",
-        "client.BloodMoonSkyColorMixin"
-    ],
     "injectors": {
         "defaultRequire": 1
     }

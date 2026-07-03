@@ -65,6 +65,7 @@ A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 
 
 ### Additional Features
 
+- Champion mobs — above a level threshold, a small share of hostile spawns become named elites with 1–2 affixes (vampiric, explosive, knockback aura, thorns, regenerating), boosted stats, a particle aura, and improved XP/loot
 - Special zombie variants (Big Zombie, Speed Zombie) with distinct stat profiles
 - Special skeleton variants (Deadeye, Brute) with distinct bow cadence and stat profiles
 - Boss scaling with separate, gentler formula (Ender Dragon, Wither, tagged bosses)
@@ -117,7 +118,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

@@ -448,4 +448,41 @@ class ScalingEngineTest {
     void amplifyMoonFactor_zeroRaw_staysZero() {
         assertEquals(0.0, ScalingEngine.amplifyMoonFactor(0.0, 3.0), EPS);
     }
+
+    // ---- computeGroupHealthBonus (multiplayer group health bonus) ----
+
+    @Test
+    void groupHealthBonus_lonePlayer_isZero() {
+        assertEquals(0.0, ScalingEngine.computeGroupHealthBonus(1, 0.2, 1.0), EPS);
+    }
+
+    @Test
+    void groupHealthBonus_noPlayers_isZero() {
+        assertEquals(0.0, ScalingEngine.computeGroupHealthBonus(0, 0.2, 1.0), EPS);
+    }
+
+    @Test
+    void groupHealthBonus_scalesPerExtraPlayer() {
+        // Only players beyond the first count: 2 players → 1 extra → +0.2.
+        assertEquals(0.2, ScalingEngine.computeGroupHealthBonus(2, 0.2, 1.0), EPS);
+        assertEquals(0.4, ScalingEngine.computeGroupHealthBonus(3, 0.2, 1.0), EPS);
+        assertEquals(0.8, ScalingEngine.computeGroupHealthBonus(5, 0.2, 1.0), EPS);
+    }
+
+    @Test
+    void groupHealthBonus_respectsCap() {
+        // 10 players → 9 extras → raw +1.8, clipped at the +1.0 cap.
+        assertEquals(1.0, ScalingEngine.computeGroupHealthBonus(10, 0.2, 1.0), EPS);
+    }
+
+    @Test
+    void groupHealthBonus_zeroPerPlayerBonus_isZero() {
+        assertEquals(0.0, ScalingEngine.computeGroupHealthBonus(5, 0.0, 1.0), EPS);
+    }
+
+    @Test
+    void groupHealthBonus_zeroCap_isZero() {
+        // A zero cap is an off-switch, not "uncapped".
+        assertEquals(0.0, ScalingEngine.computeGroupHealthBonus(5, 0.2, 0.0), EPS);
+    }
 }

@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 12;
+    static final int CURRENT_VERSION = 13;
 
     @FunctionalInterface
     interface Migration {
@@ -125,6 +125,14 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("levelDecay")) {
                     json.add("levelDecay", new JsonObject());
+                }
+            },
+            // v12 → v13: add groupHealthBonus section. The empty object
+            // deserializes with the field-initializer defaults (disabled,
+            // +20% per extra player, +100% cap).
+            json -> {
+                if (!json.has("groupHealthBonus")) {
+                    json.add("groupHealthBonus", new JsonObject());
                 }
             }
     };

@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v12_isIdempotent() {
+    void migrate_v13_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 12);
+        json.addProperty("configVersion", 13);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -315,9 +315,36 @@ class ConfigMigratorTest {
         json.add("packTactics", new JsonObject());
         json.add("structureBoosts", new JsonObject());
         json.add("levelDecay", new JsonObject());
+        json.add("groupHealthBonus", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(12, json.get("configVersion").getAsInt());
+        assertEquals(13, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v12ToV13_addsGroupHealthBonus() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 12);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("groupHealthBonus"), "groupHealthBonus section must be added");
+        assertTrue(json.get("groupHealthBonus").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v12ToV13_doesNotOverwriteExistingGroupHealthBonus() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 12);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", true);
+        json.add("groupHealthBonus", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.getAsJsonObject("groupHealthBonus").get("enabled").getAsBoolean(),
+                "pre-existing groupHealthBonus content must be preserved");
     }
 
     @Test

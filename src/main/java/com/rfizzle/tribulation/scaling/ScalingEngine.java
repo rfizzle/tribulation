@@ -375,8 +375,7 @@ public final class ScalingEngine {
         int count = 0;
 
         for (ServerPlayer sp : world.players()) {
-            if (EntitySelector.NO_SPECTATORS.test(sp)
-                    && sp.distanceToSqr(x, y, z) <= rangeSq) {
+            if (countsForBlend(sp, x, y, z, rangeSq)) {
                 int level = state.getLevel(sp.getUUID());
                 max = Math.max(max, level);
                 sum += level;
@@ -407,6 +406,52 @@ public final class ScalingEngine {
         if (mode == TribulationConfig.ScalingMode.MAX) return max;
         if (mode == TribulationConfig.ScalingMode.AVERAGE) return (int) (sum / levels.size());
         return levels.get(0);
+    }
+
+    /**
+     * The player filter shared by the AVERAGE/MAX blend fold, the group
+     * health bonus head count, and the {@code /tribulation debug} listing:
+     * non-spectators within {@code rangeSq} of the position. Creative players
+     * count; spectators never do — matching the NEAREST path, whose
+     * {@code world.getNearestPlayer(x, y, z, range, false)} applies the same
+     * NO_SPECTATORS predicate.
+     */
+    public static boolean countsForBlend(ServerPlayer player, double x, double y, double z, double rangeSq) {
+        return EntitySelector.NO_SPECTATORS.test(player) && player.distanceToSqr(x, y, z) <= rangeSq;
+    }
+
+    /**
+     * Number of players the multiplayer blend would consider at a position —
+     * the group-health-bonus head count. Iterates the level's own
+     * dimension-scoped player list with no allocation, mirroring the
+     * AVERAGE/MAX fold in {@link #getEffectiveLevelAt}; callers gate on the
+     * feature toggle so the default (disabled) spawn hot path never runs
+     * this loop.
+     */
+    public static int countNearbyPlayers(ServerLevel world, double x, double y, double z, double range) {
+        if (range <= 0) return 0;
+        double rangeSq = range * range;
+        int count = 0;
+        for (ServerPlayer sp : world.players()) {
+            if (countsForBlend(sp, x, y, z, rangeSq)) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Group health bonus for a spawn with {@code nearbyPlayers} in range:
+     * each player beyond the first adds {@code perPlayerBonus} (an
+     * ADD_MULTIPLIED_BASE fraction of base max health), clipped at
+     * {@code maxBonus}. Returns 0 for a lone player or an empty scan, so
+     * single-player behavior is untouched; a non-positive {@code maxBonus}
+     * also yields 0 (a zero cap is an off-switch, not "uncapped"). Pure
+     * math so it is unit-testable without a Minecraft bootstrap.
+     */
+    public static double computeGroupHealthBonus(int nearbyPlayers, double perPlayerBonus, double maxBonus) {
+        if (nearbyPlayers <= 1 || perPlayerBonus <= 0 || maxBonus <= 0) {
+            return 0.0;
+        }
+        return Math.min((nearbyPlayers - 1) * perPlayerBonus, maxBonus);
     }
 
     /** 2D horizontal distance from world spawn (Y is excluded by design). */
@@ -564,6 +609,38 @@ public final class ScalingEngine {
         instance.removeModifier(id);
         if (amount > 0) {
             instance.addPermanentModifier(new AttributeModifier(id, amount, op));
+        }
+    }
+
+    /**
+     * Modifier ID for the multiplayer group health bonus. Deliberately NOT
+     * one of the {@link #AXES}, so {@link #readScalingFactor} never sees it:
+     * XP rewards keyed off the health scaling factor must not inflate with
+     * group size — the bonus is extra health for the group to chew through,
+     * not extra reward. It still lands in the {@code tribulation} namespace,
+     * so {@code /tribulation inspect}'s modifier enumeration shows it.
+     */
+    public static ResourceLocation groupHealthModifierId() {
+        return Tribulation.id("group_health");
+    }
+
+    /**
+     * Apply (or clear) the group health bonus modifier on MAX_HEALTH. The
+     * remove-before-add keeps the method idempotent; note the spawn handler
+     * only calls this when the feature is enabled, and PROCESSED_TAG means
+     * mobs are never re-scaled — so the removal is defensive for direct
+     * callers, not a live toggle-off cleanup path.
+     */
+    public static void applyGroupHealthBonus(Mob mob, double bonus) {
+        Holder<Attribute> holder = attributeHolder(ATTR_HEALTH);
+        if (holder == null) return;
+        AttributeInstance instance = mob.getAttribute(holder);
+        if (instance == null) return;
+        ResourceLocation id = groupHealthModifierId();
+        instance.removeModifier(id);
+        if (bonus > 0) {
+            instance.addPermanentModifier(new AttributeModifier(
+                    id, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
         }
     }
 

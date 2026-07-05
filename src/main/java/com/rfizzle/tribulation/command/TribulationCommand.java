@@ -259,6 +259,23 @@ public final class TribulationCommand {
         int level = state.getLevel(target.getUUID());
         int effectiveLevel = ScalingEngine.getEffectiveLevel(target, world);
 
+        // Every player the multiplayer blend considers for a spawn at the
+        // target's position, using the same filter as the AVERAGE/MAX fold
+        // and the group-bonus head count.
+        List<ConsideredPlayer> considered = new ArrayList<>();
+        double range = cfg.general.mobDetectionRange;
+        if (range > 0) {
+            double rangeSq = range * range;
+            for (ServerPlayer sp : world.players()) {
+                if (ScalingEngine.countsForBlend(sp, target.getX(), target.getY(), target.getZ(), rangeSq)) {
+                    considered.add(new ConsideredPlayer(
+                            sp.getGameProfile().getName(),
+                            state.getLevel(sp.getUUID()),
+                            Math.sqrt(sp.distanceToSqr(target.getX(), target.getY(), target.getZ()))));
+                }
+            }
+        }
+
         // Reference-mob scaling ("zombie") gives a stable apples-to-apples time
         // breakdown across calls. Per-mob debug is covered by /inspect.
         MobScaling refScaling = cfg.getMobScaling("zombie");
@@ -272,7 +289,7 @@ public final class TribulationCommand {
                 : 0.0;
         double rawMoonFactor = ScalingEngine.effectiveMoonFactor(world, target, cfg);
 
-        for (String line : formatDebug(target, world, cfg, level, effectiveLevel, refScaling, horizDist, rawDistFactor, rawHeightFactor, rawMoonFactor)) {
+        for (String line : formatDebug(target, world, cfg, level, effectiveLevel, considered, refScaling, horizDist, rawDistFactor, rawHeightFactor, rawMoonFactor)) {
             src.sendSuccess(() -> Component.literal(line), false);
         }
         return Command.SINGLE_SUCCESS;
@@ -546,12 +563,58 @@ public final class TribulationCommand {
         return lines;
     }
 
+    /**
+     * One player the multiplayer blend considers at the debug target's
+     * position: profile name, stored Tribulation level, and distance in
+     * blocks. Gathered in {@link #runDebug} so the rendering in
+     * {@link #formatDebug} and {@link #formatConsideredPlayers} stays pure
+     * and unit-testable without a world.
+     */
+    record ConsideredPlayer(String name, int level, double distance) {}
+
+    /**
+     * Render the multiplayer block for {@code /tribulation debug}: the
+     * players the active blend mode considers and the group health bonus a
+     * spawn at the target's position would receive. In NEAREST mode the list
+     * still shows everyone in range (the head count the group bonus uses);
+     * only the level resolution is nearest-wins.
+     */
+    static List<String> formatConsideredPlayers(TribulationConfig cfg, List<ConsideredPlayer> considered) {
+        List<String> lines = new ArrayList<>();
+        String modeNote = "";
+        if (considered.isEmpty()) {
+            modeNote = "  (no proximity scaling applies)";
+        } else if (cfg.general.scalingMode == TribulationConfig.ScalingMode.NEAREST && considered.size() > 1) {
+            modeNote = "  (NEAREST: closest player's level wins; all count for group bonus)";
+        }
+        lines.add(String.format(Locale.ROOT,
+                "Players considered: %d within %.0f blocks%s",
+                considered.size(), cfg.general.mobDetectionRange, modeNote));
+        for (ConsideredPlayer p : considered) {
+            lines.add(String.format(Locale.ROOT,
+                    "  %s  level %d  (%.1f blocks away)",
+                    p.name(), p.level(), p.distance()));
+        }
+        TribulationConfig.GroupHealthBonus ghb = cfg.groupHealthBonus;
+        if (ghb.enabled) {
+            double bonus = ScalingEngine.computeGroupHealthBonus(
+                    considered.size(), ghb.perPlayerBonus, ghb.maxBonus);
+            lines.add(String.format(Locale.ROOT,
+                    "Group health bonus: %+.0f%% health  (%d player(s), %+.0f%% per extra, cap %+.0f%%)",
+                    bonus * 100, considered.size(), ghb.perPlayerBonus * 100, ghb.maxBonus * 100));
+        } else {
+            lines.add("Group health bonus: (disabled)");
+        }
+        return lines;
+    }
+
     static List<String> formatDebug(
             ServerPlayer target,
             ServerLevel world,
             TribulationConfig cfg,
             int playerLevel,
             int effectiveLevel,
+            List<ConsideredPlayer> considered,
             MobScaling refScaling,
             double horizontalDistance,
             double rawDistanceFactor,
@@ -570,6 +633,7 @@ public final class TribulationCommand {
         lines.add(String.format(Locale.ROOT,
                 "Scaling mode: %s  Effective level: %d",
                 cfg.general.scalingMode, effectiveLevel));
+        lines.addAll(formatConsideredPlayers(cfg, considered));
         lines.add(String.format(Locale.ROOT,
                 "Dimension offset: %+d  (%s)",
                 cfg.getDimensionOffset(world.dimension().location()),

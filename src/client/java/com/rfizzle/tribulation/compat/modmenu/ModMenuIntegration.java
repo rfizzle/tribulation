@@ -45,6 +45,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addHud(builder, entry, current);
             addScalingSources(builder, entry, current);
             addBloodMoon(builder, entry, current);
+            addGroupHealthBonus(builder, entry, current);
             addStatCaps(builder, entry, current);
             addTiers(builder, entry, current);
             addAbilities(builder, entry, current);
@@ -457,6 +458,30 @@ public final class ModMenuIntegration implements ModMenuApi {
                         bm.clientEffects)
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> bm.clientEffects = v)
+                .build());
+    }
+
+    private static void addGroupHealthBonus(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.group_health_bonus"));
+        TribulationConfig.GroupHealthBonus ghb = config.groupHealthBonus;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.group_health_bonus.enabled"),
+                        ghb.enabled)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> ghb.enabled = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.group_health_bonus.per_player_bonus"),
+                        ghb.perPlayerBonus)
+                .setDefaultValue(0.2).setMin(0.0)
+                .setSaveConsumer(v -> ghb.perPlayerBonus = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.group_health_bonus.max_bonus"),
+                        ghb.maxBonus)
+                .setDefaultValue(1.0).setMin(0.0)
+                .setSaveConsumer(v -> ghb.maxBonus = v)
                 .build());
     }
 

@@ -91,6 +91,26 @@ class TribulationConfigTest {
     }
 
     @Test
+    void defaultGroupHealthBonus_isDisabledWithSaneDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertFalse(cfg.groupHealthBonus.enabled, "group health bonus must be opt-in");
+        assertEquals(0.2, cfg.groupHealthBonus.perPlayerBonus);
+        assertEquals(1.0, cfg.groupHealthBonus.maxBonus);
+    }
+
+    @Test
+    void validate_clampsGroupHealthBonusFields() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.groupHealthBonus.perPlayerBonus = -0.5;
+        cfg.groupHealthBonus.maxBonus = -2.0;
+
+        cfg.validate();
+
+        assertEquals(0.0, cfg.groupHealthBonus.perPlayerBonus);
+        assertEquals(0.0, cfg.groupHealthBonus.maxBonus);
+    }
+
+    @Test
     void defaultBloodMoon_hasValidValues() {
         TribulationConfig cfg = new TribulationConfig();
         assertTrue(cfg.bloodMoon.enabled);

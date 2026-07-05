@@ -115,6 +115,28 @@ public class MobScalingGameTest implements FabricGameTest {
         assertMultiplayerHp(helper, TribulationConfig.ScalingMode.AVERAGE, 45.0f, 50, 200);
     }
 
+    // Group health bonus (issue #128): each player beyond the first within
+    // detection range adds perPlayerBonus of base max health, capped.
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void groupHealthBonus_twoPlayers_addExtraHealth(GameTestHelper helper) {
+        // 2 players → 1 extra × +20% → 20 * 1.2 = 24 HP.
+        assertGroupBonusHp(helper, 2, 0.2, 1.0, 24.0f);
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void groupHealthBonus_fourPlayers_respectsCap(GameTestHelper helper) {
+        // 4 players → 3 extras × +25% = +75% raw, capped at +40% → 28 HP.
+        assertGroupBonusHp(helper, 4, 0.25, 0.4, 28.0f);
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void groupHealthBonus_singlePlayer_isUnaffected(GameTestHelper helper) {
+        // A lone player sees base health even with the feature enabled —
+        // the bonus only counts players beyond the first.
+        assertGroupBonusHp(helper, 1, 0.2, 1.0, 20.0f);
+    }
+
     @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void zombieSpawn_fullMoon_reachesExtraHp(GameTestHelper helper) {
@@ -583,6 +605,76 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.heightScaling.enabled = savedHeight;
             cfg.specialZombies.enabled = savedSpecial;
             cfg.champions.enabled = savedChampions;
+            cfg.general.mobDetectionRange = savedRange;
+            for (ServerPlayer p : players) {
+                p.discard();
+            }
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Shared recipe for the group-health-bonus gametests (issue #128). Seats
+     * {@code playerCount} level-0 mock players on the spawn, enables the bonus
+     * with the given tuning, spawns a zombie, and asserts its max HP — at
+     * player level 0 with the other axes disabled, base 20 HP × (1 + bonus)
+     * isolates the group bonus alone. Also asserts the bonus stays out of
+     * {@link ScalingEngine#readHealthScalingFactor} so XP rewards (keyed off
+     * that factor) don't inflate with group size. Isolation and restore
+     * follow {@link #assertMultiplayerHp}.
+     */
+    @SuppressWarnings("removal")
+    private void assertGroupBonusHp(GameTestHelper helper, int playerCount,
+            double perPlayerBonus, double maxBonus, float expectedMaxHp) {
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.groupHealthBonus.enabled;
+        double savedPerPlayer = cfg.groupHealthBonus.perPlayerBonus;
+        double savedMax = cfg.groupHealthBonus.maxBonus;
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
+        boolean savedMoon = cfg.moonPhaseScaling.enabled;
+        double savedRange = cfg.general.mobDetectionRange;
+
+        cfg.groupHealthBonus.enabled = true;
+        cfg.groupHealthBonus.perPlayerBonus = perPlayerBonus;
+        cfg.groupHealthBonus.maxBonus = maxBonus;
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
+        cfg.moonPhaseScaling.enabled = false;
+        // Shrink the range so the head count sees only this test's players,
+        // not mock players leaking in from adjacent test structures (see
+        // assertMultiplayerHp for the same isolation).
+        cfg.general.mobDetectionRange = 2.0;
+
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
+        BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
+        List<ServerPlayer> players = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < playerCount; i++) {
+                ServerPlayer p = helper.makeMockServerPlayerInLevel();
+                p.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
+                state.setLevel(p.getUUID(), 0, cfg.general.maxLevel);
+                players.add(p);
+            }
+            Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+            helper.assertValueEqual(zombie.getMaxHealth(), expectedMaxHp,
+                    playerCount + "-player group health bonus");
+            helper.assertTrue(ScalingEngine.readHealthScalingFactor(zombie) == 0.0,
+                    "group bonus must stay out of the health scaling factor (XP reward)");
+        } finally {
+            cfg.groupHealthBonus.enabled = savedEnabled;
+            cfg.groupHealthBonus.perPlayerBonus = savedPerPlayer;
+            cfg.groupHealthBonus.maxBonus = savedMax;
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
+            cfg.moonPhaseScaling.enabled = savedMoon;
             cfg.general.mobDetectionRange = savedRange;
             for (ServerPlayer p : players) {
                 p.discard();

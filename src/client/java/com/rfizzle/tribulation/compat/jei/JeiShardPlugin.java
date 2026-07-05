@@ -23,9 +23,7 @@ public final class JeiShardPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        Component[] lines = ShardInfoFormatter.infoLines().stream()
-                .map(Component::literal)
-                .toArray(Component[]::new);
+        Component[] lines = ShardInfoFormatter.infoLines().toArray(Component[]::new);
         registration.addItemStackInfo(new ItemStack(TribulationItems.SHATTER_SHARD), lines);
     }
 }

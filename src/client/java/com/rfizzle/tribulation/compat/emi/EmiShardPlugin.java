@@ -15,10 +15,7 @@ public final class EmiShardPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
-        List<Component> text = ShardInfoFormatter.infoLines().stream()
-                .map(Component::literal)
-                .map(c -> (Component) c)
-                .toList();
+        List<Component> text = ShardInfoFormatter.infoLines();
 
         registry.addRecipe(new EmiInfoRecipe(
                 List.of(EmiStack.of(TribulationItems.SHATTER_SHARD)),

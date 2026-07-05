@@ -21,8 +21,8 @@ public final class ReiShardPlugin implements REIClientPlugin {
         DefaultInformationDisplay info = DefaultInformationDisplay.createFromEntry(
                 EntryStacks.of(TribulationItems.SHATTER_SHARD),
                 Component.translatable("item.tribulation.shatter_shard"));
-        for (String line : ShardInfoFormatter.infoLines()) {
-            info.line(Component.literal(line));
+        for (Component line : ShardInfoFormatter.infoLines()) {
+            info.line(line);
         }
         registry.add(info);
     }

@@ -24,6 +24,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <p>Guard is strict: only {@link Mob} instances are multiplied (players drop
  * via the same method but must not be scaled), and mobs without any
  * tribulation health modifier fall through unchanged.
+ *
+ * <p>The target stays {@link LivingEntity} rather than {@link Mob}:
+ * {@code getExperienceReward} is declared {@code final} on {@code LivingEntity}
+ * and never appears on {@code Mob}, so a {@code @Inject} targeting {@code Mob}
+ * would bind no method and fail at load. The {@code instanceof Mob} guard does
+ * the narrowing instead.
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityExperienceMixin {

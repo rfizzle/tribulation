@@ -19,6 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * {@link com.rfizzle.tribulation.ability.AbilityManager}. Covers Spider web
  * placement and crop trampling — these require code at the attack site that
  * the pure-attribute/effect approach in AbilityManager cannot express.
+ *
+ * <p>Although the tags are only ever set on {@code Spider}/{@code CaveSpider},
+ * the target stays {@link Mob}: {@code doHurtTarget} is declared on {@code Mob}
+ * and not overridden by {@code Spider}, so a {@code @Inject} targeting
+ * {@code Spider} would bind no method and fail at load. The tag check does the
+ * narrowing at runtime.
  */
 @Mixin(Mob.class)
 public abstract class MobAbilityMixin {

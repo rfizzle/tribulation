@@ -97,6 +97,31 @@
         },
         {
           "type": "sub",
+          "id": "structure-boost",
+          "title": "Structure Danger Zones",
+          "intro": "Lootable structures are where the reward is — so the mobs guarding them scale harder. Spawns inside (or within a margin of) a configured structure's bounds use a boosted effective level, keyed on structure instead of dimension or biome.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "How It Works",
+                  "html": ["Applied upstream of the four axes exactly like the dimension and biome offsets, stacking additively with both before the <code class='text-accent2'>maxLevel</code> clamp — so a fortress blaze rolls higher stats, higher tier abilities, and more bonus XP together, with no separate reward knob. Membership is the structure start's overall bounding box inflated by <code class='text-accent2'>marginBlocks</code> (16 by default); where boosted structures overlap, the largest boost applies. Only the spawn position counts — a mob that wanders in later is unaffected. <code class='text-accent2'>/tribulation debug</code> and <code class='text-accent2'>/tribulation inspect</code> report the active boost and the structure granting it."]
+                },
+                {
+                  "title": "Configuration",
+                  "html": ["The <code class='text-accent2'>structureBoosts.boosts</code> map accepts plain structure IDs (<code class='text-accent2'>minecraft:fortress</code>) and <code class='text-accent2'>#</code>-prefixed structure tags, so modded structures and whole categories work; an exact ID entry wins over tags. Defaults cover the classic loot structures — fortress and bastion <span class='text-bone'>+20</span>, ancient city <span class='text-bone'>+30</span>, end city <span class='text-bone'>+25</span>, monument and trial chambers <span class='text-bone'>+15</span>. An empty map switches the feature (and its spawn-path lookups) off entirely."]
+                }
+              ]
+            },
+            { "type": "note", "html": "Structure lookups stay cheap on the spawn hot path: each chunk's danger zones are resolved once from the chunk's stored structure references and cached until the chunk unloads, so open-terrain spawns — the common case — cost a single map hit." }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "moon-phase",
           "title": "Moon-Phase Threat",
           "intro": "A thematic weekly rhythm layered on top of the position axes. The lunar cycle nudges nighttime danger up toward the full moon and back down toward the new moon, so the same coordinates feel different week to week.",

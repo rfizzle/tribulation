@@ -6,14 +6,27 @@ import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
+import com.rfizzle.tribulation.scaling.StructureBoostManager;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
+import net.minecraft.world.level.levelgen.structure.structures.NetherFortressPieces;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -322,6 +335,134 @@ public class MobScalingGameTest implements FabricGameTest {
             helper.assertValueEqual(z.getMaxHealth(), 30.0f,
                     "maxHealth with +50 biome offset (" + offsetKey + ") at player level 0");
         });
+    }
+
+    /**
+     * Proves a structure danger-zone boost feeds the scaling pipeline
+     * end-to-end (issue #124 acceptance criterion 1): a mob spawning inside a
+     * configured structure's bounds uses the boosted effective level, and the
+     * same spawn outside the bounds does not.
+     */
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombieSpawn_structureBoost_scalesAsHigherLevel(GameTestHelper helper) {
+        assertStructureBoostHp(helper, false);
+    }
+
+    /**
+     * Same pipeline with a {@code #}-prefixed structure-tag entry, proving tag
+     * keys resolve against the live registry (the path modded structure packs
+     * rely on — acceptance criterion 2).
+     */
+    @GameTest(template = "tribulation:empty_3x3")
+    public void zombieSpawn_structureTagBoost_scalesAsHigherLevel(GameTestHelper helper) {
+        assertStructureBoostHp(helper, true);
+    }
+
+    /**
+     * Shared recipe for the structure-boost gametests. Gametest worlds carry no
+     * real worldgen structures, so the test stamps a synthetic mineshaft
+     * {@link StructureStart} (one-block-column bounding box on the spawn
+     * position) plus its chunk reference into the live chunk — exactly the
+     * chunk data the zone cache reads — then registers a +50 boost under the
+     * structure's ID or first registry tag, spawns one zombie inside the box
+     * (expect 30 HP at player level 0) and one outside it in the same test
+     * region (expect base 20 HP).
+     *
+     * <p>Mineshaft is deliberately NOT in the default boosts map, so the
+     * stamped start left behind in the chunk (vanilla has no reference-removal
+     * API) is inert for every other test once the boost entry is removed and
+     * the zone cache invalidated in the {@code finally} block. The explicit
+     * {@link StructureBoostManager#invalidate} calls are needed because the
+     * cache invalidates by config identity, and gametests mutate the shared
+     * config in place.
+     */
+    @SuppressWarnings("removal")
+    private void assertStructureBoostHp(GameTestHelper helper, boolean useTag) {
+        ServerLevel world = helper.getLevel();
+        MinecraftServer server = world.getServer();
+        PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+        TribulationConfig cfg = Tribulation.getConfig();
+
+        Registry<Structure> registry = world.registryAccess().registryOrThrow(Registries.STRUCTURE);
+        Structure mineshaft = registry.getOrThrow(BuiltinStructures.MINESHAFT);
+        String boostKey = useTag
+                ? "#" + registry.wrapAsHolder(mineshaft).tags().findFirst()
+                        .orElseThrow(() -> new IllegalStateException("mineshaft carries no structure tags"))
+                        .location()
+                : "minecraft:mineshaft";
+
+        boolean savedDist = cfg.distanceScaling.enabled;
+        boolean savedHeight = cfg.heightScaling.enabled;
+        boolean savedSpecial = cfg.specialZombies.enabled;
+        boolean savedChampions = cfg.champions.enabled;
+        boolean savedMoon = cfg.moonPhaseScaling.enabled;
+        double savedRange = cfg.general.mobDetectionRange;
+        Integer savedDimOffset = cfg.dimensionOffsets.get("minecraft:overworld");
+        int savedMargin = cfg.structureBoosts.marginBlocks;
+        Integer savedBoost = cfg.structureBoosts.boosts.get(boostKey);
+        cfg.distanceScaling.enabled = false;
+        cfg.heightScaling.enabled = false;
+        cfg.specialZombies.enabled = false;
+        cfg.champions.enabled = false;
+        cfg.moonPhaseScaling.enabled = false;
+        cfg.general.mobDetectionRange = 2.0;
+        cfg.dimensionOffsets.put("minecraft:overworld", 0);
+        // Margin 0 so the one-block zone gives a deterministic inside/outside
+        // split within the tiny 3x3 test region.
+        cfg.structureBoosts.marginBlocks = 0;
+        cfg.structureBoosts.boosts.put(boostKey, 50);
+
+        // Stamp the synthetic start: bounding box is the single block column at
+        // the "inside" spawn position, so the (0,2,0) spawn is outside it.
+        BlockPos inside = helper.absolutePos(new BlockPos(1, 2, 1));
+        BoundingBox box = new BoundingBox(
+                inside.getX(), inside.getY() - 2, inside.getZ(),
+                inside.getX(), inside.getY() + 3, inside.getZ());
+        StructureStart start = new StructureStart(mineshaft, new net.minecraft.world.level.ChunkPos(inside), 0,
+                new PiecesContainer(List.of(
+                        new NetherFortressPieces.BridgeStraight(0, RandomSource.create(0), box, Direction.NORTH))));
+        LevelChunk chunk = world.getChunkAt(inside);
+        chunk.setStartForStructure(mineshaft, start);
+        chunk.addReferenceForStructure(mineshaft, chunk.getPos().toLong());
+        StructureBoostManager.invalidate(world);
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5);
+        state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
+
+        try {
+            // Level-0 player + 50 structure boost → timeFactor min(50*0.01, 2.5)
+            // = 0.5 → 20 * 1.5 = 30 HP inside the zone; base 20 HP outside it.
+            Zombie insideZombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+            helper.assertValueEqual(insideZombie.getMaxHealth(), 30.0f,
+                    "maxHealth inside structure zone (" + boostKey + ")");
+            Zombie outsideZombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(0, 2, 0));
+            helper.assertValueEqual(outsideZombie.getMaxHealth(), 20.0f,
+                    "maxHealth outside structure zone (" + boostKey + ")");
+        } finally {
+            cfg.distanceScaling.enabled = savedDist;
+            cfg.heightScaling.enabled = savedHeight;
+            cfg.specialZombies.enabled = savedSpecial;
+            cfg.champions.enabled = savedChampions;
+            cfg.moonPhaseScaling.enabled = savedMoon;
+            cfg.general.mobDetectionRange = savedRange;
+            if (savedDimOffset == null) {
+                cfg.dimensionOffsets.remove("minecraft:overworld");
+            } else {
+                cfg.dimensionOffsets.put("minecraft:overworld", savedDimOffset);
+            }
+            cfg.structureBoosts.marginBlocks = savedMargin;
+            if (savedBoost == null) {
+                cfg.structureBoosts.boosts.remove(boostKey);
+            } else {
+                cfg.structureBoosts.boosts.put(boostKey, savedBoost);
+            }
+            // Purge zones cached while the boost entry existed; the lingering
+            // stamped start is inert with no boost configured for it.
+            StructureBoostManager.invalidate(world);
+            player.discard();
+        }
+        helper.succeed();
     }
 
     /**

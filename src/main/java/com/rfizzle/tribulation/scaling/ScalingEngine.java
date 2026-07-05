@@ -345,6 +345,12 @@ public final class ScalingEngine {
         if (cfg.hasBiomeOffsets()) {
             offset += cfg.getBiomeOffset(world.getBiome(BlockPos.containing(x, y, z)));
         }
+        // Structure danger zones stack additively with the dimension and biome
+        // offsets. The hasStructureBoosts() guard keeps the chunk-cache lookup
+        // off the hot path when the feature is unconfigured.
+        if (cfg.hasStructureBoosts()) {
+            offset += StructureBoostManager.boostAt(world, x, y, z, cfg);
+        }
         int maxLevel = cfg.general.maxLevel;
 
         TribulationConfig.ScalingMode mode = cfg.general.scalingMode;

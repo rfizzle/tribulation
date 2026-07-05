@@ -993,4 +993,116 @@ class TribulationConfigTest {
         assertFalse(TribulationConfig.isValidBiomeOffsetKey("bad id with spaces"));
         assertFalse(TribulationConfig.isValidBiomeOffsetKey(null));
     }
+
+    // ---- Structure boosts ----
+
+    @Test
+    void defaultConfig_structureBoostsSeedsClassicLootStructures() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertEquals(16, cfg.structureBoosts.marginBlocks);
+        assertEquals(Integer.valueOf(20), cfg.structureBoosts.boosts.get("minecraft:fortress"));
+        assertEquals(Integer.valueOf(30), cfg.structureBoosts.boosts.get("minecraft:ancient_city"));
+        assertEquals(Integer.valueOf(20), cfg.structureBoosts.boosts.get("minecraft:bastion_remnant"));
+        assertEquals(Integer.valueOf(15), cfg.structureBoosts.boosts.get("minecraft:monument"));
+        assertEquals(Integer.valueOf(15), cfg.structureBoosts.boosts.get("minecraft:trial_chambers"));
+        assertEquals(Integer.valueOf(25), cfg.structureBoosts.boosts.get("minecraft:end_city"));
+        assertTrue(cfg.hasStructureBoosts());
+    }
+
+    @Test
+    void load_missingStructureBoosts_fillsDefaults(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, "{}");
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertNotNull(loaded.structureBoosts);
+        assertEquals(16, loaded.structureBoosts.marginBlocks);
+        assertEquals(Integer.valueOf(20), loaded.structureBoosts.boosts.get("minecraft:fortress"));
+        assertTrue(loaded.hasStructureBoosts());
+    }
+
+    @Test
+    void load_structureBoostMarginOutOfRange_clamped(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "structureBoosts": { "marginBlocks": -8 } }
+                """);
+        assertEquals(0, TribulationConfig.load(path).structureBoosts.marginBlocks);
+
+        Files.writeString(path, """
+                { "structureBoosts": { "marginBlocks": 4096 } }
+                """);
+        assertEquals(TribulationConfig.StructureBoosts.MAX_MARGIN_BLOCKS,
+                TribulationConfig.load(path).structureBoosts.marginBlocks);
+    }
+
+    @Test
+    void load_negativeStructureBoost_clampedToZero(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "structureBoosts": { "boosts": { "minecraft:stronghold": -10 } } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertEquals(Integer.valueOf(0), loaded.structureBoosts.boosts.get("minecraft:stronghold"));
+    }
+
+    @Test
+    void load_invalidStructureBoostKey_skippedNotFatal(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "structureBoosts": { "boosts": { "not a valid id!!": 20, "#c:dungeons": 15, "minecraft:stronghold": 5 } } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertFalse(loaded.structureBoosts.boosts.containsKey("not a valid id!!"),
+                "unparseable key must be dropped");
+        assertEquals(Integer.valueOf(15), loaded.structureBoosts.boosts.get("#c:dungeons"));
+        assertEquals(Integer.valueOf(5), loaded.structureBoosts.boosts.get("minecraft:stronghold"));
+    }
+
+    @Test
+    void roundTrip_structureBoostsPreservesValues(@TempDir Path tmp) {
+        Path path = tmp.resolve("tribulation.json");
+        TribulationConfig original = new TribulationConfig();
+        original.structureBoosts.marginBlocks = 4;
+        original.structureBoosts.boosts.put("#c:dungeons", 12);
+        original.save(path);
+
+        TribulationConfig reloaded = TribulationConfig.load(path);
+
+        assertEquals(4, reloaded.structureBoosts.marginBlocks);
+        assertEquals(Integer.valueOf(12), reloaded.structureBoosts.boosts.get("#c:dungeons"));
+        assertEquals(Integer.valueOf(20), reloaded.structureBoosts.boosts.get("minecraft:fortress"));
+    }
+
+    @Test
+    void hasStructureBoosts_falseWhenMapEmptied() {
+        // An empty map is the documented off-switch: behavior must be identical
+        // to today, and the spawn path must not consult the structure cache.
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.structureBoosts.boosts.clear();
+        assertFalse(cfg.hasStructureBoosts());
+
+        cfg.structureBoosts = null;
+        assertFalse(cfg.hasStructureBoosts());
+    }
+
+    @Test
+    void load_emptiedStructureBoosts_staysEmpty(@TempDir Path tmp) throws IOException {
+        // The empty map must survive the load path — fillDefaults must not
+        // re-seed defaults into it, or the off-switch silently re-arms.
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                { "structureBoosts": { "boosts": {} } }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertTrue(loaded.structureBoosts.boosts.isEmpty());
+        assertFalse(loaded.hasStructureBoosts());
+    }
 }

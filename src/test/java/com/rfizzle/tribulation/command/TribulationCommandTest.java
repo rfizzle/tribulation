@@ -2,6 +2,8 @@
 package com.rfizzle.tribulation.command;
 
 import com.rfizzle.tribulation.config.TribulationConfig;
+import com.rfizzle.tribulation.scaling.StructureBoostManager;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -219,5 +221,34 @@ class TribulationCommandTest {
         String joined = String.join("\n", lines);
         assertTrue(joined.contains("Soul Inventory: on"), "shows enabled state");
         assertTrue(joined.contains("enchant=meridian:tether"), "shows enchantment ID");
+    }
+
+    // ---- formatStructureBoostLine ----
+
+    @Test
+    void formatStructureBoostLine_outsideZones_showsNone() {
+        StructureBoostManager.BoostZone[] zones = {
+                new StructureBoostManager.BoostZone(0, 0, 0, 16, 16, 16, 20,
+                        ResourceLocation.parse("minecraft:fortress")),
+        };
+        assertEquals("Structure boost: +0  (none)",
+                TribulationCommand.formatStructureBoostLine(zones, 100, 64, 100));
+        assertEquals("Structure boost: +0  (none)",
+                TribulationCommand.formatStructureBoostLine(StructureBoostManager.NO_ZONES, 100, 64, 100));
+    }
+
+    @Test
+    void formatStructureBoostLine_insideZones_showsBoostAndIds() {
+        StructureBoostManager.BoostZone[] zones = {
+                new StructureBoostManager.BoostZone(0, 0, 0, 100, 100, 100, 20,
+                        ResourceLocation.parse("minecraft:fortress")),
+                new StructureBoostManager.BoostZone(40, 40, 40, 60, 60, 60, 30,
+                        ResourceLocation.parse("minecraft:ancient_city")),
+        };
+        assertEquals("Structure boost: +30  (minecraft:fortress, minecraft:ancient_city)",
+                TribulationCommand.formatStructureBoostLine(zones, 50, 50, 50),
+                "largest boost applies; every containing zone is listed");
+        assertEquals("Structure boost: +20  (minecraft:fortress)",
+                TribulationCommand.formatStructureBoostLine(zones, 10, 10, 10));
     }
 }

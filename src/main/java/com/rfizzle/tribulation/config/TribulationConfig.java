@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -38,7 +39,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 10;
+    public int configVersion = 11;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -47,6 +48,7 @@ public class TribulationConfig {
     public BloodMoon bloodMoon = new BloodMoon();
     public Map<String, Integer> dimensionOffsets = defaultDimensionOffsets();
     public Map<String, Integer> biomeOffsets = defaultBiomeOffsets();
+    public StructureBoosts structureBoosts = new StructureBoosts();
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
@@ -221,6 +223,44 @@ public class TribulationConfig {
     }
 
     /**
+     * Parsed lookup structure for {@link StructureBoosts#boosts}, rebuilt
+     * lazily when the map's contents change (config reload swaps the whole
+     * object, but tests mutate the map in place). {@code transient} so Gson
+     * never serializes it.
+     */
+    private transient volatile StructureBoostResolver structureBoostResolver;
+
+    /** True when at least one structure boost entry is configured — lets the spawn hot path skip structure lookups entirely. */
+    public boolean hasStructureBoosts() {
+        return structureBoosts != null
+                && structureBoosts.boosts != null
+                && !structureBoosts.boosts.isEmpty();
+    }
+
+    /**
+     * Flat level boost added to the effective scaling level for mobs spawning
+     * inside (or within {@link StructureBoosts#marginBlocks} of) the given
+     * structure's bounds, stacking additively with the dimension and biome
+     * offsets (see {@link com.rfizzle.tribulation.scaling.ScalingEngine#getEffectiveLevel}).
+     * Keys in {@link StructureBoosts#boosts} are structure IDs
+     * ({@code minecraft:fortress}) or {@code #}-prefixed structure tags; an
+     * exact ID entry wins over tags, and the largest boost among matching tags
+     * applies otherwise. Returns {@code 0} for unlisted structures.
+     */
+    public int getStructureBoost(Holder<Structure> structure) {
+        StructureBoosts section = structureBoosts;
+        if (section == null || structure == null) return 0;
+        Map<String, Integer> boosts = section.boosts;
+        if (boosts == null || boosts.isEmpty()) return 0;
+        StructureBoostResolver resolver = structureBoostResolver;
+        if (resolver == null || !resolver.matches(boosts)) {
+            resolver = StructureBoostResolver.build(boosts);
+            structureBoostResolver = resolver;
+        }
+        return resolver.boostFor(structure);
+    }
+
+    /**
      * Resolve the {@link MobScaling} for an entity, applying the precedence
      * defined in DESIGN.md:
      * <ol>
@@ -374,6 +414,16 @@ public class TribulationConfig {
             }
         }
 
+        // Unlike dimensionOffsets/biomeOffsets, an existing boosts map is NOT
+        // re-seeded with defaults: an explicitly emptied map is the documented
+        // off-switch for the whole feature (issue #124), so only null-heal.
+        if (structureBoosts == null) {
+            structureBoosts = new StructureBoosts();
+        }
+        if (structureBoosts.boosts == null) {
+            structureBoosts.boosts = StructureBoosts.defaultBoosts();
+        }
+
         if (unlistedHostileMobs == null) {
             unlistedHostileMobs = new UnlistedHostileMobs();
         }
@@ -447,6 +497,35 @@ public class TribulationConfig {
                 } else if (offset < 0) {
                     Tribulation.LOGGER.warn("biomeOffsets.{} must be >= 0, got {}; clamped to 0", entry.getKey(), offset);
                     entry.setValue(0);
+                }
+            }
+        }
+
+        if (structureBoosts != null) {
+            if (structureBoosts.marginBlocks < 0) {
+                Tribulation.LOGGER.warn("structureBoosts.marginBlocks must be >= 0, got {}; clamped to 0", structureBoosts.marginBlocks);
+                structureBoosts.marginBlocks = 0;
+            } else if (structureBoosts.marginBlocks > StructureBoosts.MAX_MARGIN_BLOCKS) {
+                Tribulation.LOGGER.warn("structureBoosts.marginBlocks must be <= {}, got {}; clamped to {}",
+                        StructureBoosts.MAX_MARGIN_BLOCKS, structureBoosts.marginBlocks, StructureBoosts.MAX_MARGIN_BLOCKS);
+                structureBoosts.marginBlocks = StructureBoosts.MAX_MARGIN_BLOCKS;
+            }
+            if (structureBoosts.boosts != null) {
+                structureBoosts.boosts.entrySet().removeIf(entry -> {
+                    if (!isValidIdOrTagKey(entry.getKey())) {
+                        Tribulation.LOGGER.warn("structureBoosts.boosts key '{}' is not a valid structure id or #tag; entry skipped", entry.getKey());
+                        return true;
+                    }
+                    return false;
+                });
+                for (Map.Entry<String, Integer> entry : structureBoosts.boosts.entrySet()) {
+                    Integer boost = entry.getValue();
+                    if (boost == null) {
+                        entry.setValue(0);
+                    } else if (boost < 0) {
+                        Tribulation.LOGGER.warn("structureBoosts.boosts.{} must be >= 0, got {}; clamped to 0", entry.getKey(), boost);
+                        entry.setValue(0);
+                    }
                 }
             }
         }
@@ -801,9 +880,47 @@ public class TribulationConfig {
 
     /** A biome offset key is a biome ID or a {@code #}-prefixed biome tag. */
     static boolean isValidBiomeOffsetKey(String key) {
+        return isValidIdOrTagKey(key);
+    }
+
+    /** A registry-keyed offset key is a plain resource ID or a {@code #}-prefixed tag. */
+    static boolean isValidIdOrTagKey(String key) {
         if (key == null || key.isEmpty()) return false;
         String id = key.startsWith("#") ? key.substring(1) : key;
         return !id.isEmpty() && ResourceLocation.tryParse(id) != null;
+    }
+
+    /**
+     * Danger-zone level boosts for lootable structures. Mobs spawning inside
+     * (or within {@code marginBlocks} of) a configured structure's bounding
+     * box use an effective level raised by the mapped boost, applied upstream
+     * of the scaling axes exactly like the dimension and biome offsets — so
+     * stats, tier-ability rolls, and bonus XP all rise together. Keys in
+     * {@code boosts} are structure IDs ({@code minecraft:fortress}) or
+     * {@code #}-prefixed structure tags. An empty map disables the feature
+     * (and its spawn-path lookups) entirely.
+     */
+    public static class StructureBoosts {
+        public static final int MAX_MARGIN_BLOCKS = 128;
+
+        public int marginBlocks = 16;
+        public Map<String, Integer> boosts = defaultBoosts();
+
+        /**
+         * Baseline boosts for the classic loot structures — the places where
+         * reward concentrates and risk should track it. Everything else is
+         * opt-in tuning.
+         */
+        static Map<String, Integer> defaultBoosts() {
+            Map<String, Integer> map = new LinkedHashMap<>();
+            map.put("minecraft:fortress", 20);
+            map.put("minecraft:bastion_remnant", 20);
+            map.put("minecraft:monument", 15);
+            map.put("minecraft:trial_chambers", 15);
+            map.put("minecraft:ancient_city", 30);
+            map.put("minecraft:end_city", 25);
+            return map;
+        }
     }
 
     public static class General {

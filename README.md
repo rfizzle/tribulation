@@ -35,6 +35,8 @@ Every hostile mob's stats are computed from four independent factors at spawn ti
 
 Upstream of the four axes, per-dimension and per-biome level offsets add a flat boost to the effective level — the Nether (+25), the End (+40), and the Deep Dark (+30) by default. Biome offsets accept plain biome IDs or `#`-prefixed biome tags, so modded biomes and whole categories can carry their own boost.
 
+Structure danger zones stack the same way: mobs spawning inside (or within a configurable margin of) a configured structure's bounds use a boosted effective level — fortresses and bastions (+20), ancient cities (+30), end cities (+25), monuments and trial chambers (+15) by default. Keys accept structure IDs or `#`-prefixed structure tags; an empty map disables the feature.
+
 21 vanilla mob types have individually tuned scaling rates and caps. Modded hostile mobs get conservative fallback scaling automatically.
 
 ### Tier-Gated Abilities
@@ -124,7 +126,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

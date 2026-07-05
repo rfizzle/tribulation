@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v13_isIdempotent() {
+    void migrate_v14_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 13);
+        json.addProperty("configVersion", 14);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -316,9 +316,36 @@ class ConfigMigratorTest {
         json.add("structureBoosts", new JsonObject());
         json.add("levelDecay", new JsonObject());
         json.add("groupHealthBonus", new JsonObject());
+        json.add("environmentalPressure", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(13, json.get("configVersion").getAsInt());
+        assertEquals(14, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v13ToV14_addsEnvironmentalPressure() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 13);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("environmentalPressure"), "environmentalPressure section must be added");
+        assertTrue(json.get("environmentalPressure").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v13ToV14_doesNotOverwriteExistingEnvironmentalPressure() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 13);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", true);
+        json.add("environmentalPressure", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.getAsJsonObject("environmentalPressure").get("enabled").getAsBoolean(),
+                "pre-existing environmentalPressure content must be preserved");
     }
 
     @Test
@@ -496,6 +523,8 @@ class ConfigMigratorTest {
         assertTrue(json.has("packTactics"));
         assertTrue(json.has("structureBoosts"));
         assertTrue(json.has("levelDecay"));
+        assertTrue(json.has("groupHealthBonus"));
+        assertTrue(json.has("environmentalPressure"));
     }
 
     @Test

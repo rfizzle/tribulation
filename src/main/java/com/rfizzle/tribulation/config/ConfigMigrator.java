@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 13;
+    static final int CURRENT_VERSION = 14;
 
     @FunctionalInterface
     interface Migration {
@@ -133,6 +133,14 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("groupHealthBonus")) {
                     json.add("groupHealthBonus", new JsonObject());
+                }
+            },
+            // v13 → v14: add environmentalPressure section. The empty object
+            // deserializes with the field-initializer defaults (master toggle
+            // off; strikes at tier 3, oppressive nights at tier 4).
+            json -> {
+                if (!json.has("environmentalPressure")) {
+                    json.add("environmentalPressure", new JsonObject());
                 }
             }
     };

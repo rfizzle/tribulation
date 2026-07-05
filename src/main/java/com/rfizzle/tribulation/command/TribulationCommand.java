@@ -10,6 +10,7 @@ import com.rfizzle.tribulation.compat.common.MobScalingDataCollector;
 import com.rfizzle.tribulation.data.BloodMoonState;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.BloodMoonHandler;
+import com.rfizzle.tribulation.event.EnvironmentalPressureHandler;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
 import com.rfizzle.tribulation.event.SoulInventoryHandler;
@@ -199,6 +200,9 @@ public final class TribulationCommand {
             // toggling bloodMoon.clientEffects mid-event takes effect now, not
             // at dawn).
             BloodMoonHandler.broadcast(src.getServer(), Tribulation.getConfig());
+            // Same for per-player night pressure: a toggled feature reaches
+            // clients now instead of on the next level sync.
+            EnvironmentalPressureHandler.broadcast(src.getServer(), Tribulation.getConfig());
             src.sendSuccess(() -> Component.literal("Reloaded Tribulation config"), true);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {

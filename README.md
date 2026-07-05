@@ -55,6 +55,13 @@ At 5 level thresholds (50/100/150/200/250), mobs unlock special behaviors:
 
 At or above a configurable tier threshold (default tier 3), the classic pack mobs — zombies, skeletons, and spiders — fight together: hurting one alerts same-type mobs within 16 blocks (line-of-sight required) onto the attacker, and their natural spawn groups grow by +2. Radius, threshold, bonus, and the eligible-mob list are configurable via the `packTactics` section.
 
+### Environmental Pressure *(opt-in)*
+
+Disabled by default. When enabled via the `environmentalPressure` section, the world itself pushes back at high tiers — gated on each player's *own* level, so a low-level player on the same server is unaffected:
+
+- **Debilitating Strikes** — at or above a tier threshold (default 3), a landed melee hit from a scaled hostile applies short Weakness and/or Slowness (per-effect toggles, duration and amplifier configurable)
+- **Oppressive Nights** — at or above a separate tier threshold (default 4), night ambient light is subtly reduced for the affected player (bounded intensity, client-side opt-out, respects the vanilla Darkness Pulsing accessibility slider)
+
 ### Death Penalties
 
 - **Death Relief** — Lose 2 levels on death (rubber-band mechanic, configurable)

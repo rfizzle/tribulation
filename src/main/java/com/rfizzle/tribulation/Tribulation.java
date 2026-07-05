@@ -8,6 +8,7 @@ import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.BloodMoonHandler;
 import com.rfizzle.tribulation.event.ChampionEffectHandler;
 import com.rfizzle.tribulation.event.DeathReliefHandler;
+import com.rfizzle.tribulation.event.EnvironmentalPressureHandler;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.event.LevelDecayHandler;
 import com.rfizzle.tribulation.event.MobScalingHandler;
@@ -67,6 +68,7 @@ public class Tribulation implements ModInitializer {
         ShardDropHandler.register();
         SilverfishAbilityHandler.register();
         PackTacticsHandler.register();
+        EnvironmentalPressureHandler.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 TribulationCommand.register(dispatcher));
         registerJoinSync();

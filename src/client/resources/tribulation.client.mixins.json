@@ -6,7 +6,8 @@
     "client": [
         "client.BloodMoonFogMixin",
         "client.BloodMoonMoonTintMixin",
-        "client.BloodMoonSkyColorMixin"
+        "client.BloodMoonSkyColorMixin",
+        "client.OppressiveNightLightMixin"
     ],
     "injectors": {
         "defaultRequire": 1

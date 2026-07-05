@@ -39,7 +39,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 13;
+    public int configVersion = 14;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -72,6 +72,7 @@ public class TribulationConfig {
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public RaidScaling raidScaling = new RaidScaling();
     public PackTactics packTactics = new PackTactics();
+    public EnvironmentalPressure environmentalPressure = new EnvironmentalPressure();
     public ThreatParticles threatParticles = new ThreatParticles();
     public Hud hud = new Hud();
 
@@ -381,6 +382,14 @@ public class TribulationConfig {
         }
 
         if (threatParticles == null) threatParticles = new ThreatParticles();
+
+        if (environmentalPressure == null) environmentalPressure = new EnvironmentalPressure();
+        if (environmentalPressure.debilitatingStrikes == null) {
+            environmentalPressure.debilitatingStrikes = new EnvironmentalPressure.DebilitatingStrikes();
+        }
+        if (environmentalPressure.oppressiveNights == null) {
+            environmentalPressure.oppressiveNights = new EnvironmentalPressure.OppressiveNights();
+        }
 
         if (scaling == null) {
             scaling = defaultScaling();
@@ -725,6 +734,27 @@ public class TribulationConfig {
             threatParticles.minimumTier = 0;
         }
 
+        EnvironmentalPressure.DebilitatingStrikes strikes = environmentalPressure.debilitatingStrikes;
+        strikes.tierThreshold = clampAtLeast("environmentalPressure.debilitatingStrikes.tierThreshold", strikes.tierThreshold, 0);
+        strikes.weaknessDurationTicks = clampIntRange("environmentalPressure.debilitatingStrikes.weaknessDurationTicks",
+                strikes.weaknessDurationTicks, 1, EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_DURATION_TICKS);
+        strikes.weaknessAmplifier = clampIntRange("environmentalPressure.debilitatingStrikes.weaknessAmplifier",
+                strikes.weaknessAmplifier, 0, EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_AMPLIFIER);
+        strikes.slownessDurationTicks = clampIntRange("environmentalPressure.debilitatingStrikes.slownessDurationTicks",
+                strikes.slownessDurationTicks, 1, EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_DURATION_TICKS);
+        strikes.slownessAmplifier = clampIntRange("environmentalPressure.debilitatingStrikes.slownessAmplifier",
+                strikes.slownessAmplifier, 0, EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_AMPLIFIER);
+
+        EnvironmentalPressure.OppressiveNights nights = environmentalPressure.oppressiveNights;
+        nights.tierThreshold = clampAtLeast("environmentalPressure.oppressiveNights.tierThreshold", nights.tierThreshold, 0);
+        nights.maxDarkness = clampNonNegative("environmentalPressure.oppressiveNights.maxDarkness", nights.maxDarkness);
+        if (nights.maxDarkness > EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS) {
+            Tribulation.LOGGER.warn("environmentalPressure.oppressiveNights.maxDarkness must be <= {}, got {}; clamped to {}",
+                    EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS, nights.maxDarkness,
+                    EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS);
+            nights.maxDarkness = EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS;
+        }
+
         for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
             WeaponTier wt = entry.getValue();
             wt.wearChancePercent = clampPercent("weaponEquipment.tiers." + entry.getKey() + ".wearChancePercent", wt.wearChancePercent);
@@ -796,6 +826,18 @@ public class TribulationConfig {
         if (value < min) {
             Tribulation.LOGGER.warn("{} must be >= {}, got {}; clamped to {}", name, min, value, min);
             return min;
+        }
+        return value;
+    }
+
+    private static int clampIntRange(String name, int value, int min, int max) {
+        if (value < min) {
+            Tribulation.LOGGER.warn("{} must be in [{},{}], got {}; clamped to {}", name, min, max, value, min);
+            return min;
+        }
+        if (value > max) {
+            Tribulation.LOGGER.warn("{} must be in [{},{}], got {}; clamped to {}", name, min, max, value, max);
+            return max;
         }
         return value;
     }
@@ -1411,6 +1453,76 @@ public class TribulationConfig {
          */
         public int spawnGroupBonus(int tier) {
             return isActiveAtTier(tier) ? groupSizeBonus : 0;
+        }
+    }
+
+    /**
+     * Tier-gated environmental pressure (off by default): the world itself
+     * grows hostile as a player's difficulty climbs. Both effects gate on the
+     * <em>player's own</em> stored level (via the tier thresholds), so a
+     * low-level player on the same server is unaffected. {@code enabled} is
+     * the master off-switch for the whole section; each effect underneath has
+     * its own toggle and tier threshold.
+     *
+     * <p><b>Debilitating strikes</b> — at or above its tier, a landed melee
+     * hit from a Tribulation-scaled hostile applies short Weakness and/or
+     * Slowness to the player (duration/amplifier configurable per effect).
+     * Ranged and environmental damage never trigger it.
+     *
+     * <p><b>Oppressive nights</b> — at or above its (separate) tier, night
+     * ambient light is subtly reduced for the affected player. Client-side
+     * visual only: the server syncs a per-player darkness strength; the
+     * client bounds it, applies it only at night in daylight-cycle
+     * dimensions, and honors both {@code clientEnabled} (read from the
+     * client's local config) and the vanilla Darkness Pulsing accessibility
+     * slider.
+     */
+    public static class EnvironmentalPressure {
+        public boolean enabled = false;
+        public DebilitatingStrikes debilitatingStrikes = new DebilitatingStrikes();
+        public OppressiveNights oppressiveNights = new OppressiveNights();
+
+        public static class DebilitatingStrikes {
+            public static final int MAX_EFFECT_DURATION_TICKS = 2400;
+            public static final int MAX_EFFECT_AMPLIFIER = 4;
+
+            public boolean enabled = true;
+            public int tierThreshold = 3;
+            public boolean applyWeakness = true;
+            public int weaknessDurationTicks = 100;
+            public int weaknessAmplifier = 0;
+            public boolean applySlowness = false;
+            public int slownessDurationTicks = 100;
+            public int slownessAmplifier = 0;
+        }
+
+        public static class OppressiveNights {
+            public static final double MAX_NIGHT_DARKNESS = 0.6;
+
+            public boolean enabled = true;
+            public int tierThreshold = 4;
+            public double maxDarkness = 0.25;
+            /** Client-side opt-out; only ever read from the client's local config. */
+            public boolean clientEnabled = true;
+        }
+
+        /**
+         * Whether debilitating strikes apply to a player at the given tier.
+         * Pure arithmetic — covered by unit tests.
+         */
+        public boolean strikesActiveAtTier(int tier) {
+            return enabled && debilitatingStrikes.enabled && tier >= debilitatingStrikes.tierThreshold;
+        }
+
+        /**
+         * Oppressive-nights darkness strength for a player at the given tier:
+         * {@code maxDarkness} when active, else 0. Pure arithmetic — covered
+         * by unit tests.
+         */
+        public double nightDarknessAtTier(int tier) {
+            if (!enabled || !oppressiveNights.enabled) return 0.0;
+            if (tier < oppressiveNights.tierThreshold) return 0.0;
+            return oppressiveNights.maxDarkness;
         }
     }
 

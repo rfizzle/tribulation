@@ -120,6 +120,37 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
 
     @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
+    public void soulInventory_disabledLeavesInventoryUntouched(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+
+        TribulationConfig cfg = Tribulation.getConfig();
+
+        boolean savedEnabled = cfg.soulInventory.enabled;
+        // Feature off — processDeathInventory must return before touching the
+        // inventory, leaving vanilla drop behavior intact.
+        cfg.soulInventory.enabled = false;
+
+        try {
+            player.getInventory().setItem(0, new ItemStack(Items.DIAMOND_SWORD));
+            player.getInventory().setItem(1, new ItemStack(Items.DIAMOND, 32));
+
+            com.rfizzle.tribulation.event.SoulInventoryHandler.processDeathInventory(player);
+
+            helper.succeedWhen(() -> {
+                helper.assertFalse(player.getInventory().getItem(0).isEmpty(),
+                        "slot 0 must be untouched when soul inventory is disabled");
+                helper.assertFalse(player.getInventory().getItem(1).isEmpty(),
+                        "slot 1 must be untouched when soul inventory is disabled");
+            });
+        } finally {
+            cfg.soulInventory.enabled = savedEnabled;
+        }
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_soulboundRetained(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));

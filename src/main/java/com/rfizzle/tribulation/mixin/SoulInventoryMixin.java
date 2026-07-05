@@ -10,6 +10,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Voids non-soulbound items on player death. Targets {@link LivingEntity} — not
+ * {@link ServerPlayer} — because {@code dropAllDeathLoot} is declared only on
+ * {@code LivingEntity} and never overridden by {@code Player}/{@code ServerPlayer};
+ * a Mixin {@code @Inject} can only bind a method the target class itself declares,
+ * so the {@code instanceof ServerPlayer} guard is required, not the broad target
+ * a naive reading of the mc-mixin-craft narrowing rule might suggest.
+ */
 @Mixin(LivingEntity.class)
 public abstract class SoulInventoryMixin {
 

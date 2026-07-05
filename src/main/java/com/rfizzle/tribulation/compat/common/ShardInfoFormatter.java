@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.compat.common;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,36 +12,42 @@ import java.util.Locale;
  * Generates info text for the Shatter Shard item, used by EMI, REI, and JEI
  * info panels. Reads current config values so the panel reflects the server's
  * tuning (or local defaults on a dedicated-multiplayer client).
+ *
+ * <p>Lines are returned as translatable {@link Component}s so the panels render
+ * in the viewer's locale; the config-derived numbers are passed as pre-formatted
+ * arguments (Minecraft's translation substitution is plain {@code %s}, not
+ * {@code printf}). Blank spacer lines are {@link Component#empty()}.
  */
 public final class ShardInfoFormatter {
 
     private ShardInfoFormatter() {}
 
-    public static List<String> infoLines() {
+    public static List<Component> infoLines() {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) cfg = new TribulationConfig();
         return infoLines(cfg);
     }
 
-    static List<String> infoLines(TribulationConfig cfg) {
-        List<String> lines = new ArrayList<>();
+    static List<Component> infoLines(TribulationConfig cfg) {
+        List<Component> lines = new ArrayList<>();
 
-        lines.add(String.format(Locale.ROOT,
-                "Drops from hostile mobs scaled to level %d+ with a %.1f%% chance per kill.",
-                cfg.shards.dropStartLevel, cfg.shards.dropChance * 100));
+        lines.add(Component.translatable(
+                "item.tribulation.shatter_shard.info.drop",
+                cfg.shards.dropStartLevel,
+                String.format(Locale.ROOT, "%.1f", cfg.shards.dropChance * 100)));
 
-        lines.add("");
+        lines.add(Component.empty());
 
-        lines.add(String.format(Locale.ROOT,
-                "Right-click to consume and reduce your difficulty level by %d.",
+        lines.add(Component.translatable(
+                "item.tribulation.shatter_shard.info.consume",
                 cfg.shards.shardPower));
 
         if (cfg.shards.sideEffects) {
-            lines.add("Applies Slowness II, Mining Fatigue II, and Weakness II for 10 seconds.");
+            lines.add(Component.translatable("item.tribulation.shatter_shard.info.side_effects"));
         }
 
-        lines.add("");
-        lines.add("All values are configurable by the server operator.");
+        lines.add(Component.empty());
+        lines.add(Component.translatable("item.tribulation.shatter_shard.info.configurable"));
 
         return lines;
     }

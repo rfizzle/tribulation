@@ -19,6 +19,7 @@ import com.rfizzle.tribulation.item.TribulationItems;
 import com.rfizzle.tribulation.sound.TribulationSounds;
 import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
+import com.rfizzle.tribulation.scaling.StructureBoostManager;
 import com.rfizzle.tribulation.scaling.TierManager;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -53,6 +54,7 @@ public class Tribulation implements ModInitializer {
         TribulationStats.register();
         TribulationCriteria.register();
         registerTickHandler();
+        StructureBoostManager.register();
         MobScalingHandler.register();
         ChampionEffectHandler.register();
         BloodMoonHandler.register();

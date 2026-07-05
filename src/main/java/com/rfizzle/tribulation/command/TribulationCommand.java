@@ -18,6 +18,7 @@ import com.rfizzle.tribulation.event.ZombieVariantHandler;
 import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.scaling.BossScalingEngine;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
+import com.rfizzle.tribulation.scaling.StructureBoostManager;
 import com.rfizzle.tribulation.scaling.TierManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -572,6 +573,15 @@ public final class TribulationCommand {
                 "Biome offset: %+d  (%s)",
                 cfg.getBiomeOffset(biome),
                 biome.unwrapKey().map(key -> key.location().toString()).orElse("unknown")));
+        if (cfg.hasStructureBoosts()) {
+            lines.add(formatStructureBoostLine(
+                    StructureBoostManager.zonesAt(world, target.getX(), target.getZ(), cfg),
+                    target.getX(), target.getY(), target.getZ()));
+        } else {
+            // An admin diagnosing a missing boost needs to see the emptied-map
+            // off-switch, not silence.
+            lines.add("Structure boost: (disabled - no structures configured)");
+        }
         lines.add(String.format(Locale.ROOT,
                 "Distance from spawn: %.1f blocks  →  factor %+.3f",
                 horizontalDistance, rawDistanceFactor));
@@ -653,6 +663,16 @@ public final class TribulationCommand {
         lines.add("Variant: " + variant.label());
         lines.add("Champion: " + describeChampion(mob));
 
+        // Structure boost at the mob's current position. Scaling froze at the
+        // spawn position, so this reads "was it likely boosted" — a mob that
+        // wandered across a zone boundary shows the zone it stands in now.
+        TribulationConfig cfg = Tribulation.getConfig();
+        if (cfg != null && cfg.hasStructureBoosts() && mob.level() instanceof ServerLevel world) {
+            lines.add(formatStructureBoostLine(
+                    StructureBoostManager.zonesAt(world, mob.getX(), mob.getZ(), cfg),
+                    mob.getX(), mob.getY(), mob.getZ()));
+        }
+
         double healthFactor = ScalingEngine.readHealthScalingFactor(mob);
         lines.add(String.format(Locale.ROOT,
                 "Scaling factor (MAX_HEALTH axes): %+.3f",
@@ -673,6 +693,27 @@ public final class TribulationCommand {
             lines.addAll(modifierLines);
         }
         return lines;
+    }
+
+    /**
+     * Render the structure-boost line for debug/inspect from the danger zones
+     * at a position: the applied (largest) boost plus every containing zone's
+     * structure ID. Pure formatting over the zones array so it is
+     * unit-testable without a world.
+     */
+    static String formatStructureBoostLine(StructureBoostManager.BoostZone[] zones, double x, double y, double z) {
+        int boost = StructureBoostManager.maxBoostAt(zones, x, y, z);
+        if (boost <= 0) {
+            return "Structure boost: +0  (none)";
+        }
+        StringBuilder names = new StringBuilder();
+        for (StructureBoostManager.BoostZone zone : zones) {
+            if (zone.contains(x, y, z)) {
+                if (names.length() > 0) names.append(", ");
+                names.append(zone.structureId());
+            }
+        }
+        return String.format(Locale.ROOT, "Structure boost: %+d  (%s)", boost, names);
     }
 
     /**

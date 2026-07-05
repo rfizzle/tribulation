@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 10;
+    static final int CURRENT_VERSION = 11;
 
     @FunctionalInterface
     interface Migration {
@@ -108,6 +108,15 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("packTactics")) {
                     json.add("packTactics", new JsonObject());
+                }
+            },
+            // v10 → v11: add structureBoosts section. Gson's no-arg
+            // construction runs the field initializers, so the empty object
+            // deserializes with the default margin and classic-loot-structure
+            // boosts (fillDefaults only null-heals this section).
+            json -> {
+                if (!json.has("structureBoosts")) {
+                    json.add("structureBoosts", new JsonObject());
                 }
             }
     };

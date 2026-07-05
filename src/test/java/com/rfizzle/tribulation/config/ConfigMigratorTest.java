@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v10_isIdempotent() {
+    void migrate_v11_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 10);
+        json.addProperty("configVersion", 11);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -313,9 +313,36 @@ class ConfigMigratorTest {
         json.add("champions", new JsonObject());
         json.add("biomeOffsets", new JsonObject());
         json.add("packTactics", new JsonObject());
+        json.add("structureBoosts", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(10, json.get("configVersion").getAsInt());
+        assertEquals(11, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v10ToV11_addsStructureBoosts() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 10);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("structureBoosts"), "structureBoosts section must be added");
+        assertTrue(json.get("structureBoosts").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v10ToV11_doesNotOverwriteExistingStructureBoosts() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 10);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("marginBlocks", 4);
+        json.add("structureBoosts", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertEquals(4, json.getAsJsonObject("structureBoosts").get("marginBlocks").getAsInt(),
+                "pre-existing structureBoosts content must be preserved");
     }
 
     @Test
@@ -413,6 +440,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("champions"));
         assertTrue(json.has("biomeOffsets"));
         assertTrue(json.has("packTactics"));
+        assertTrue(json.has("structureBoosts"));
     }
 
     @Test

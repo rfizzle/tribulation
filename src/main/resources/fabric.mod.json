@@ -21,6 +21,7 @@
             "com.rfizzle.tribulation.gametest.MobScalingGameTest",
             "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest",
             "com.rfizzle.tribulation.gametest.DeathReliefGameTest",
+            "com.rfizzle.tribulation.gametest.LevelDecayGameTest",
             "com.rfizzle.tribulation.gametest.TotemGameTest",
             "com.rfizzle.tribulation.gametest.APIGameTest",
             "com.rfizzle.tribulation.gametest.ArmorEquipmentGameTest",

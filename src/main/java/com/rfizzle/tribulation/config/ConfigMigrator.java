@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 11;
+    static final int CURRENT_VERSION = 12;
 
     @FunctionalInterface
     interface Migration {
@@ -117,6 +117,14 @@ final class ConfigMigrator {
             json -> {
                 if (!json.has("structureBoosts")) {
                     json.add("structureBoosts", new JsonObject());
+                }
+            },
+            // v11 → v12: add levelDecay section. The empty object deserializes
+            // with the field-initializer defaults (disabled, 7-day grace,
+            // 2 levels/day, floor 0).
+            json -> {
+                if (!json.has("levelDecay")) {
+                    json.add("levelDecay", new JsonObject());
                 }
             }
     };

@@ -50,6 +50,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addAbilities(builder, entry, current);
             addMobToggles(builder, entry, current);
             addDeathRelief(builder, entry, current);
+            addLevelDecay(builder, entry, current);
             addShards(builder, entry, current);
             addHardcoreHearts(builder, entry, current);
             addSoulInventory(builder, entry, current);
@@ -623,6 +624,36 @@ public final class ModMenuIntegration implements ModMenuApi {
                         config.deathRelief.minimumLevel)
                 .setDefaultValue(0).setMin(0)
                 .setSaveConsumer(v -> config.deathRelief.minimumLevel = v)
+                .build());
+    }
+
+    private static void addLevelDecay(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.level_decay"));
+        TribulationConfig.LevelDecay ld = config.levelDecay;
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.level_decay.enabled"),
+                        ld.enabled)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> ld.enabled = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.level_decay.grace_days"),
+                        ld.graceDays)
+                .setDefaultValue(7.0).setMin(0.0)
+                .setSaveConsumer(v -> ld.graceDays = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.level_decay.levels_per_day"),
+                        ld.levelsPerDay)
+                .setDefaultValue(2.0).setMin(0.0)
+                .setSaveConsumer(v -> ld.levelsPerDay = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.level_decay.floor"),
+                        ld.floor)
+                .setDefaultValue(0).setMin(0)
+                .setSaveConsumer(v -> ld.floor = v)
                 .build());
     }
 

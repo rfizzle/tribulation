@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v11_isIdempotent() {
+    void migrate_v12_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 11);
+        json.addProperty("configVersion", 12);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -314,9 +314,36 @@ class ConfigMigratorTest {
         json.add("biomeOffsets", new JsonObject());
         json.add("packTactics", new JsonObject());
         json.add("structureBoosts", new JsonObject());
+        json.add("levelDecay", new JsonObject());
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(11, json.get("configVersion").getAsInt());
+        assertEquals(12, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v11ToV12_addsLevelDecay() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 11);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.has("levelDecay"), "levelDecay section must be added");
+        assertTrue(json.get("levelDecay").isJsonObject());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v11ToV12_doesNotOverwriteExistingLevelDecay() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 11);
+        JsonObject existing = new JsonObject();
+        existing.addProperty("enabled", true);
+        json.add("levelDecay", existing);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertTrue(json.getAsJsonObject("levelDecay").get("enabled").getAsBoolean(),
+                "pre-existing levelDecay content must be preserved");
     }
 
     @Test
@@ -441,6 +468,7 @@ class ConfigMigratorTest {
         assertTrue(json.has("biomeOffsets"));
         assertTrue(json.has("packTactics"));
         assertTrue(json.has("structureBoosts"));
+        assertTrue(json.has("levelDecay"));
     }
 
     @Test

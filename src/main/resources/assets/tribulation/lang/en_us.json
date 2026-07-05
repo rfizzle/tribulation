@@ -7,6 +7,7 @@
     "message.tribulation.level_up": "Your difficulty has risen to level %s.",
     "message.tribulation.level_up_tier": "Your difficulty has risen to level %s (Tier %s).",
     "message.tribulation.level_max": "You have reached the maximum difficulty level.",
+    "message.tribulation.level_decay": "You were away %s days — your difficulty eased from level %s to %s.",
     "message.tribulation.blood_moon_rises": "A Blood Moon rises...",
     "message.tribulation.blood_moon_no_sleep": "You cannot sleep during a Blood Moon.",
 
@@ -143,6 +144,12 @@
     "config.tribulation.death_relief.cooldown_ticks": "Cooldown Ticks",
     "config.tribulation.death_relief.minimum_level": "Minimum Level Floor",
 
+    "config.tribulation.category.level_decay": "Level Decay",
+    "config.tribulation.level_decay.enabled": "Enabled",
+    "config.tribulation.level_decay.grace_days": "Grace Period (days away)",
+    "config.tribulation.level_decay.levels_per_day": "Levels Lost per Day Beyond Grace",
+    "config.tribulation.level_decay.floor": "Minimum Level Floor",
+
     "config.tribulation.category.shards": "Shatter Shards",
     "config.tribulation.shards.enabled": "Enabled",
     "config.tribulation.shards.drop_start_level": "Drop Start Level",
@@ -277,6 +284,7 @@
 
     "stat.tribulation.highest_level_reached": "Highest level reached",
     "stat.tribulation.levels_lost_to_death_relief": "Levels lost to death relief",
+    "stat.tribulation.levels_lost_to_decay": "Levels lost to offline decay",
     "stat.tribulation.shatter_shards_used": "Shatter Shards used",
     "stat.tribulation.hearts_lost": "Half-hearts lost",
     "stat.tribulation.hearts_restored": "Half-hearts restored",

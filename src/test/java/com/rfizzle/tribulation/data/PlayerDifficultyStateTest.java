@@ -633,6 +633,50 @@ class PlayerDifficultyStateTest {
         assertEquals(6, state.getHeartsLost(uuid));
     }
 
+    // ---- lastSeenEpochMs (offline level-decay anchor) ----
+
+    @Test
+    void newPlayerData_hasNeverSeenAnchor() {
+        PlayerDifficultyState.PlayerData pd = new PlayerDifficultyState.PlayerData();
+        assertEquals(PlayerDifficultyState.NEVER_SEEN, pd.lastSeenEpochMs);
+    }
+
+    @Test
+    void setLastSeen_storesTimestampAndMarksDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.setLastSeen(uuid, 1_700_000_000_000L);
+        assertEquals(1_700_000_000_000L, state.getLastSeen(uuid));
+        assertTrue(state.isDirty());
+    }
+
+    @Test
+    void setLastSeen_sameValue_doesNotDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).lastSeenEpochMs = 42L;
+        state.setLastSeen(uuid, 42L);
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void setLastSeen_negativeValue_clampsToNeverSeen() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.setLastSeen(uuid, -1L);
+        assertEquals(PlayerDifficultyState.NEVER_SEEN, state.getLastSeen(uuid));
+    }
+
+    @Test
+    void lastSeen_independentOfLevelState() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 50;
+        state.setLastSeen(uuid, 123_456L);
+        assertEquals(50, state.getLevel(uuid));
+        assertEquals(123_456L, state.getLastSeen(uuid));
+    }
+
     // ---- NBT serialization round-trip ----
 
     @Test
@@ -649,6 +693,34 @@ class PlayerDifficultyStateTest {
         assertEquals(42, loaded.getLevel(uuid));
         assertEquals(8, loaded.getHeartsLost(uuid));
         assertEquals(1000, loaded.getTickCounter(uuid));
+    }
+
+    @Test
+    void save_omitsLastSeenKeyWhenNeverStamped() {
+        // With levelDecay disabled nothing ever stamps an anchor, and the save
+        // must stay byte-identical to pre-feature files: no LastSeenEpochMs key.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 42;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        CompoundTag playerTag = tag.getList("Players", 10).getCompound(0);
+
+        assertFalse(playerTag.contains("LastSeenEpochMs"),
+                "unstamped anchor must not grow the save file");
+    }
+
+    @Test
+    void nbt_roundTrip_preservesLastSeen() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 42;
+        state.getPlayerData(uuid).lastSeenEpochMs = 1_700_000_000_000L;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertEquals(1_700_000_000_000L, loaded.getLastSeen(uuid));
     }
 
     @Test
@@ -694,5 +766,8 @@ class PlayerDifficultyStateTest {
         assertEquals(10, loaded.getLevel(uuid));
         assertEquals(500, loaded.getTickCounter(uuid));
         assertEquals(0, loaded.getHeartsLost(uuid));
+        // Missing LastSeenEpochMs (pre-decay save) must load as NEVER_SEEN so
+        // the first login after the upgrade never mass-decays.
+        assertEquals(PlayerDifficultyState.NEVER_SEEN, loaded.getLastSeen(uuid));
     }
 }

@@ -39,7 +39,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 11;
+    public int configVersion = 12;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -52,6 +52,7 @@ public class TribulationConfig {
     public StatCaps statCaps = new StatCaps();
     public Totems totems = new Totems();
     public DeathRelief deathRelief = new DeathRelief();
+    public LevelDecay levelDecay = new LevelDecay();
     public Shards shards = new Shards();
     public HardcoreHearts hardcoreHearts = new HardcoreHearts();
     public SoulInventory soulInventory = new SoulInventory();
@@ -325,6 +326,7 @@ public class TribulationConfig {
         if (statCaps == null) statCaps = new StatCaps();
         if (totems == null) totems = new Totems();
         if (deathRelief == null) deathRelief = new DeathRelief();
+        if (levelDecay == null) levelDecay = new LevelDecay();
         if (shards == null) shards = new Shards();
         if (hardcoreHearts == null) hardcoreHearts = new HardcoreHearts();
         if (soulInventory == null) soulInventory = new SoulInventory();
@@ -547,6 +549,15 @@ public class TribulationConfig {
         if (deathRelief.minimumLevel < 0) {
             Tribulation.LOGGER.warn("deathRelief.minimumLevel must be >= 0, got {}; clamped to 0", deathRelief.minimumLevel);
             deathRelief.minimumLevel = 0;
+        }
+
+        levelDecay.graceDays = clampNonNegative("levelDecay.graceDays", levelDecay.graceDays);
+        levelDecay.levelsPerDay = clampNonNegative("levelDecay.levelsPerDay", levelDecay.levelsPerDay);
+        levelDecay.floor = clampAtLeast("levelDecay.floor", levelDecay.floor, 0);
+        if (levelDecay.floor > general.maxLevel) {
+            Tribulation.LOGGER.warn("levelDecay.floor must be <= general.maxLevel ({}), got {}; clamped",
+                    general.maxLevel, levelDecay.floor);
+            levelDecay.floor = general.maxLevel;
         }
 
         if (shards.dropStartLevel < 0) {
@@ -1003,6 +1014,21 @@ public class TribulationConfig {
         public int amount = 2;
         public int cooldownTicks = 6000;
         public int minimumLevel = 0;
+    }
+
+    /**
+     * Optional level decay for returning players (off by default). No decay
+     * accrues until a player has been logged out for {@code graceDays}
+     * real-time days; each day beyond the grace window then sheds
+     * {@code levelsPerDay} levels, computed once on login from the last
+     * disconnect time and floored at {@code floor}. The grace window
+     * restarts on every login.
+     */
+    public static class LevelDecay {
+        public boolean enabled = false;
+        public double graceDays = 7.0;
+        public double levelsPerDay = 2.0;
+        public int floor = 0;
     }
 
     public static class Shards {

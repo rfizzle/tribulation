@@ -488,6 +488,19 @@
               ]
             },
             {
+              "id": "level-decay",
+              "title": "Level Decay",
+              "badge": "Opt-in",
+              "html": ["Disabled by default. When enabled, a long break from the server gently winds your difficulty back down, computed once when you log back in."],
+              "bullets": [
+                "No decay until you have been away <code class='text-accent2'>graceDays</code> real-time days (default 7)",
+                "Each day beyond the grace window sheds <code class='text-accent2'>levelsPerDay</code> levels (default 2)",
+                "Will not reduce below <code class='text-accent2'>floor</code> (default 0)",
+                "Chat notification on login shows days away and the eased level",
+                "Grace window restarts on every login; decay never runs mid-session"
+              ]
+            },
+            {
               "id": "hardcore-hearts",
               "title": "Hardcore Hearts",
               "badge": "Opt-in",

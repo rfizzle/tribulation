@@ -475,6 +475,12 @@ public final class TribulationCommand {
                 formatTicksAsDuration(cfg.deathRelief.cooldownTicks),
                 cfg.deathRelief.minimumLevel));
         lines.add(String.format(Locale.ROOT,
+                "Level decay: %s (grace %.1f days, -%.1f levels/day, floor %d)",
+                onOff(cfg.levelDecay.enabled),
+                cfg.levelDecay.graceDays,
+                cfg.levelDecay.levelsPerDay,
+                cfg.levelDecay.floor));
+        lines.add(String.format(Locale.ROOT,
                 "Shards: %s (start level %d, -%d per use, drop %.3f%%)",
                 onOff(cfg.shards.enabled),
                 cfg.shards.dropStartLevel,

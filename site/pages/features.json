@@ -122,6 +122,31 @@
         },
         {
           "type": "sub",
+          "id": "multiplayer",
+          "title": "Multiplayer Groups",
+          "intro": "On a shared server, whose level does a spawn use? A configurable blend mode answers that, and an optional group health bonus keeps fights meaningful when several players gang up on the same mob.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "leftAccent": true,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Level Blend Modes",
+                  "html": ["<code class='text-accent2'>general.scalingMode</code> picks how the effective level is resolved when multiple players are within <code class='text-accent2'>mobDetectionRange</code> (32 blocks) of a spawn: <span class='text-bone'>nearest</span> (the default — the closest player's level), <span class='text-bone'>max</span> (the highest level in range, so a low-level player can't shield a veteran group), or <span class='text-bone'>average</span> (the floored mean, tuning mobs to the group as a whole). Spectators never count in any mode; dimension, biome, and structure offsets apply to the blended level as usual."]
+                },
+                {
+                  "title": "Group Health Bonus",
+                  "html": ["Off by default. When enabled, each player beyond the first within range adds <code class='text-accent2'>perPlayerBonus</code> of the mob's base max health (+20% by default), capped at <code class='text-accent2'>maxBonus</code> (+100%). Health only — per-hit damage stays fair — and the bonus is excluded from the scaling factor that drives bonus XP, so groups get more to chew through without inflating rewards. Bosses are exempt (they keep their own gentler formula), and the bonus stacks above <code class='text-accent2'>statCaps.maxFactorHealth</code> since it lives outside the axes. <code class='text-accent2'>/tribulation debug</code> lists the players considered and the bonus; <code class='text-accent2'>/tribulation inspect</code> shows the <span class='text-bone'>group_health</span> modifier on affected mobs."]
+                }
+              ]
+            },
+            { "type": "note", "html": "The player scan is bounded and allocation-free, and the group-bonus head count only runs when the feature is enabled — single-player spawn cost is unchanged." }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "moon-phase",
           "title": "Moon-Phase Threat",
           "intro": "A thematic weekly rhythm layered on top of the position axes. The lunar cycle nudges nighttime danger up toward the full moon and back down toward the new moon, so the same coordinates feel different week to week.",

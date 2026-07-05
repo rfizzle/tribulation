@@ -78,6 +78,7 @@ A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 
 - Special zombie variants (Big Zombie, Speed Zombie) with distinct stat profiles
 - Special skeleton variants (Deadeye, Brute) with distinct bow cadence and stat profiles
 - Boss scaling with separate, gentler formula (Ender Dragon, Wither, tagged bosses)
+- Multiplayer level blend modes (`nearest`/`max`/`average`) plus an optional capped group health bonus per extra nearby player — health only, so damage and XP stay fair
 - Trial spawner scaling from detected-player levels, with an optional ominous upgrade
 - Bonus XP proportional to mob difficulty, tunable via `xpMultiplier` (~5x on a fully-scaled mob by default)
 - Per-mob toggle switches for granular control
@@ -127,7 +128,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

@@ -39,13 +39,14 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 12;
+    public int configVersion = 13;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
     public HeightScaling heightScaling = new HeightScaling();
     public MoonPhaseScaling moonPhaseScaling = new MoonPhaseScaling();
     public BloodMoon bloodMoon = new BloodMoon();
+    public GroupHealthBonus groupHealthBonus = new GroupHealthBonus();
     public Map<String, Integer> dimensionOffsets = defaultDimensionOffsets();
     public Map<String, Integer> biomeOffsets = defaultBiomeOffsets();
     public StructureBoosts structureBoosts = new StructureBoosts();
@@ -323,6 +324,7 @@ public class TribulationConfig {
         if (heightScaling == null) heightScaling = new HeightScaling();
         if (moonPhaseScaling == null) moonPhaseScaling = new MoonPhaseScaling();
         if (bloodMoon == null) bloodMoon = new BloodMoon();
+        if (groupHealthBonus == null) groupHealthBonus = new GroupHealthBonus();
         if (statCaps == null) statCaps = new StatCaps();
         if (totems == null) totems = new Totems();
         if (deathRelief == null) deathRelief = new DeathRelief();
@@ -471,6 +473,9 @@ public class TribulationConfig {
         bloodMoon.chance = clampUnit("bloodMoon.chance", bloodMoon.chance);
         bloodMoon.moonBonusMultiplier = clampAtLeastOne("bloodMoon.moonBonusMultiplier", bloodMoon.moonBonusMultiplier);
         bloodMoon.spawnCapMultiplier = clampAtLeastOne("bloodMoon.spawnCapMultiplier", bloodMoon.spawnCapMultiplier);
+
+        groupHealthBonus.perPlayerBonus = clampNonNegative("groupHealthBonus.perPlayerBonus", groupHealthBonus.perPlayerBonus);
+        groupHealthBonus.maxBonus = clampNonNegative("groupHealthBonus.maxBonus", groupHealthBonus.maxBonus);
 
         if (dimensionOffsets != null) {
             for (Map.Entry<String, Integer> entry : dimensionOffsets.entrySet()) {
@@ -994,6 +999,32 @@ public class TribulationConfig {
         public double spawnCapMultiplier = 2.0;
         public boolean blockSleep = true;
         public boolean clientEffects = true;
+    }
+
+    /**
+     * Multiplayer group health bonus (off by default). When enabled, each
+     * non-spectator player beyond the first within
+     * {@link General#mobDetectionRange} of a spawn adds {@code perPlayerBonus}
+     * of base max health (0.2 = +20%) to the mob, clipped at {@code maxBonus}.
+     * Health only — per-hit damage stays fair for a group — and applied with
+     * its own modifier outside the scaling axes, so XP rewards keyed off the
+     * health scaling factor don't inflate with group size. A lone player (or
+     * a zero {@code maxBonus}) gets no bonus.
+     *
+     * <p>Scope notes: bosses are excluded (they keep their own gentler
+     * {@code BossScalingEngine} formula untouched). The bonus stacks on top
+     * of {@code statCaps.maxFactorHealth} — it has its own cap and lives
+     * outside the axes, so the axis ceiling is not an absolute health
+     * ceiling when this is enabled. Trial-spawner mobs count players by
+     * proximity like any other spawn (their level comes from the spawner's
+     * detected players); since trial spawners already add mobs per detected
+     * player, groups face both more and tougher mobs there — tune
+     * {@code perPlayerBonus} down if that compounds too hard.
+     */
+    public static class GroupHealthBonus {
+        public boolean enabled = false;
+        public double perPlayerBonus = 0.2;
+        public double maxBonus = 1.0;
     }
 
     public static class StatCaps {

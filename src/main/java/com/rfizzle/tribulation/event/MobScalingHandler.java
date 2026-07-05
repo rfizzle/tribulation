@@ -145,6 +145,17 @@ public final class MobScalingHandler {
             ChampionManager.tryApply(mob, playerLevel, cfg, world.getRandom());
         }
 
+        // Multiplayer group health bonus: extra max health per additional
+        // player within detection range, capped — health only, so per-hit
+        // damage stays fair for groups. The enabled guard keeps the player
+        // scan off the single-player default hot path.
+        if (cfg.groupHealthBonus.enabled) {
+            int nearby = ScalingEngine.countNearbyPlayers(
+                    world, mob.getX(), mob.getY(), mob.getZ(), cfg.general.mobDetectionRange);
+            ScalingEngine.applyGroupHealthBonus(mob, ScalingEngine.computeGroupHealthBonus(
+                    nearby, cfg.groupHealthBonus.perPlayerBonus, cfg.groupHealthBonus.maxBonus));
+        }
+
         // Modifying max health does not raise current HP; top the mob off so
         // its displayed and effective HP match the scaled maximum at spawn.
         mob.setHealth(mob.getMaxHealth());

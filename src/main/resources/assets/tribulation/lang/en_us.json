@@ -69,6 +69,11 @@
     "config.tribulation.blood_moon.block_sleep": "Block Sleeping",
     "config.tribulation.blood_moon.client_effects": "Sky Tint & Warning Sound",
 
+    "config.tribulation.category.group_health_bonus": "Group Health Bonus",
+    "config.tribulation.group_health_bonus.enabled": "Group Health Bonus",
+    "config.tribulation.group_health_bonus.per_player_bonus": "Health Bonus per Extra Player",
+    "config.tribulation.group_health_bonus.max_bonus": "Max Group Health Bonus",
+
     "config.tribulation.category.stat_caps": "Stat Caps",
     "config.tribulation.stat_caps.health": "Max Health Factor",
     "config.tribulation.stat_caps.damage": "Max Damage Factor",

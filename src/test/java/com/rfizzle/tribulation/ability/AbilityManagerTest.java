@@ -21,39 +21,76 @@ class AbilityManagerTest {
         assertNotEquals(AbilityManager.abilityId("zombie_sprint"), AbilityManager.abilityId("hoglin_kb"));
     }
 
-    @Test
-    void applyAbilities_nullMob_noException() {
-        TribulationConfig cfg = new TribulationConfig();
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, 5, "zombie", cfg));
+    // ---- selection predicate (AbilityManager#matches) --------------------
+    // Zombie has three declared abilities gated by ascending unlock tier:
+    //   zombie_reinforcements @1, zombie_door_breaking @3, zombie_sprinting @5.
+    // These exercise the predicate that decides what applyAbilities applies,
+    // without needing a live Mob (which is covered by AbilitiesGameTest).
+
+    private static MobAbility ability(String mobKey, int unlockTier) {
+        return MobAbilities.REGISTRY.stream()
+                .filter(a -> a.mobKey().equals(mobKey) && a.unlockTier() == unlockTier)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "no registry ability for " + mobKey + " @tier " + unlockTier));
     }
 
     @Test
-    void applyAbilities_nullConfig_noException() {
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, 5, "zombie", null));
+    void matches_unlockTierReached_isTrue() {
+        MobAbility sprint = ability("zombie", 5);
+        assertTrue(AbilityManager.matches(sprint, 5, "zombie", new TribulationConfig()));
     }
 
     @Test
-    void applyAbilities_nullMobKey_noException() {
-        TribulationConfig cfg = new TribulationConfig();
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, 5, null, cfg));
+    void matches_unlockTierNotReached_isFalse() {
+        MobAbility sprint = ability("zombie", 5);
+        assertFalse(AbilityManager.matches(sprint, 4, "zombie", new TribulationConfig()),
+                "an ability must not apply below its unlock tier");
     }
 
     @Test
-    void applyAbilities_zeroTier_noException() {
+    void matches_tierZeroOrNegative_isFalseForEveryAbility() {
         TribulationConfig cfg = new TribulationConfig();
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, 0, "zombie", cfg));
+        // Every ability unlocks at tier >= 1, so tier 0 and negative tiers select nothing.
+        for (MobAbility a : MobAbilities.REGISTRY) {
+            assertFalse(AbilityManager.matches(a, 0, a.mobKey(), cfg), a.abilityKey() + " @tier 0");
+            assertFalse(AbilityManager.matches(a, -1, a.mobKey(), cfg), a.abilityKey() + " @tier -1");
+        }
     }
 
     @Test
-    void applyAbilities_negativeTier_noException() {
-        TribulationConfig cfg = new TribulationConfig();
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, -1, "zombie", cfg));
+    void matches_mobKeyMismatch_isFalse() {
+        MobAbility sprint = ability("zombie", 5);
+        assertFalse(AbilityManager.matches(sprint, 5, "skeleton", new TribulationConfig()),
+                "a zombie ability must not apply to a skeleton");
     }
 
     @Test
-    void applyAbilities_unknownMobKey_noException() {
+    void matches_unknownMobKey_isFalse() {
+        MobAbility sprint = ability("zombie", 5);
+        assertFalse(AbilityManager.matches(sprint, 5, "unknown_mob", new TribulationConfig()));
+    }
+
+    @Test
+    void matches_disabledToggle_isFalse() {
+        MobAbility sprint = ability("zombie", 5);
         TribulationConfig cfg = new TribulationConfig();
-        assertDoesNotThrow(() -> AbilityManager.applyAbilities(null, 5, "unknown_mob", cfg));
+        cfg.abilities.zombieSprinting = false;
+        assertFalse(AbilityManager.matches(sprint, 5, "zombie", cfg),
+                "a disabled toggle must exclude its ability even at the unlock tier");
+    }
+
+    @Test
+    void applyAbilities_guardConditions_areNoOps() {
+        // The public entry point must swallow the degenerate inputs its callers
+        // guard against (null mob/config/key, non-positive tier) rather than throw.
+        TribulationConfig cfg = new TribulationConfig();
+        assertDoesNotThrow(() -> {
+            AbilityManager.applyAbilities(null, 5, "zombie", cfg);
+            AbilityManager.applyAbilities(null, 5, "zombie", null);
+            AbilityManager.applyAbilities(null, 5, null, cfg);
+            AbilityManager.applyAbilities(null, 0, "zombie", cfg);
+        });
     }
 
     @Test

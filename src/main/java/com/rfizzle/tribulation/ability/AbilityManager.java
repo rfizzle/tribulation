@@ -77,15 +77,26 @@ public final class AbilityManager {
         if (mob == null || cfg == null || mobKey == null || tier <= 0) return;
         try {
             for (MobAbility ability : MobAbilities.REGISTRY) {
-                if (ability.unlockTier() <= tier
-                        && ability.mobKey().equals(mobKey)
-                        && ability.enabled().test(cfg.abilities)) {
+                if (matches(ability, tier, mobKey, cfg)) {
                     ability.apply().accept(mob, cfg);
                 }
             }
         } catch (Exception e) {
             Tribulation.LOGGER.warn("Failed applying abilities to {} tier {}", mobKey, tier, e);
         }
+    }
+
+    /**
+     * Whether {@code ability} should be applied to a mob of {@code mobKey} at the
+     * given {@code tier} under {@code cfg}: the mob key matches, the unlock tier is
+     * reached, and the ability's toggle is enabled. Callers guarantee non-null
+     * {@code mobKey} and {@code cfg} (see {@link #applyAbilities}); the in-place
+     * loop keeps the spawn hot path allocation-free.
+     */
+    static boolean matches(MobAbility ability, int tier, String mobKey, TribulationConfig cfg) {
+        return ability.unlockTier() <= tier
+                && ability.mobKey().equals(mobKey)
+                && ability.enabled().test(cfg.abilities);
     }
 
     // ---- Helpers shared by the registry's apply actions ----

@@ -397,6 +397,43 @@
         },
         {
           "type": "sub",
+          "id": "environmental-pressure",
+          "title": "Environmental Pressure",
+          "intro": "Disabled by default. When enabled, the world itself pushes back at high tiers — and it gates on each player's <em>own</em> level, so a low-level player on the same server feels none of it. <code class='text-accent2'>environmentalPressure.enabled</code> is the master switch; each effect below has its own toggle and tier threshold.",
+          "blocks": [
+            {
+              "type": "cards",
+              "mdColumns": 2,
+              "titleSize": "base",
+              "items": [
+                {
+                  "title": "Debilitating Strikes",
+                  "html": ["At or above <code class='text-accent2'>debilitatingStrikes.tierThreshold</code> (default tier 3), a landed melee hit from a Tribulation-scaled hostile briefly saps you. Ranged and environmental damage never trigger it."],
+                  "bullets": [
+                    "Weakness on hit: <code class='text-accent2'>applyWeakness</code> (default on), <code class='text-accent2'>weaknessDurationTicks</code> (default 100 = 5s), <code class='text-accent2'>weaknessAmplifier</code> (default 0)",
+                    "Slowness on hit: <code class='text-accent2'>applySlowness</code> (default off), with its own duration and amplifier",
+                    "Only hits from mobs Tribulation actually scaled apply; blocked hits never trigger"
+                  ]
+                },
+                {
+                  "title": "Oppressive Nights",
+                  "html": ["At or above <code class='text-accent2'>oppressiveNights.tierThreshold</code> (default tier 4), night ambient light is subtly reduced for the affected player — a purely visual, per-player darkening that fades in through dusk and out at dawn."],
+                  "bullets": [
+                    "Strength: <code class='text-accent2'>maxDarkness</code> (default 0.25), hard-capped at 0.6 on both server and client",
+                    "Night only, and only in dimensions with a daylight cycle — storms at noon never trigger it",
+                    "Client opt-out: <code class='text-accent2'>oppressiveNights.clientEnabled</code> in the client's own config, and the vanilla Darkness Pulsing accessibility slider bounds it too"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "html": "Performance: debilitating strikes are event-driven (no cost outside combat, one boolean check when disabled) and oppressive nights sync only when a player's pressure actually changes."
+            }
+          ]
+        },
+        {
+          "type": "sub",
           "id": "zombie-variants",
           "title": "Zombie Variants",
           "intro": "Zombies have a chance to spawn as special variants with distinct visual and mechanical differences.",

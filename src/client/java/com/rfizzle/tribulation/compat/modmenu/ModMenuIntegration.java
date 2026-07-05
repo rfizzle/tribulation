@@ -2,12 +2,15 @@ package com.rfizzle.tribulation.compat.modmenu;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
+import com.rfizzle.tribulation.event.EnvironmentalPressureHandler;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.Locale;
 
@@ -66,12 +69,23 @@ public final class ModMenuIntegration implements ModMenuApi {
             addTrialSpawner(builder, entry, current);
             addRaidScaling(builder, entry, current);
             addPackTactics(builder, entry, current);
+            addEnvironmentalPressure(builder, entry, current);
             addThreatParticles(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
                 current.validate();
                 current.save();
                 Tribulation.reloadConfig();
+                // Per-player night pressure is server-synced (unlike the
+                // blood-moon tint, which reads local config), so a GUI edit
+                // on an integrated server must re-broadcast it — the periodic
+                // level sync that would otherwise catch up is skipped when
+                // time scaling is disabled.
+                MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+                if (server != null) {
+                    server.execute(() ->
+                            EnvironmentalPressureHandler.broadcast(server, Tribulation.getConfig()));
+                }
             });
 
             return builder.build();
@@ -1111,6 +1125,98 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(2).setMin(0)
                 .setMax(TribulationConfig.PackTactics.MAX_GROUP_SIZE_BONUS)
                 .setSaveConsumer(v -> pt.groupSizeBonus = v)
+                .build());
+    }
+
+    private static void addEnvironmentalPressure(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.environmental_pressure"));
+        TribulationConfig.EnvironmentalPressure ep = config.environmentalPressure;
+        TribulationConfig.EnvironmentalPressure.DebilitatingStrikes strikes = ep.debilitatingStrikes;
+        TribulationConfig.EnvironmentalPressure.OppressiveNights nights = ep.oppressiveNights;
+
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.enabled"),
+                        ep.enabled)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> ep.enabled = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.strikes_enabled"),
+                        strikes.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> strikes.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.strikes_tier_threshold"),
+                        strikes.tierThreshold)
+                .setDefaultValue(3).setMin(0)
+                .setSaveConsumer(v -> strikes.tierThreshold = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.apply_weakness"),
+                        strikes.applyWeakness)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> strikes.applyWeakness = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.weakness_duration_ticks"),
+                        strikes.weaknessDurationTicks)
+                .setDefaultValue(100).setMin(1)
+                .setMax(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_DURATION_TICKS)
+                .setSaveConsumer(v -> strikes.weaknessDurationTicks = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.weakness_amplifier"),
+                        strikes.weaknessAmplifier)
+                .setDefaultValue(0).setMin(0)
+                .setMax(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_AMPLIFIER)
+                .setSaveConsumer(v -> strikes.weaknessAmplifier = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.apply_slowness"),
+                        strikes.applySlowness)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> strikes.applySlowness = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.slowness_duration_ticks"),
+                        strikes.slownessDurationTicks)
+                .setDefaultValue(100).setMin(1)
+                .setMax(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_DURATION_TICKS)
+                .setSaveConsumer(v -> strikes.slownessDurationTicks = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.slowness_amplifier"),
+                        strikes.slownessAmplifier)
+                .setDefaultValue(0).setMin(0)
+                .setMax(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_AMPLIFIER)
+                .setSaveConsumer(v -> strikes.slownessAmplifier = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.nights_enabled"),
+                        nights.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> nights.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.environmental_pressure.nights_tier_threshold"),
+                        nights.tierThreshold)
+                .setDefaultValue(4).setMin(0)
+                .setSaveConsumer(v -> nights.tierThreshold = v)
+                .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.environmental_pressure.max_darkness"),
+                        nights.maxDarkness)
+                .setDefaultValue(0.25).setMin(0.0)
+                .setMax(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS)
+                .setSaveConsumer(v -> nights.maxDarkness = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.environmental_pressure.client_enabled"),
+                        nights.clientEnabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> nights.clientEnabled = v)
                 .build());
     }
 

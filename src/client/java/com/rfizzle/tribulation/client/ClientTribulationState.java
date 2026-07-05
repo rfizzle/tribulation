@@ -7,6 +7,7 @@ public final class ClientTribulationState {
     private static int progressTicks = 0;
     private static int goalTicks = 1;
     private static boolean bloodMoonActive = false;
+    private static float oppressiveNightDarkness = 0f;
 
     private ClientTribulationState() {}
 
@@ -57,6 +58,20 @@ public final class ClientTribulationState {
         bloodMoonActive = active;
     }
 
+    /**
+     * Server-synced oppressive-nights darkness strength for the local player;
+     * {@code 0} when the effect does not apply. Presentation rules (night
+     * only, dimension, ceiling, opt-out) live in
+     * {@code EnvironmentalPressureClientEffects}.
+     */
+    public static float getOppressiveNightDarkness() {
+        return oppressiveNightDarkness;
+    }
+
+    public static void setOppressiveNightDarkness(float darkness) {
+        oppressiveNightDarkness = Math.max(0f, darkness);
+    }
+
     public static void reset() {
         level = -1;
         previousLevel = -1;
@@ -64,5 +79,6 @@ public final class ClientTribulationState {
         progressTicks = 0;
         goalTicks = 1;
         bloodMoonActive = false;
+        oppressiveNightDarkness = 0f;
     }
 }

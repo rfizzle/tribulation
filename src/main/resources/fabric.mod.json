@@ -35,7 +35,8 @@
             "com.rfizzle.tribulation.gametest.ParticleRegistrationGameTest",
             "com.rfizzle.tribulation.gametest.BloodMoonGameTest",
             "com.rfizzle.tribulation.gametest.ChampionGameTest",
-            "com.rfizzle.tribulation.gametest.PackTacticsGameTest"
+            "com.rfizzle.tribulation.gametest.PackTacticsGameTest",
+            "com.rfizzle.tribulation.gametest.EnvironmentalPressureGameTest"
         ],
         "modmenu": ["com.rfizzle.tribulation.compat.modmenu.ModMenuIntegration"],
         "jade": ["com.rfizzle.tribulation.compat.jade.JadeTribulationPlugin"],

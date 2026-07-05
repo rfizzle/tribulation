@@ -111,6 +111,69 @@ class TribulationConfigTest {
     }
 
     @Test
+    void defaultEnvironmentalPressure_isDisabledWithSaneDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertFalse(cfg.environmentalPressure.enabled, "environmental pressure must be opt-in");
+
+        TribulationConfig.EnvironmentalPressure.DebilitatingStrikes strikes =
+                cfg.environmentalPressure.debilitatingStrikes;
+        assertTrue(strikes.enabled);
+        assertEquals(3, strikes.tierThreshold);
+        assertTrue(strikes.applyWeakness);
+        assertEquals(100, strikes.weaknessDurationTicks);
+        assertEquals(0, strikes.weaknessAmplifier);
+        assertFalse(strikes.applySlowness);
+        assertEquals(100, strikes.slownessDurationTicks);
+        assertEquals(0, strikes.slownessAmplifier);
+
+        TribulationConfig.EnvironmentalPressure.OppressiveNights nights =
+                cfg.environmentalPressure.oppressiveNights;
+        assertTrue(nights.enabled);
+        assertEquals(4, nights.tierThreshold);
+        assertEquals(0.25, nights.maxDarkness);
+        assertTrue(nights.clientEnabled);
+    }
+
+    @Test
+    void validate_clampsEnvironmentalPressureFields() {
+        TribulationConfig cfg = new TribulationConfig();
+        TribulationConfig.EnvironmentalPressure.DebilitatingStrikes strikes =
+                cfg.environmentalPressure.debilitatingStrikes;
+        TribulationConfig.EnvironmentalPressure.OppressiveNights nights =
+                cfg.environmentalPressure.oppressiveNights;
+        strikes.tierThreshold = -1;
+        strikes.weaknessDurationTicks = 0;
+        strikes.weaknessAmplifier = 99;
+        strikes.slownessDurationTicks = 999999;
+        strikes.slownessAmplifier = -3;
+        nights.tierThreshold = -2;
+        nights.maxDarkness = 5.0;
+
+        cfg.validate();
+
+        assertEquals(0, strikes.tierThreshold);
+        assertEquals(1, strikes.weaknessDurationTicks);
+        assertEquals(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_AMPLIFIER,
+                strikes.weaknessAmplifier);
+        assertEquals(TribulationConfig.EnvironmentalPressure.DebilitatingStrikes.MAX_EFFECT_DURATION_TICKS,
+                strikes.slownessDurationTicks);
+        assertEquals(0, strikes.slownessAmplifier);
+        assertEquals(0, nights.tierThreshold);
+        assertEquals(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS,
+                nights.maxDarkness);
+    }
+
+    @Test
+    void validate_clampsNegativeMaxDarknessToZero() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.environmentalPressure.oppressiveNights.maxDarkness = -0.4;
+
+        cfg.validate();
+
+        assertEquals(0.0, cfg.environmentalPressure.oppressiveNights.maxDarkness);
+    }
+
+    @Test
     void defaultBloodMoon_hasValidValues() {
         TribulationConfig cfg = new TribulationConfig();
         assertTrue(cfg.bloodMoon.enabled);

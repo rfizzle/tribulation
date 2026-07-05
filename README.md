@@ -59,13 +59,14 @@ At or above a configurable tier threshold (default tier 3), the classic pack mob
 
 - **Death Relief** — Lose 2 levels on death (rubber-band mechanic, configurable)
 - **Shatter Shards** — Rare mob drops (0.5%) that reduce your level by 5 on use
+- **Level Decay** *(opt-in)* — After a configurable grace period away from the server (default 7 days), your level decays by a configurable rate (default 2 levels/day beyond the grace window), computed on login and floored at a configurable minimum
 - **Hardcore Hearts** *(opt-in)* — Permanently lose max health on each death; restore with Heart Fragments
 - **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment (or any enchantment in the `#c:soulbound` convention tag, e.g. Meridian's Tether)
 - **Totem interaction** — Configure how a popped Totem of Undying interacts with the penalties via the `totems` section: `countsAsDeathRelief` (whether a totem pop still applies the Death Relief level loss) and `protectsHearts` (whether a totem pop shields you from the Hardcore Hearts loss)
 
 ### Statistics
 
-Tribulation registers six custom statistics (highest level reached, levels lost to death relief, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
+Tribulation registers seven custom statistics (highest level reached, levels lost to death relief, levels lost to offline decay, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
 
 ### Advancements
 

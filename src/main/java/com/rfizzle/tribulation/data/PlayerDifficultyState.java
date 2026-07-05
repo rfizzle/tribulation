@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerDifficultyState extends SavedData {
     public static final String STORAGE_KEY = "tribulation_players";
     public static final long NEVER_DIED = Long.MIN_VALUE;
+    /** Sentinel for "no last-seen timestamp recorded" — decay never applies from it. */
+    public static final long NEVER_SEEN = 0L;
 
     private static final String NBT_PLAYERS_KEY = "Players";
     private static final String NBT_UUID_KEY = "UUID";
@@ -43,6 +45,7 @@ public class PlayerDifficultyState extends SavedData {
     private static final String NBT_TICK_KEY = "Tick";
     private static final String NBT_LAST_DEATH_TICK_KEY = "LastDeathTick";
     private static final String NBT_HEARTS_LOST_KEY = "HeartsLost";
+    private static final String NBT_LAST_SEEN_KEY = "LastSeenEpochMs";
 
     public static final SavedData.Factory<PlayerDifficultyState> FACTORY = new SavedData.Factory<>(
             PlayerDifficultyState::new,
@@ -195,6 +198,30 @@ public class PlayerDifficultyState extends SavedData {
         return newLevel;
     }
 
+    /**
+     * Wall-clock timestamp (epoch millis) of the player's last disconnect,
+     * used as the offline level-decay anchor. {@link #NEVER_SEEN} when the
+     * player has never been stamped (fresh player, or a save from before the
+     * feature existed) — callers must not compute decay from the sentinel.
+     */
+    public long getLastSeen(UUID uuid) {
+        return getPlayerData(uuid).lastSeenEpochMs;
+    }
+
+    /**
+     * Record the offline level-decay anchor. Negative values are clamped to
+     * {@link #NEVER_SEEN} so a clock anomaly can never persist a timestamp
+     * that would later underflow the elapsed-time computation.
+     */
+    public void setLastSeen(UUID uuid, long epochMs) {
+        long clamped = Math.max(NEVER_SEEN, epochMs);
+        PlayerData pd = getPlayerData(uuid);
+        if (pd.lastSeenEpochMs != clamped) {
+            pd.lastSeenEpochMs = clamped;
+            setDirty();
+        }
+    }
+
     public int getHeartsLost(UUID uuid) {
         return getPlayerData(uuid).heartsLost;
     }
@@ -286,6 +313,12 @@ public class PlayerDifficultyState extends SavedData {
             playerTag.putInt(NBT_TICK_KEY, entry.getValue().tickCounter);
             playerTag.putLong(NBT_LAST_DEATH_TICK_KEY, entry.getValue().lastDeathTick);
             playerTag.putInt(NBT_HEARTS_LOST_KEY, entry.getValue().heartsLost);
+            // Only written once a decay anchor exists, so a server that never
+            // enables levelDecay keeps its save byte-identical to pre-feature
+            // files. load() reads a missing key as NEVER_SEEN.
+            if (entry.getValue().lastSeenEpochMs != NEVER_SEEN) {
+                playerTag.putLong(NBT_LAST_SEEN_KEY, entry.getValue().lastSeenEpochMs);
+            }
             list.add(playerTag);
         }
         tag.put(NBT_PLAYERS_KEY, list);
@@ -317,6 +350,7 @@ public class PlayerDifficultyState extends SavedData {
                     ? playerTag.getLong(NBT_LAST_DEATH_TICK_KEY)
                     : NEVER_DIED;
             pd.heartsLost = Math.max(0, playerTag.getInt(NBT_HEARTS_LOST_KEY));
+            pd.lastSeenEpochMs = Math.max(NEVER_SEEN, playerTag.getLong(NBT_LAST_SEEN_KEY));
             state.data.put(uuid, pd);
         }
         return state;
@@ -327,6 +361,7 @@ public class PlayerDifficultyState extends SavedData {
         public int tickCounter;
         public long lastDeathTick = NEVER_DIED;
         public int heartsLost;
+        public long lastSeenEpochMs = NEVER_SEEN;
 
         public PlayerData() {}
     }

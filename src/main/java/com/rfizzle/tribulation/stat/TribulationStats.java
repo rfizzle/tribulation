@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Mob;
 public final class TribulationStats {
     public static final ResourceLocation HIGHEST_LEVEL_REACHED = Tribulation.id("highest_level_reached");
     public static final ResourceLocation LEVELS_LOST_TO_DEATH_RELIEF = Tribulation.id("levels_lost_to_death_relief");
+    public static final ResourceLocation LEVELS_LOST_TO_DECAY = Tribulation.id("levels_lost_to_decay");
     public static final ResourceLocation SHATTER_SHARDS_USED = Tribulation.id("shatter_shards_used");
     public static final ResourceLocation HEARTS_LOST = Tribulation.id("hearts_lost");
     public static final ResourceLocation HEARTS_RESTORED = Tribulation.id("hearts_restored");
@@ -32,6 +33,7 @@ public final class TribulationStats {
     public static void register() {
         registerStat(HIGHEST_LEVEL_REACHED, StatFormatter.DEFAULT);
         registerStat(LEVELS_LOST_TO_DEATH_RELIEF, StatFormatter.DEFAULT);
+        registerStat(LEVELS_LOST_TO_DECAY, StatFormatter.DEFAULT);
         registerStat(SHATTER_SHARDS_USED, StatFormatter.DEFAULT);
         registerStat(HEARTS_LOST, StatFormatter.DEFAULT);
         registerStat(HEARTS_RESTORED, StatFormatter.DEFAULT);

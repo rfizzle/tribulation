@@ -57,6 +57,40 @@ class TribulationConfigTest {
     }
 
     @Test
+    void defaultLevelDecay_isDisabledWithSaneDefaults() {
+        TribulationConfig cfg = new TribulationConfig();
+        assertFalse(cfg.levelDecay.enabled, "level decay must be opt-in");
+        assertEquals(7.0, cfg.levelDecay.graceDays);
+        assertEquals(2.0, cfg.levelDecay.levelsPerDay);
+        assertEquals(0, cfg.levelDecay.floor);
+    }
+
+    @Test
+    void validate_clampsLevelDecayFields() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.levelDecay.graceDays = -3.0;
+        cfg.levelDecay.levelsPerDay = -1.0;
+        cfg.levelDecay.floor = -5;
+
+        cfg.validate();
+
+        assertEquals(0.0, cfg.levelDecay.graceDays);
+        assertEquals(0.0, cfg.levelDecay.levelsPerDay);
+        assertEquals(0, cfg.levelDecay.floor);
+    }
+
+    @Test
+    void validate_clampsLevelDecayFloorToMaxLevel() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.general.maxLevel = 100;
+        cfg.levelDecay.floor = 500;
+
+        cfg.validate();
+
+        assertEquals(100, cfg.levelDecay.floor);
+    }
+
+    @Test
     void defaultBloodMoon_hasValidValues() {
         TribulationConfig cfg = new TribulationConfig();
         assertTrue(cfg.bloodMoon.enabled);

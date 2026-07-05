@@ -72,9 +72,22 @@ class TribulationCommandTest {
         assertTrue(joined.contains("Height:"), "height details when enabled");
         assertTrue(joined.contains("Stat caps:"), "lists stat caps");
         assertTrue(joined.contains("Death relief:"), "lists death relief");
+        assertTrue(joined.contains("Level decay:"), "lists level decay");
         assertTrue(joined.contains("Shards:"), "lists shards");
         assertTrue(joined.contains("Bosses:"), "lists boss scaling");
         assertTrue(joined.contains("Tiers:"), "lists tier thresholds");
+    }
+
+    @Test
+    void formatConfigSummary_rendersLevelDecayValues() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.levelDecay.enabled = true;
+        cfg.levelDecay.graceDays = 7.0;
+        cfg.levelDecay.levelsPerDay = 2.0;
+        cfg.levelDecay.floor = 3;
+        List<String> lines = TribulationCommand.formatConfigSummary(cfg);
+        assertTrue(lines.contains("Level decay: on (grace 7.0 days, -2.0 levels/day, floor 3)"),
+                "level-decay line renders toggle, grace, rate, and floor");
     }
 
     @Test

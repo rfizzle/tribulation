@@ -5,6 +5,7 @@ import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.TribulationAttachments;
 import com.rfizzle.tribulation.event.ZombieVariantHandler;
 import com.rfizzle.tribulation.particle.ThreatCue;
+import com.rfizzle.tribulation.particle.ThreatParticleCulling;
 import com.rfizzle.tribulation.particle.TribulationParticles;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -65,12 +67,32 @@ public final class TribulationParticleEmitter {
         int frequency = Math.max(1, cfg.threatParticles.particleFrequencyTicks);
         RandomSource random = level.random;
 
+        Vec3 eye = player.getEyePosition();
+        Vec3 view = player.getViewVector(1.0F);
+
         AABB box = player.getBoundingBox().inflate(RADIUS);
         List<Mob> mobs = level.getEntitiesOfClass(Mob.class, box,
                 mob -> mob.hasAttached(TribulationAttachments.SCALED_TIER));
 
+        // Total particles emitted this tick, capped by the per-tick budget so a
+        // crowd of eligible mobs can't flood the frame.
+        int spawned = 0;
+
         for (Mob mob : mobs) {
             if (mob.distanceToSqr(player) > RADIUS_SQR) continue;
+            if (!ThreatParticleCulling.withinBudget(spawned)) return;
+
+            // View-cone cull: mobs behind or outside the player's field of view
+            // cost nothing beyond this check — no cue decision is made for them.
+            // Origin is the eye (not the feet the distance cull above uses) so the
+            // cone matches what the player actually sees. Aim at the mob's vertical
+            // centre so tall mobs at the screen edge aren't clipped by their feet.
+            double centreY = mob.getY() + mob.getBbHeight() * 0.5;
+            if (!ThreatParticleCulling.inViewCone(
+                    mob.getX() - eye.x, centreY - eye.y, mob.getZ() - eye.z,
+                    view.x, view.y, view.z)) {
+                continue;
+            }
 
             // Champion aura is independent of the tier/variant threat cues:
             // every champion telegraphs, whatever its tier. Vanilla soul-fire
@@ -79,7 +101,9 @@ public final class TribulationParticleEmitter {
                     && mob.hasAttached(TribulationAttachments.CHAMPION_AFFIXES)
                     && !mob.isInvisible()
                     && random.nextInt(CHAMPION_AURA_INTERVAL_TICKS) == 0) {
+                if (!ThreatParticleCulling.withinBudget(spawned)) return;
                 emitChampionAura(level, mob, random);
+                spawned++;
             }
 
             if (!threatCues) continue;
@@ -92,7 +116,9 @@ public final class TribulationParticleEmitter {
 
             // ~1/frequency chance per tick keeps emission sparse and cheap.
             if (random.nextInt(frequency) != 0) continue;
+            if (!ThreatParticleCulling.withinBudget(spawned)) return;
             emit(level, mob, cue, random);
+            spawned++;
         }
     }
 

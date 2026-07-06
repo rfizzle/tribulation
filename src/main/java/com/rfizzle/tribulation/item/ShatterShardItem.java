@@ -2,10 +2,13 @@ package com.rfizzle.tribulation.item;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
+import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
+import com.rfizzle.tribulation.compat.common.TooltipDetailProvider;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,6 +45,15 @@ public class ShatterShardItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.translatable("item.tribulation.shatter_shard.tooltip"));
+        if (TooltipDetailProvider.isShiftHeld()) {
+            tooltipComponents.add(Component.empty());
+            for (Component line : ShardInfoFormatter.infoLines(TooltipDetailProvider.effectiveConfig())) {
+                tooltipComponents.add(line.copy().withStyle(ChatFormatting.GRAY));
+            }
+        } else {
+            tooltipComponents.add(Component.translatable("item.tribulation.shatter_shard.info.hold_shift")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 
     @Override

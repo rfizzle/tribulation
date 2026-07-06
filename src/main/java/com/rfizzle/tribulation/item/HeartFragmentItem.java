@@ -1,10 +1,13 @@
 package com.rfizzle.tribulation.item;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.compat.common.HeartFragmentInfoFormatter;
+import com.rfizzle.tribulation.compat.common.TooltipDetailProvider;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.event.HardcoreHeartsHandler;
 import com.rfizzle.tribulation.stat.TribulationStats;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,6 +37,15 @@ public class HeartFragmentItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.translatable("item.tribulation.heart_fragment.tooltip"));
+        if (TooltipDetailProvider.isShiftHeld()) {
+            tooltipComponents.add(Component.empty());
+            for (Component line : HeartFragmentInfoFormatter.infoLines(TooltipDetailProvider.effectiveConfig())) {
+                tooltipComponents.add(line.copy().withStyle(ChatFormatting.GRAY));
+            }
+        } else {
+            tooltipComponents.add(Component.translatable("item.tribulation.heart_fragment.info.hold_shift")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 
     @Override

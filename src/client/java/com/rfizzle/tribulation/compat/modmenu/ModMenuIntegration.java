@@ -8,11 +8,15 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.Locale;
+import java.util.Optional;
 
 public final class ModMenuIntegration implements ModMenuApi {
 
@@ -29,6 +33,27 @@ public final class ModMenuIntegration implements ModMenuApi {
             sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
         }
         return Component.literal(sb.toString());
+    }
+
+    /**
+     * Attach a tooltip to every entry in a category by deriving its tooltip
+     * lang key from the entry's own label key ({@code <label>.tooltip}). This
+     * covers the generic {@code addAbilityToggle} and per-mob toggle loops for
+     * free — no per-entry {@code setTooltip} calls. The {@link Language#has}
+     * guard means a missing string degrades to no tooltip rather than a raw
+     * key rendered on screen.
+     */
+    private static void applyTooltips(ConfigCategory cat) {
+        for (Object o : cat.getEntries()) {
+            if (o instanceof TooltipListEntry<?> tip
+                    && tip.getFieldName().getContents() instanceof TranslatableContents tc) {
+                String key = tc.getKey() + ".tooltip";
+                if (Language.getInstance().has(key)) {
+                    tip.setTooltipSupplier(() ->
+                            Optional.of(new Component[]{Component.translatable(key)}));
+                }
+            }
+        }
     }
 
     @Override
@@ -229,6 +254,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1.0).setMin(0.0)
                 .setSaveConsumer(v -> affixes.regenHealthPerSecond = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addGeneral(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -272,6 +298,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.general.notifyLevelUpShowTier = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addHud(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -304,6 +331,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(4).setMin(0)
                 .setSaveConsumer(v -> hud.offsetY = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addScalingSources(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -431,6 +459,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(63.0)
                 .setSaveConsumer(v -> config.moonPhaseScaling.surfaceY = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addBloodMoon(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -473,6 +502,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> bm.clientEffects = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addGroupHealthBonus(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -497,6 +527,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1.0).setMin(0.0)
                 .setSaveConsumer(v -> ghb.maxBonus = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addStatCaps(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -532,6 +563,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1.5).setMin(0.0)
                 .setSaveConsumer(v -> config.statCaps.maxFactorFollowRange = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addTiers(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -567,6 +599,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(250).setMin(0)
                 .setSaveConsumer(v -> config.tiers.tier5 = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addAbilities(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -603,6 +636,7 @@ public final class ModMenuIntegration implements ModMenuApi {
         addAbilityToggle(cat, entry, "guardian_faster_beam", a.guardianFasterBeam, v -> a.guardianFasterBeam = v);
         addAbilityToggle(cat, entry, "ravager_roar_expansion", a.ravagerRoarExpansion, v -> a.ravagerRoarExpansion = v);
         addAbilityToggle(cat, entry, "silverfish_call_sleepers", a.silverfishCallSleepers, v -> a.silverfishCallSleepers = v);
+        applyTooltips(cat);
     }
 
     private static void addAbilityToggle(ConfigCategory cat, ConfigEntryBuilder entry,
@@ -635,6 +669,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                     .setSaveConsumer(v -> config.mobToggles.put(mob, v))
                     .build());
         }
+        applyTooltips(cat);
     }
 
     private static void addDeathRelief(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -664,6 +699,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(0).setMin(0)
                 .setSaveConsumer(v -> config.deathRelief.minimumLevel = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addLevelDecay(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -694,6 +730,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(0).setMin(0)
                 .setSaveConsumer(v -> ld.floor = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addShards(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -729,6 +766,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.shards.sideEffects = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addHardcoreHearts(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -759,6 +797,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(2).setMin(1).setMax(20)
                 .setSaveConsumer(v -> hh.heartsRestoredPerFragment = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addSoulInventory(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -789,6 +828,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> si.respectKeepInventory = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addTotems(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -807,6 +847,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> totems.protectsHearts = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addSpecialZombies(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -867,6 +908,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(10.0).setMin(0.0)
                 .setSaveConsumer(v -> sz.speedZombieMalusHealth = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addSpecialSkeletons(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -927,6 +969,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1.3).setMin(1.0)
                 .setSaveConsumer(v -> sk.bruteSkeletonSize = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addBosses(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -956,6 +999,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(0.3).setMin(0.0)
                 .setSaveConsumer(v -> config.bosses.bossTimeFactor = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addXp(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -967,6 +1011,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1.0).setMin(0.0)
                 .setSaveConsumer(v -> config.xp.xpMultiplier = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addArmorEquipment(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1006,6 +1051,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(15.0).setMin(0.0)
                 .setSaveConsumer(v -> ae.toughnessCeiling = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addWeaponEquipment(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1031,6 +1077,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(20.0).setMin(0.0)
                 .setSaveConsumer(v -> we.damageCeiling = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addTrialSpawner(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1062,6 +1109,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(3).setMin(0)
                 .setSaveConsumer(v -> ts.ominousUpgrade.minimumTier = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addRaidScaling(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1093,6 +1141,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(1).setMin(0)
                 .setSaveConsumer(v -> rs.extraWaveCount = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addPackTactics(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1126,6 +1175,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setMax(TribulationConfig.PackTactics.MAX_GROUP_SIZE_BONUS)
                 .setSaveConsumer(v -> pt.groupSizeBonus = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addEnvironmentalPressure(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1225,6 +1275,7 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> nights.clientEnabled = v)
                 .build());
+        applyTooltips(cat);
     }
 
     private static void addThreatParticles(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
@@ -1250,5 +1301,6 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(40).setMin(1)
                 .setSaveConsumer(v -> tp.particleFrequencyTicks = v)
                 .build());
+        applyTooltips(cat);
     }
 }

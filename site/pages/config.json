@@ -117,6 +117,25 @@
       ]
     },
     {
+      "id": "blood-moon",
+      "title": "bloodMoon",
+      "intro": "Rare full-moon nights of heightened danger, with a red sky and denser spawns.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable Blood Moon events"],
+            ["<code class='text-accent2 whitespace-nowrap'>chance</code>", "double", "0.25", "Probability that a full-moon night becomes a Blood Moon (0.0–1.0)"],
+            ["<code class='text-accent2 whitespace-nowrap'>moonBonusMultiplier</code>", "double", "3.0", "Multiplier applied to the moon-phase scaling bonus during a Blood Moon"],
+            ["<code class='text-accent2 whitespace-nowrap'>spawnCapMultiplier</code>", "double", "2.0", "Multiplier applied to the hostile mob spawn cap during a Blood Moon"],
+            ["<code class='text-accent2 whitespace-nowrap'>blockSleep</code>", "boolean", "true", "Prevent players from sleeping through a Blood Moon"],
+            ["<code class='text-accent2 whitespace-nowrap'>clientEffects</code>", "boolean", "true", "Show the red sky tint and play the warning sound when a Blood Moon rises"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "dimension-offsets",
       "title": "dimensionOffsets",
       "intro": "A flat level offset per dimension, added to the effective level used for mob stat scaling and tier-gated abilities in that dimension. The Nether and End only receive the time axis (distance and height are Overworld-only), so a baseline offset restores the intended difficulty escalation there. The offset never touches the player's stored level, HUD readout, tier notifications, or death penalties.",
@@ -168,6 +187,22 @@
       ]
     },
     {
+      "id": "group-health-bonus",
+      "title": "groupHealthBonus",
+      "intro": "Optional bonus health for mobs when several players are nearby.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "false", "Grant mobs bonus health for each additional nearby player"],
+            ["<code class='text-accent2 whitespace-nowrap'>perPlayerBonus</code>", "double", "0.2", "Health factor added per extra player in range"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxBonus</code>", "double", "1.0", "Maximum total group health bonus factor"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "death-relief",
       "title": "deathRelief",
       "intro": "Level reduction on death acts as a natural difficulty rubber-band.",
@@ -180,6 +215,23 @@
             ["<code class='text-accent2 whitespace-nowrap'>amount</code>", "int", "2", "Levels lost per death"],
             ["<code class='text-accent2 whitespace-nowrap'>cooldownTicks</code>", "int", "6000", "Ticks between reductions"],
             ["<code class='text-accent2 whitespace-nowrap'>minimumLevel</code>", "int", "0", "Level floor (will not reduce below this)"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "level-decay",
+      "title": "levelDecay",
+      "intro": "Optionally ease a player's difficulty level back down while they are offline.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "false", "Reduce a player's difficulty level while they are offline"],
+            ["<code class='text-accent2 whitespace-nowrap'>graceDays</code>", "double", "7.0", "Days a player can stay offline before decay begins"],
+            ["<code class='text-accent2 whitespace-nowrap'>levelsPerDay</code>", "double", "2.0", "Levels lost per day offline beyond the grace period"],
+            ["<code class='text-accent2 whitespace-nowrap'>floor</code>", "int", "0", "Lowest level offline decay can reduce a player to"]
           ]
         }
       ]
@@ -360,6 +412,41 @@
       ]
     },
     {
+      "id": "champions",
+      "title": "champions",
+      "intro": "Rare elite mobs with bonus stats and randomly rolled affixes.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Enable champion mobs"],
+            ["<code class='text-accent2 whitespace-nowrap'>levelThreshold</code>", "int", "50", "Minimum player difficulty level before champions can spawn"],
+            ["<code class='text-accent2 whitespace-nowrap'>championChance</code>", "double", "0.05", "Probability an eligible mob spawns as a champion (0.0–1.0)"],
+            ["<code class='text-accent2 whitespace-nowrap'>maxAffixes</code>", "int", "2", "Maximum number of affixes a champion can roll"],
+            ["<code class='text-accent2 whitespace-nowrap'>healthMultiplier</code>", "double", "1.5", "Health multiplier applied on top of normal scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>damageMultiplier</code>", "double", "1.25", "Damage multiplier applied on top of normal scaling"],
+            ["<code class='text-accent2 whitespace-nowrap'>xpMultiplier</code>", "double", "3.0", "XP multiplier for killing a champion"],
+            ["<code class='text-accent2 whitespace-nowrap'>bonusLootRolls</code>", "int", "1", "Extra loot-table rolls granted on a champion's death"],
+            ["<code class='text-accent2 whitespace-nowrap'>showNameTag</code>", "boolean", "true", "Show the champion's generated name above its head"],
+            ["<code class='text-accent2 whitespace-nowrap'>particleAura</code>", "boolean", "true", "Emit an ambient particle aura around champions"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.vampiric</code>", "boolean", "true", "Allow the Vampiric affix — heals the champion when it deals damage"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.vampiricHealFraction</code>", "double", "0.5", "Fraction of damage dealt healed back by the Vampiric affix"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.explosive</code>", "boolean", "true", "Allow the Explosive affix — the champion explodes on death"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.explosivePower</code>", "double", "2.0", "Explosion power of the Explosive affix"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.knockbackAura</code>", "boolean", "true", "Allow the Knockback Aura affix — periodically repels nearby players"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.knockbackAuraStrength</code>", "double", "0.8", "Knockback strength of the Knockback Aura affix"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.knockbackAuraRadius</code>", "double", "4.0", "Radius (blocks) of the Knockback Aura affix"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.knockbackAuraIntervalTicks</code>", "int", "60", "Ticks between Knockback Aura pulses"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.thorns</code>", "boolean", "true", "Allow the Thorns affix — reflects a fraction of melee damage"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.thornsFraction</code>", "double", "0.3", "Fraction of incoming melee damage reflected by the Thorns affix"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.regenerating</code>", "boolean", "true", "Allow the Regenerating affix — the champion steadily heals"],
+            ["<code class='text-accent2 whitespace-nowrap'>affixes.regenHealthPerSecond</code>", "double", "1.0", "Health regenerated per second by the Regenerating affix"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "xp",
       "title": "xp",
       "intro": "Bonus XP for killing scaled mobs.",
@@ -528,6 +615,33 @@
           ]
         },
         { "type": "code", "small": true, "code": "{\n  \"packTactics\": {\n    \"enabled\": true,\n    \"tierThreshold\": 3,\n    \"alertRadius\": 16.0,\n    \"groupSizeBonus\": 2,\n    \"eligibleMobs\": [\"minecraft:zombie\", \"minecraft:skeleton\", \"minecraft:spider\"]\n  }\n}" }
+      ]
+    },
+    {
+      "id": "environmental-pressure",
+      "title": "environmentalPressure",
+      "intro": "Tier-gated pressure effects: debuff-on-hit strikes and darker, sharper-sensed nights.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "false", "Master switch for environmental pressure effects"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.enabled</code>", "boolean", "true", "Enable Debilitating Strikes — high-tier mobs apply debuffs on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.tierThreshold</code>", "int", "3", "Lowest scaled tier at which Debilitating Strikes apply"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.applyWeakness</code>", "boolean", "true", "Debilitating Strikes apply Weakness on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.weaknessDurationTicks</code>", "int", "100", "Duration (ticks) of the Weakness applied on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.weaknessAmplifier</code>", "int", "0", "Amplifier of the Weakness applied on hit (0 = level I)"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.applySlowness</code>", "boolean", "false", "Debilitating Strikes apply Slowness on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.slownessDurationTicks</code>", "int", "100", "Duration (ticks) of the Slowness applied on hit"],
+            ["<code class='text-accent2 whitespace-nowrap'>debilitatingStrikes.slownessAmplifier</code>", "int", "0", "Amplifier of the Slowness applied on hit (0 = level I)"],
+            ["<code class='text-accent2 whitespace-nowrap'>oppressiveNights.enabled</code>", "boolean", "true", "Enable Oppressive Nights — high-tier nights grow darker and sharpen mob senses"],
+            ["<code class='text-accent2 whitespace-nowrap'>oppressiveNights.tierThreshold</code>", "int", "4", "Lowest scaled tier at which Oppressive Nights take effect"],
+            ["<code class='text-accent2 whitespace-nowrap'>oppressiveNights.maxDarkness</code>", "double", "0.25", "Strength of the night darkening effect (0.0–1.0)"],
+            ["<code class='text-accent2 whitespace-nowrap'>oppressiveNights.followRangeMultiplier</code>", "double", "1.5", "Follow-range multiplier applied to mobs on oppressive nights"],
+            ["<code class='text-accent2 whitespace-nowrap'>oppressiveNights.clientEnabled</code>", "boolean", "true", "Show the night darkening overlay on this client"]
+          ]
+        }
       ]
     },
     {

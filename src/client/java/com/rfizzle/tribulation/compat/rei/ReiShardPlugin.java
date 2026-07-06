@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.compat.rei;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.client.ClientConfigState;
+import com.rfizzle.tribulation.compat.common.AscendantInfoFormatter;
 import com.rfizzle.tribulation.compat.common.HeartFragmentInfoFormatter;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
@@ -27,6 +28,14 @@ public final class ReiShardPlugin implements REIClientPlugin {
             shard.line(line);
         }
         registry.add(shard);
+
+        DefaultInformationDisplay ascendant = DefaultInformationDisplay.createFromEntry(
+                EntryStacks.of(TribulationItems.ASCENDANT_SHARD),
+                Component.translatable("item.tribulation.ascendant_shard"));
+        for (Component line : AscendantInfoFormatter.infoLines(ClientConfigState.effective())) {
+            ascendant.line(line);
+        }
+        registry.add(ascendant);
 
         DefaultInformationDisplay fragment = DefaultInformationDisplay.createFromEntry(
                 EntryStacks.of(TribulationItems.HEART_FRAGMENT),

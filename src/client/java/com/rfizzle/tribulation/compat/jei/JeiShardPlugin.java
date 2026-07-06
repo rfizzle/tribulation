@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.compat.jei;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.client.ClientConfigState;
+import com.rfizzle.tribulation.compat.common.AscendantInfoFormatter;
 import com.rfizzle.tribulation.compat.common.HeartFragmentInfoFormatter;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
@@ -28,6 +29,9 @@ public final class JeiShardPlugin implements IModPlugin {
         registration.addItemStackInfo(
                 new ItemStack(TribulationItems.SHATTER_SHARD),
                 ShardInfoFormatter.infoLines(ClientConfigState.effective()).toArray(Component[]::new));
+        registration.addItemStackInfo(
+                new ItemStack(TribulationItems.ASCENDANT_SHARD),
+                AscendantInfoFormatter.infoLines(ClientConfigState.effective()).toArray(Component[]::new));
         registration.addItemStackInfo(
                 new ItemStack(TribulationItems.HEART_FRAGMENT),
                 HeartFragmentInfoFormatter.infoLines(ClientConfigState.effective()).toArray(Component[]::new));

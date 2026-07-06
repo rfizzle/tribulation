@@ -68,6 +68,9 @@ public class TribulationAdvancementProvider extends FabricAdvancementProvider {
         leaf(consumer, root, "shatter_shard_used", TribulationItems.SHATTER_SHARD, AdvancementType.TASK,
                 "shatter_shard_used",
                 TribulationCriteria.SHATTER_SHARD_USED.createCriterion(simple()));
+        leaf(consumer, root, "ascendant_shard_used", TribulationItems.ASCENDANT_SHARD, AdvancementType.TASK,
+                "ascendant_shard_used",
+                TribulationCriteria.ASCENDANT_SHARD_USED.createCriterion(simple()));
         leaf(consumer, root, "heart_fragment_used", TribulationItems.HEART_FRAGMENT, AdvancementType.GOAL,
                 "heart_fragment_used",
                 TribulationCriteria.HEART_FRAGMENT_USED.createCriterion(simple()));

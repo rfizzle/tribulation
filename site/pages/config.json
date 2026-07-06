@@ -255,6 +255,22 @@
       ]
     },
     {
+      "id": "ascension",
+      "title": "ascension",
+      "intro": "Ascendant Shard configuration — the opt-in consumable that raises your difficulty level, capped at <code class='text-accent2'>general.maxLevel</code>.",
+      "blocks": [
+        {
+          "type": "table",
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Allow Ascendant Shards to raise difficulty"],
+            ["<code class='text-accent2 whitespace-nowrap'>raisePower</code>", "int", "25", "Levels gained when consuming a shard (clamped at the maximum level)"],
+            ["<code class='text-accent2 whitespace-nowrap'>sideEffects</code>", "boolean", "false", "Grant a short Strength II / Resistance II buff on use"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "hardcore-hearts",
       "title": "hardcoreHearts",
       "intro": "Permanent max-health reduction on death. Disabled by default.",

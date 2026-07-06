@@ -24,6 +24,7 @@ public final class TribulationStats {
     public static final ResourceLocation LEVELS_LOST_TO_DEATH_RELIEF = Tribulation.id("levels_lost_to_death_relief");
     public static final ResourceLocation LEVELS_LOST_TO_DECAY = Tribulation.id("levels_lost_to_decay");
     public static final ResourceLocation SHATTER_SHARDS_USED = Tribulation.id("shatter_shards_used");
+    public static final ResourceLocation ASCENDANT_SHARDS_USED = Tribulation.id("ascendant_shards_used");
     public static final ResourceLocation HEARTS_LOST = Tribulation.id("hearts_lost");
     public static final ResourceLocation HEARTS_RESTORED = Tribulation.id("hearts_restored");
     public static final ResourceLocation TIER_5_MOBS_KILLED = Tribulation.id("tier_5_mobs_killed");
@@ -35,6 +36,7 @@ public final class TribulationStats {
         registerStat(LEVELS_LOST_TO_DEATH_RELIEF, StatFormatter.DEFAULT);
         registerStat(LEVELS_LOST_TO_DECAY, StatFormatter.DEFAULT);
         registerStat(SHATTER_SHARDS_USED, StatFormatter.DEFAULT);
+        registerStat(ASCENDANT_SHARDS_USED, StatFormatter.DEFAULT);
         registerStat(HEARTS_LOST, StatFormatter.DEFAULT);
         registerStat(HEARTS_RESTORED, StatFormatter.DEFAULT);
         registerStat(TIER_5_MOBS_KILLED, StatFormatter.DEFAULT);

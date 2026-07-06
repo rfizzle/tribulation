@@ -1,9 +1,10 @@
-// 1.21.1	2026-07-06T17:13:53.455876726	Tribulation/Advancements
+// 1.21.1	2026-07-06T20:29:42.951205075	Tribulation/Advancements
 fd382a5c4ae2d91492d405ff50ae12d6372ba674 data/tribulation/advancement/tier_1.json
 f884c0cb4457138931ea156640d1eb045e838bb7 data/tribulation/advancement/tier_five_mob_killed.json
 f22b13d478a0a4549a04cdc010860ea011b72e5d data/tribulation/advancement/heart_fragment_used.json
 66672386d4f86390521b52eb08a52d46a426967b data/tribulation/advancement/shatter_shard_used.json
 88e63c2c45dd00270ebaa8d0244f9ab67f15cdaa data/tribulation/advancement/tier_4.json
+4c5f69e25b27b6416add88bb57a2c4b77a80096d data/tribulation/advancement/ascendant_shard_used.json
 0f056b0bc09d8fc8830d61388743c761c250ccbd data/tribulation/advancement/root.json
 a504eb9a019ae564585aa9ddc6c55e5a2687ab74 data/tribulation/advancement/tier_5.json
 3420c1344599513d3e175d5ef05375799c0914d1 data/tribulation/advancement/tier_3.json

@@ -552,6 +552,20 @@
               ]
             },
             {
+              "id": "ascendant-shards",
+              "title": "Ascendant Shards",
+              "html": ["The Shatter Shard's dark twin — a consumable that <em>raises</em> your difficulty level, the survival path to Tier 5 mobs, champion spawns, and the richer XP and loot payoff without waiting out the passive climb."],
+              "bullets": [
+                "Consuming a shard raises your level by 25 (configurable)",
+                "Clamped at <code class='text-accent2'>general.maxLevel</code>; a no-op that keeps the item when already at the cap",
+                "The raised level is the cost — consumption is costless by default",
+                "Optional short Strength II / Resistance II buff via <code class='text-accent2'>ascension.sideEffects</code> (off by default)",
+                "Crafted from a Nether Star ringed by 4 Shatter Shards — a deliberate, expensive opt-in",
+                "Death Relief still bleeds 2 levels per death off the boost — a thematic risk/reward",
+                "Hold <strong class='text-bone'>Shift</strong> on the item for its live raise amount and cap — in the tooltip and in EMI/REI/JEI"
+              ]
+            },
+            {
               "id": "level-decay",
               "title": "Level Decay",
               "badge": "Opt-in",
@@ -652,6 +666,7 @@
                 ["<span class='text-bone'>Highest level reached</span>", "The highest Tribulation level you have ever reached (monotonic — never decreases, even after death relief or shatter shards)"],
                 ["<span class='text-bone'>Levels lost to death relief</span>", "Total levels removed by the Death Relief penalty on death"],
                 ["<span class='text-bone'>Shatter Shards used</span>", "Number of Shatter Shards you have consumed to lower your level"],
+                ["<span class='text-bone'>Ascendant Shards used</span>", "Number of Ascendant Shards you have consumed to raise your level"],
                 ["<span class='text-bone'>Half-hearts lost</span>", "Total half-hearts removed by the Hardcore Hearts penalty"],
                 ["<span class='text-bone'>Half-hearts restored</span>", "Total half-hearts recovered with Heart Fragments"],
                 ["<span class='text-bone'>Tier-5 scaled mobs killed</span>", "Number of mobs you have killed while they were scaled to the maximum tier"]
@@ -673,6 +688,7 @@
                 ["<span class='text-bone'>First Blood → Apex Tribulation</span>", "A chained ladder for reaching Tiers 1 through 5"],
                 ["<span class='text-bone'>Beyond the Grave</span>", "Carry a Soulbound item through your own death (Soul Inventory)"],
                 ["<span class='text-bone'>A Moment's Mercy</span>", "Use a Shatter Shard to lower your difficulty"],
+                ["<span class='text-bone'>Courting Ruin</span>", "Use an Ascendant Shard to raise your difficulty"],
                 ["<span class='text-bone'>Mended</span>", "Restore a lost heart with a Heart Fragment (Hardcore Hearts)"],
                 ["<span class='text-bone'>Giant Slayer</span>", "Kill a mob scaled to the maximum tier"]
               ]

@@ -30,7 +30,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import org.slf4j.Logger;
@@ -135,7 +137,18 @@ public class Tribulation implements ModInitializer {
                 onTierCrossed(player, newTier);
             }
             if (cfg.general.notifyLevelUp) {
-                sendLevelUpMessage(player, newLevel, oldTier, newTier, cfg.general.maxLevel, cfg.general.notifyLevelUpShowTier);
+                // First notified level-up carries a one-time sentence explaining
+                // the system. Gated on a persisted flag rather than oldLevel == 0
+                // so a level that decays back to 0 and re-climbs never repeats it.
+                // The flag is marked only when the sentence is actually shown, so a
+                // degenerate cap-on-first-level (which suppresses it) doesn't burn
+                // the one-shot without the player ever seeing it.
+                boolean wantIntro = !state.hasSeenLevelUpIntro(player.getUUID());
+                boolean introShown = sendLevelUpMessage(player, newLevel, oldTier, newTier,
+                        cfg.general.maxLevel, cfg.general.notifyLevelUpShowTier, wantIntro);
+                if (introShown) {
+                    state.markLevelUpIntroSeen(player.getUUID());
+                }
             }
         }
     }
@@ -158,9 +171,15 @@ public class Tribulation implements ModInitializer {
                 player.getRandom().nextLong()));
     }
 
-    private static void sendLevelUpMessage(ServerPlayer player, int newLevel, int oldTier, int newTier, int maxLevel, boolean showTier) {
-        Component message;
-        if (newLevel >= maxLevel) {
+    /**
+     * Send the level-up chat line. Returns {@code true} when the one-time
+     * teaching sentence was actually appended, so the caller only burns the
+     * one-shot flag on a message the player really saw.
+     */
+    private static boolean sendLevelUpMessage(ServerPlayer player, int newLevel, int oldTier, int newTier, int maxLevel, boolean showTier, boolean showIntro) {
+        MutableComponent message;
+        boolean cappedNow = newLevel >= maxLevel;
+        if (cappedNow) {
             // One-time "hit the cap" message; suppress the normal level_up line
             // so players don't receive two pings on the same tick.
             message = Component.translatable("message.tribulation.level_max")
@@ -172,6 +191,15 @@ public class Tribulation implements ModInitializer {
             message = Component.translatable("message.tribulation.level_up", newLevel)
                     .withStyle(ChatFormatting.GREEN);
         }
+        // On the first level-up, append one sentence teaching how leveling
+        // works. Skipped on the degenerate cap-on-first-level case, where the
+        // "maximum difficulty" line already reads as terminal.
+        boolean introShown = showIntro && !cappedNow;
+        if (introShown) {
+            message = message.append(CommonComponents.SPACE)
+                    .append(Component.translatable("message.tribulation.level_up_intro"));
+        }
         player.sendSystemMessage(message);
+        return introShown;
     }
 }

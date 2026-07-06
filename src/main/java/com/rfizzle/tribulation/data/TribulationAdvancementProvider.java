@@ -48,7 +48,10 @@ public class TribulationAdvancementProvider extends FabricAdvancementProvider {
                         description("root"),
                         BACKGROUND,
                         AdvancementType.TASK,
-                        false, false, false)
+                        // showToast=true so the tick-granted root pops a toast on
+                        // first join, acknowledging the mod is installed. Chat
+                        // announce and hidden stay off.
+                        true, false, false)
                 .addCriterion("tick", CriteriaTriggers.TICK.createCriterion(
                         new PlayerTrigger.TriggerInstance(Optional.empty())))
                 .save(consumer, id("root"));

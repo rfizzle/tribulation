@@ -677,6 +677,98 @@ class PlayerDifficultyStateTest {
         assertEquals(123_456L, state.getLastSeen(uuid));
     }
 
+    // ---- seenLevelUpIntro (first-level-up teaching moment) ----
+
+    @Test
+    void newPlayerData_hasNotSeenLevelUpIntro() {
+        PlayerDifficultyState.PlayerData pd = new PlayerDifficultyState.PlayerData();
+        assertFalse(pd.seenLevelUpIntro);
+    }
+
+    @Test
+    void hasSeenLevelUpIntro_defaultsToFalse() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        assertFalse(state.hasSeenLevelUpIntro(UUID.randomUUID()));
+    }
+
+    @Test
+    void markLevelUpIntroSeen_setsFlagAndMarksDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.markLevelUpIntroSeen(uuid);
+        assertTrue(state.hasSeenLevelUpIntro(uuid));
+        assertTrue(state.isDirty());
+    }
+
+    @Test
+    void markLevelUpIntroSeen_isIdempotentAndDoesNotReDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).seenLevelUpIntro = true;
+        // Already set out-of-band — a second mark must not flip the dirty flag.
+        assertFalse(state.isDirty());
+        state.markLevelUpIntroSeen(uuid);
+        assertTrue(state.hasSeenLevelUpIntro(uuid));
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void seenLevelUpIntro_survivesLevelDecayToZero() {
+        // The intro must fire exactly once even if the level decays back to 0
+        // and re-climbs. The flag — not oldLevel == 0 — is the gate, so once
+        // marked it stays marked regardless of level movement.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 1;
+        state.markLevelUpIntroSeen(uuid);
+        state.reducePlayerLevel(uuid, 5, 0); // decays to 0
+        assertEquals(0, state.getLevel(uuid));
+        assertTrue(state.hasSeenLevelUpIntro(uuid));
+    }
+
+    @Test
+    void save_omitsSeenLevelUpIntroKeyWhenUnset() {
+        // A player who has never leveled must not grow the save file.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 42;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        CompoundTag playerTag = tag.getList("Players", 10).getCompound(0);
+
+        assertFalse(playerTag.contains("SeenLevelUpIntro"),
+                "unshown intro must not grow the save file");
+    }
+
+    @Test
+    void nbt_roundTrip_preservesSeenLevelUpIntro() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 5;
+        state.markLevelUpIntroSeen(uuid);
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertTrue(loaded.hasSeenLevelUpIntro(uuid));
+    }
+
+    @Test
+    void nbt_backwardCompat_missingSeenLevelUpIntroDefaultsToFalse() {
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
+        CompoundTag playerTag = new CompoundTag();
+        UUID uuid = UUID.randomUUID();
+        playerTag.putUUID("UUID", uuid);
+        playerTag.putInt("Level", 10);
+        list.add(playerTag);
+        tag.put("Players", list);
+
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertFalse(loaded.hasSeenLevelUpIntro(uuid));
+    }
+
     // ---- NBT serialization round-trip ----
 
     @Test

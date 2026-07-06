@@ -47,6 +47,7 @@ public class PlayerDifficultyState extends SavedData {
     private static final String NBT_HEARTS_LOST_KEY = "HeartsLost";
     private static final String NBT_LAST_SEEN_KEY = "LastSeenEpochMs";
     private static final String NBT_SEEN_LEVEL_UP_INTRO_KEY = "SeenLevelUpIntro";
+    private static final String NBT_SEEN_TIER_DISCOVERY_HINT_KEY = "SeenTierDiscoveryHint";
 
     public static final SavedData.Factory<PlayerDifficultyState> FACTORY = new SavedData.Factory<>(
             PlayerDifficultyState::new,
@@ -246,6 +247,28 @@ public class PlayerDifficultyState extends SavedData {
         }
     }
 
+    /**
+     * Whether the one-time tier-detail-panel discovery hint has already been
+     * shown to this player. Follows the {@link #hasSeenLevelUpIntro} precedent:
+     * default {@code false}, written to disk only once set, so a save where no
+     * player has ever crossed a tier stays byte-identical.
+     */
+    public boolean hasSeenTierDiscoveryHint(UUID uuid) {
+        return getPlayerData(uuid).seenTierDiscoveryHint;
+    }
+
+    /**
+     * Record that the tier-detail-panel discovery hint has been shown so it
+     * never fires again, even across a decay-and-reclimb. Idempotent.
+     */
+    public void markTierDiscoveryHintSeen(UUID uuid) {
+        PlayerData pd = getPlayerData(uuid);
+        if (!pd.seenTierDiscoveryHint) {
+            pd.seenTierDiscoveryHint = true;
+            setDirty();
+        }
+    }
+
     public int getHeartsLost(UUID uuid) {
         return getPlayerData(uuid).heartsLost;
     }
@@ -348,6 +371,11 @@ public class PlayerDifficultyState extends SavedData {
             if (entry.getValue().seenLevelUpIntro) {
                 playerTag.putBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY, true);
             }
+            // Same write-only-when-set discipline: absent until the discovery
+            // hint has fired for this player.
+            if (entry.getValue().seenTierDiscoveryHint) {
+                playerTag.putBoolean(NBT_SEEN_TIER_DISCOVERY_HINT_KEY, true);
+            }
             list.add(playerTag);
         }
         tag.put(NBT_PLAYERS_KEY, list);
@@ -381,6 +409,7 @@ public class PlayerDifficultyState extends SavedData {
             pd.heartsLost = Math.max(0, playerTag.getInt(NBT_HEARTS_LOST_KEY));
             pd.lastSeenEpochMs = Math.max(NEVER_SEEN, playerTag.getLong(NBT_LAST_SEEN_KEY));
             pd.seenLevelUpIntro = playerTag.getBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY);
+            pd.seenTierDiscoveryHint = playerTag.getBoolean(NBT_SEEN_TIER_DISCOVERY_HINT_KEY);
             state.data.put(uuid, pd);
         }
         return state;
@@ -393,6 +422,7 @@ public class PlayerDifficultyState extends SavedData {
         public int heartsLost;
         public long lastSeenEpochMs = NEVER_SEEN;
         public boolean seenLevelUpIntro;
+        public boolean seenTierDiscoveryHint;
 
         public PlayerData() {}
     }

@@ -17,6 +17,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The declarative registry of every tier ability. {@link AbilityManager}
@@ -271,5 +272,73 @@ public final class MobAbilities {
             }
         }
         return out;
+    }
+
+    /**
+     * The curated flagship ability for each tier — the one whose newly-unlocked
+     * threat best captures "what changed" when a player crosses into that tier.
+     * Used by {@link #headlineAt} to pick the ability named in the tier-up chat
+     * line. Keys are 1..5; every value is an {@code abilityKey} present in
+     * {@link #REGISTRY} with a matching {@code unlockTier}. Flagships have a
+     * hand-written full sentence at {@code message.tribulation.tier_headline.<abilityKey>};
+     * any fallback pick (used only when the flagship is disabled in config) is
+     * named via the generic template and its config label instead.
+     */
+    static final Map<Integer, String> TIER_HEADLINES = Map.of(
+            1, "zombie_reinforcements",
+            2, "skeleton_sword_switch",
+            3, "zombie_door_breaking",
+            4, "skeleton_flame_arrows",
+            5, "zombie_sprinting");
+
+    /**
+     * Every ability unlocking <em>exactly</em> at {@code tier} and enabled by
+     * config, in registry order. Distinct from {@link #activeAt}, which is
+     * cumulative ({@code unlockTier <= tier}); this is only what is newly
+     * introduced at the boundary. Empty if the tier introduces nothing enabled.
+     */
+    public static List<MobAbility> newlyUnlockedAt(int tier, TribulationConfig cfg) {
+        if (cfg == null || cfg.abilities == null) return List.of();
+        List<MobAbility> registry = REGISTRY;
+        List<MobAbility> out = new ArrayList<>();
+        for (MobAbility ability : registry) {
+            if (ability.unlockTier() == tier && ability.enabled().test(cfg.abilities)) {
+                out.add(ability);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The single ability to headline in the tier-up chat line for {@code tier}:
+     * the curated {@link #TIER_HEADLINES} flagship when it is enabled, otherwise
+     * the first enabled ability newly unlocking at that tier. Returns
+     * {@code null} when every ability unlocking at {@code tier} is disabled in
+     * config — the caller then sends no headline line.
+     */
+    public static MobAbility headlineAt(int tier, TribulationConfig cfg) {
+        List<MobAbility> newly = newlyUnlockedAt(tier, cfg);
+        if (newly.isEmpty()) {
+            return null;
+        }
+        String flagship = TIER_HEADLINES.get(tier);
+        if (flagship != null) {
+            for (MobAbility ability : newly) {
+                if (ability.abilityKey().equals(flagship)) {
+                    return ability;
+                }
+            }
+        }
+        return newly.get(0);
+    }
+
+    /**
+     * Whether {@code ability} is the curated {@link #TIER_HEADLINES} flagship
+     * for {@code tier} — i.e. it has a hand-written headline sentence rather
+     * than needing the generic label template. Used by the caller to choose
+     * which translation key to render for a {@link #headlineAt} pick.
+     */
+    public static boolean isFlagship(int tier, MobAbility ability) {
+        return ability != null && ability.abilityKey().equals(TIER_HEADLINES.get(tier));
     }
 }

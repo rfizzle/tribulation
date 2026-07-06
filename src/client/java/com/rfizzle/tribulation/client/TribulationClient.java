@@ -14,9 +14,13 @@ import org.lwjgl.glfw.GLFW;
 
 public class TribulationClient implements ClientModInitializer {
     /**
-     * Hold-to-peek keybind for the tier detail panel. Unbound by default
-     * ({@link GLFW#GLFW_KEY_UNKNOWN}) so it never collides with another mod's
-     * binding — the player assigns it under Controls → Tribulation.
+     * Hold-to-peek keybind for the tier detail panel. Bound to Tab by default —
+     * the panel behaves like vanilla's hold-Tab player list (it never captures
+     * the mouse or opens a {@link net.minecraft.client.gui.screens.Screen}), so
+     * a shared default makes the mod's richest explainer discoverable without a
+     * Controls-menu visit. A player who has already assigned their own key keeps
+     * it: Fabric only applies the registered default for a binding absent from
+     * {@code options.txt}.
      */
     public static KeyMapping KEY_TIER_DETAIL;
 
@@ -25,7 +29,7 @@ public class TribulationClient implements ClientModInitializer {
         KEY_TIER_DETAIL = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.tribulation.tier_detail",
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+                GLFW.GLFW_KEY_TAB,
                 "key.categories.tribulation"));
 
         ClientNetworkHandler.register();

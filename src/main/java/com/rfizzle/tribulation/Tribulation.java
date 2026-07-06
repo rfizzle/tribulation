@@ -1,5 +1,7 @@
 package com.rfizzle.tribulation;
 
+import com.rfizzle.tribulation.ability.MobAbilities;
+import com.rfizzle.tribulation.ability.MobAbility;
 import com.rfizzle.tribulation.advancement.TribulationCriteria;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.command.TribulationCommand;
@@ -135,7 +137,7 @@ public class Tribulation implements ModInitializer {
             int newTier = TierManager.getTier(newLevel, cfg.tiers);
             TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, oldLevel, newLevel);
             if (newTier != oldTier) {
-                onTierCrossed(player, newTier);
+                onTierCrossed(player, newTier, state, cfg);
             }
             if (cfg.general.notifyLevelUp) {
                 // First notified level-up carries a one-time sentence explaining
@@ -161,8 +163,14 @@ public class Tribulation implements ModInitializer {
      * connection — {@code Level#playSound(null, …)} would broadcast to everyone
      * nearby, and {@code Player#playNotifySound} is a client-only no-op on a
      * dedicated server.
+     *
+     * <p>The moment also teaches: a chat line names one ability the mobs around
+     * the player have newly unlocked at this tier (skipped when every ability
+     * introduced at the tier is disabled in config), and — exactly once per
+     * player — a discovery line points at the hold-to-peek tier detail panel and
+     * where to bind it. Both ride the toast as chat so all three land together.
      */
-    private static void onTierCrossed(ServerPlayer player, int newTier) {
+    private static void onTierCrossed(ServerPlayer player, int newTier, PlayerDifficultyState state, TribulationConfig cfg) {
         TribulationCriteria.TIER_REACHED.trigger(player, newTier);
         player.connection.send(new ClientboundSoundPacket(
                 TribulationSounds.TIER_UP,
@@ -170,6 +178,44 @@ public class Tribulation implements ModInitializer {
                 player.getX(), player.getY(), player.getZ(),
                 1.0f, 1.0f,
                 player.getRandom().nextLong()));
+
+        sendTierHeadline(player, newTier, cfg);
+
+        // One-time nudge toward the tier detail panel, on the first tier a
+        // player ever crosses. Gated on a persisted flag rather than
+        // {@code newTier == 1} so a level that decays to 0 and reclimbs never
+        // repeats it. The bound key is named by {@link Component#keybind}, which
+        // the client resolves to the player's actual binding at render time.
+        if (!state.hasSeenTierDiscoveryHint(player.getUUID())) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.tribulation.tier_discovery_hint",
+                    Component.keybind("key.tribulation.tier_detail")
+                            .withStyle(ChatFormatting.GOLD))
+                    .withStyle(ChatFormatting.YELLOW));
+            state.markTierDiscoveryHintSeen(player.getUUID());
+        }
+    }
+
+    /**
+     * Send the tier-up headline: a chat line naming one newly unlocked,
+     * currently-enabled ability at {@code newTier}. The curated flagship gets a
+     * hand-written sentence; any fallback pick is named via the generic template
+     * and its config label. No line is sent when the tier introduces no enabled
+     * ability.
+     */
+    private static void sendTierHeadline(ServerPlayer player, int newTier, TribulationConfig cfg) {
+        MobAbility headline = MobAbilities.headlineAt(newTier, cfg);
+        if (headline == null) {
+            return;
+        }
+        MutableComponent line;
+        if (MobAbilities.isFlagship(newTier, headline)) {
+            line = Component.translatable("message.tribulation.tier_headline." + headline.abilityKey());
+        } else {
+            line = Component.translatable("message.tribulation.tier_headline_generic",
+                    Component.translatable("config.tribulation.abilities." + headline.abilityKey()));
+        }
+        player.sendSystemMessage(line.withStyle(ChatFormatting.RED));
     }
 
     /**

@@ -46,6 +46,29 @@ class ClientTribulationStateTest {
     }
 
     @Test
+    void setLevel_decrease_setsDropTimestamp() {
+        ClientTribulationState.setLevel(10);
+        ClientTribulationState.setLevel(5);
+        assertTrue(ClientTribulationState.getLevelDropTimestamp() > 0,
+                "drop timestamp should be set on a real level decrease");
+    }
+
+    @Test
+    void setLevel_initialSyncFromSentinel_noDropTimestamp() {
+        // First real sync moves up from the -1 sentinel to a positive level;
+        // that is initial state, not a decrease, so no cooling flash triggers.
+        ClientTribulationState.setLevel(50);
+        assertEquals(-1, ClientTribulationState.getLevelDropTimestamp());
+    }
+
+    @Test
+    void setLevel_increase_doesNotSetDropTimestamp() {
+        ClientTribulationState.setLevel(3);
+        ClientTribulationState.setLevel(8);
+        assertEquals(-1, ClientTribulationState.getLevelDropTimestamp());
+    }
+
+    @Test
     void setLevel_sameValue_noChange() {
         ClientTribulationState.setLevel(7);
         long ts = ClientTribulationState.getLevelUpTimestamp();

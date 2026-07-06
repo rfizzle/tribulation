@@ -4,6 +4,7 @@ public final class ClientTribulationState {
     private static int level = -1;
     private static int previousLevel = -1;
     private static long levelUpTimestamp = -1;
+    private static long levelDropTimestamp = -1;
     private static int progressTicks = 0;
     private static int goalTicks = 1;
     private static boolean bloodMoonActive = false;
@@ -21,12 +22,21 @@ public final class ClientTribulationState {
             level = newLevel;
             if (newLevel > previousLevel) {
                 levelUpTimestamp = System.currentTimeMillis();
+            } else if (previousLevel >= 0) {
+                // Any drop (death relief, decay, shard use) plays the cooling
+                // flash. Skip the first sync from -1, which is initial state,
+                // not a real decrease.
+                levelDropTimestamp = System.currentTimeMillis();
             }
         }
     }
 
     public static long getLevelUpTimestamp() {
         return levelUpTimestamp;
+    }
+
+    public static long getLevelDropTimestamp() {
+        return levelDropTimestamp;
     }
 
     public static int getProgressTicks() {
@@ -76,6 +86,7 @@ public final class ClientTribulationState {
         level = -1;
         previousLevel = -1;
         levelUpTimestamp = -1;
+        levelDropTimestamp = -1;
         progressTicks = 0;
         goalTicks = 1;
         bloodMoonActive = false;

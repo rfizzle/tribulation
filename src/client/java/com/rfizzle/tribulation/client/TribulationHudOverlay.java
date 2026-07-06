@@ -27,6 +27,9 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
     private static final long ANIMATION_DURATION_MS = 2000;
     private static final int GOLD_COLOR = 0xFFFFD700;
+    // Cooling flash for a level drop (death relief, decay, shard use): a cool
+    // cyan-blue that reads as "eased" against the gold level-up flash.
+    private static final int COOLING_COLOR = 0xFF4FC3F7;
 
     private static final int[] TIER_COLORS = {
             0xFFFFFFFF, // Tier 0: White
@@ -82,7 +85,10 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         // The badge is icon-only: tier is conveyed by the icon tint and the
         // progress bar. The level-up flash (gold -> tier color) is applied to
         // the tint so feedback isn't lost now that the number is gone.
-        int color = getAnimatedColor(tier, ClientTribulationState.getLevelUpTimestamp());
+        int color = getAnimatedColor(
+                tier,
+                ClientTribulationState.getLevelUpTimestamp(),
+                ClientTribulationState.getLevelDropTimestamp());
 
         int screenW = graphics.guiWidth();
         int screenH = graphics.guiHeight();
@@ -139,13 +145,36 @@ public final class TribulationHudOverlay implements HudRenderCallback {
     }
 
     static int getAnimatedColor(int tier, long levelUpTimestamp) {
-        long elapsed = System.currentTimeMillis() - levelUpTimestamp;
-        if (elapsed >= 0 && elapsed < ANIMATION_DURATION_MS) {
-            float progress = (float) elapsed / ANIMATION_DURATION_MS;
-            int tierColor = getTierColor(tier);
-            return lerpColor(GOLD_COLOR, tierColor, progress);
+        return getAnimatedColor(tier, levelUpTimestamp, -1);
+    }
+
+    /**
+     * Tint for the badge, flashing from a start color toward the tier color
+     * over {@link #ANIMATION_DURATION_MS}. A level increase flashes gold; a
+     * level drop flashes {@link #COOLING_COLOR}. When both timestamps are
+     * within the window the more recent one wins.
+     */
+    static int getAnimatedColor(int tier, long levelUpTimestamp, long levelDropTimestamp) {
+        int tierColor = getTierColor(tier);
+        long now = System.currentTimeMillis();
+        long upElapsed = now - levelUpTimestamp;
+        long dropElapsed = now - levelDropTimestamp;
+        boolean upActive = levelUpTimestamp >= 0 && upElapsed >= 0 && upElapsed < ANIMATION_DURATION_MS;
+        boolean dropActive = levelDropTimestamp >= 0 && dropElapsed >= 0 && dropElapsed < ANIMATION_DURATION_MS;
+
+        int startColor;
+        long elapsed;
+        if (upActive && (!dropActive || upElapsed <= dropElapsed)) {
+            startColor = GOLD_COLOR;
+            elapsed = upElapsed;
+        } else if (dropActive) {
+            startColor = COOLING_COLOR;
+            elapsed = dropElapsed;
+        } else {
+            return tierColor;
         }
-        return getTierColor(tier);
+        float progress = (float) elapsed / ANIMATION_DURATION_MS;
+        return lerpColor(startColor, tierColor, progress);
     }
 
     static int getTierColor(int tier) {

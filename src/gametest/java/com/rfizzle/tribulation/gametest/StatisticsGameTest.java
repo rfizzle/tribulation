@@ -48,7 +48,7 @@ public class StatisticsGameTest implements FabricGameTest {
         int before = state.getLevel(player.getUUID());
 
         // Simulate death relief via direct event call
-        com.rfizzle.tribulation.event.DeathReliefHandler.onAfterDeath(player, player.damageSources().generic());
+        com.rfizzle.tribulation.event.DeathReliefHandler.maybeApplyPenalty(player);
 
         int after = state.getLevel(player.getUUID());
         int expectedDelta = before - after;

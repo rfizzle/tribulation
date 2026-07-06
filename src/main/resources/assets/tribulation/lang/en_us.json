@@ -13,6 +13,7 @@
     "message.tribulation.level_up_tier": "Your difficulty has risen to level %s (Tier %s).",
     "message.tribulation.level_max": "You have reached the maximum difficulty level.",
     "message.tribulation.level_decay": "You were away %s days — your difficulty eased from level %s to %s.",
+    "message.tribulation.death_relief": "Your trials ease — difficulty level %s → %s",
     "message.tribulation.blood_moon_rises": "A Blood Moon rises...",
     "message.tribulation.blood_moon_no_sleep": "You cannot sleep during a Blood Moon.",
 

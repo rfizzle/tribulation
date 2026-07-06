@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.compat.emi;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.client.ClientConfigState;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
 import dev.emi.emi.api.EmiPlugin;
@@ -15,7 +16,7 @@ public final class EmiShardPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
-        List<Component> text = ShardInfoFormatter.infoLines();
+        List<Component> text = ShardInfoFormatter.infoLines(ClientConfigState.effective());
 
         registry.addRecipe(new EmiInfoRecipe(
                 List.of(EmiStack.of(TribulationItems.SHATTER_SHARD)),

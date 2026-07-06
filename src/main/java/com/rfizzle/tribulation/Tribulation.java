@@ -91,6 +91,7 @@ public class Tribulation implements ModInitializer {
     private static void registerJoinSync() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
+            TribulationNetworking.syncConfig(player);
             TribulationNetworking.syncLevel(player);
             TribulationNetworking.syncBloodMoon(player, BloodMoonHandler.syncedStateFor(config));
         });

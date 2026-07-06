@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.compat.jei;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.client.ClientConfigState;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
 import mezz.jei.api.IModPlugin;
@@ -23,7 +24,7 @@ public final class JeiShardPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        Component[] lines = ShardInfoFormatter.infoLines().toArray(Component[]::new);
+        Component[] lines = ShardInfoFormatter.infoLines(ClientConfigState.effective()).toArray(Component[]::new);
         registration.addItemStackInfo(new ItemStack(TribulationItems.SHATTER_SHARD), lines);
     }
 }

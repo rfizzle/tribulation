@@ -84,4 +84,37 @@ class EnvironmentalPressureTest {
         ep.oppressiveNights.maxDarkness = 0.4;
         assertEquals(0.4, ep.nightDarknessAtTier(5));
     }
+
+    // ---- nightFollowRangeMultiplierAtTier ----
+
+    @ParameterizedTest
+    @CsvSource({
+            "0, 1.0",
+            "3, 1.0",
+            "4, 1.5",
+            "5, 1.5"
+    })
+    void nightFollowRangeMultiplierAtTier_gatesOnDefaultThreshold(int tier, double expected) {
+        assertEquals(expected, enabled().nightFollowRangeMultiplierAtTier(tier));
+    }
+
+    @Test
+    void nightFollowRangeMultiplierAtTier_masterToggleOff_isNeutral() {
+        EnvironmentalPressure ep = new EnvironmentalPressure();
+        assertEquals(1.0, ep.nightFollowRangeMultiplierAtTier(5));
+    }
+
+    @Test
+    void nightFollowRangeMultiplierAtTier_nightsToggleOff_isNeutral() {
+        EnvironmentalPressure ep = enabled();
+        ep.oppressiveNights.enabled = false;
+        assertEquals(1.0, ep.nightFollowRangeMultiplierAtTier(5));
+    }
+
+    @Test
+    void nightFollowRangeMultiplierAtTier_returnsConfiguredMultiplier() {
+        EnvironmentalPressure ep = enabled();
+        ep.oppressiveNights.followRangeMultiplier = 2.0;
+        assertEquals(2.0, ep.nightFollowRangeMultiplierAtTier(5));
+    }
 }

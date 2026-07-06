@@ -132,6 +132,7 @@ class TribulationConfigTest {
         assertEquals(4, nights.tierThreshold);
         assertEquals(0.25, nights.maxDarkness);
         assertTrue(nights.clientEnabled);
+        assertEquals(1.5, nights.followRangeMultiplier);
     }
 
     @Test
@@ -148,6 +149,7 @@ class TribulationConfigTest {
         strikes.slownessAmplifier = -3;
         nights.tierThreshold = -2;
         nights.maxDarkness = 5.0;
+        nights.followRangeMultiplier = 99.0;
 
         cfg.validate();
 
@@ -161,6 +163,18 @@ class TribulationConfigTest {
         assertEquals(0, nights.tierThreshold);
         assertEquals(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS,
                 nights.maxDarkness);
+        assertEquals(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER,
+                nights.followRangeMultiplier);
+    }
+
+    @Test
+    void validate_clampsSubOneFollowRangeMultiplierToOne() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.environmentalPressure.oppressiveNights.followRangeMultiplier = 0.3;
+
+        cfg.validate();
+
+        assertEquals(1.0, cfg.environmentalPressure.oppressiveNights.followRangeMultiplier);
     }
 
     @Test

@@ -10,8 +10,15 @@ import com.rfizzle.tribulation.scaling.TierManager;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -37,13 +44,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * Tribulation-scaled hostile applies the configured Weakness/Slowness to the
  * player.
  *
- * <p><b>Oppressive nights</b> — the server computes a per-player darkness
- * strength and syncs it only when it changes (piggybacked on the existing
- * level syncs, which already fire on join, level-ups, decay, relief, shards,
- * and admin commands). Rendering rules live client-side in
+ * <p><b>Oppressive nights</b> — two halves. Mechanically, hostiles scaled at
+ * night in a daylight-cycle dimension near an affected player spawn with a
+ * follow-range multiplier ({@link #applyNightSenses}, called from the mob
+ * scaling pipeline — frozen at spawn like every other scaling decision). As
+ * the tell, the server computes a per-player darkness strength and syncs it
+ * only when it changes (piggybacked on the existing level syncs, which
+ * already fire on join, level-ups, decay, relief, shards, and admin
+ * commands). Rendering rules live client-side in
  * {@code EnvironmentalPressureClientEffects}.
  */
 public final class EnvironmentalPressureHandler {
+
+    /** Modifier id for the night-senses follow-range boost. */
+    public static final ResourceLocation NIGHT_SENSES_MODIFIER_ID = Tribulation.id("oppressive_night_senses");
 
     /**
      * Last darkness strength sent per player, so the periodic level sync only
@@ -109,6 +123,59 @@ public final class EnvironmentalPressureHandler {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
                     strikes.slownessDurationTicks, strikes.slownessAmplifier), attacker);
         }
+    }
+
+    /**
+     * Night senses: hostiles scaled at night near an affected player notice
+     * and pursue from farther away. World-aware wrapper around
+     * {@link #applyNightSenses(Mob, boolean, int, TribulationConfig)}.
+     */
+    public static void applyNightSenses(Mob mob, ServerLevel world, int tier, TribulationConfig cfg) {
+        applyNightSenses(mob, isOppressiveNight(world), tier, cfg);
+    }
+
+    /**
+     * Injectable core of the night-senses hook, exercised directly by
+     * gametests. Applies a permanent follow-range multiplier to the mob when
+     * it is night and the tier clears the oppressive-nights threshold; a
+     * multiplier of 1.0 (gate closed or configured off) applies nothing.
+     */
+    public static void applyNightSenses(Mob mob, boolean oppressiveNight, int tier, TribulationConfig cfg) {
+        if (!oppressiveNight || cfg == null) return;
+        double multiplier = cfg.environmentalPressure.nightFollowRangeMultiplierAtTier(tier);
+        if (multiplier <= 1.0) return;
+        AttributeInstance followRange = mob.getAttribute(Attributes.FOLLOW_RANGE);
+        if (followRange == null) return;
+        followRange.removeModifier(NIGHT_SENSES_MODIFIER_ID);
+        followRange.addPermanentModifier(new AttributeModifier(
+                NIGHT_SENSES_MODIFIER_ID, multiplier - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+    }
+
+    /**
+     * Whether oppressive nights can bite here and now — the same predicate
+     * the client dimming uses: a daylight-cycle dimension with visible sky,
+     * and the fully dark band of the day cycle. Deliberately pure time math
+     * (not {@code Level.isDay()}, whose sky-darken input folds in weather and
+     * fixed time), so a thunderstorm at noon never triggers it and a
+     * fixed-time modded dimension never counts as permanent night.
+     */
+    public static boolean isOppressiveNight(ServerLevel world) {
+        DimensionType dimension = world.dimensionType();
+        if (dimension.hasFixedTime() || !dimension.hasSkyLight()) return false;
+        return isNightTime(world.getTimeOfDay(1.0f));
+    }
+
+    /**
+     * Fully dark band of the day cycle: the pure-time part of vanilla's sky
+     * brightness curve ({@code Level#getSkyDarken}) clamps to zero, which is
+     * roughly the hostile-spawn night window. The client dimming ramps on the
+     * inverse of the same curve, so the mechanical gate opens exactly where
+     * the tell reaches full strength. Pure math — covered by unit tests.
+     */
+    public static boolean isNightTime(float timeOfDay) {
+        float dayBrightness = Mth.clamp(
+                Mth.cos(timeOfDay * (float) (Math.PI * 2)) * 2.0f + 0.5f, 0.0f, 1.0f);
+        return dayBrightness <= 0.0f;
     }
 
     /**

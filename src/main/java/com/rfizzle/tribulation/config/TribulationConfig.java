@@ -754,6 +754,14 @@ public class TribulationConfig {
                     EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS);
             nights.maxDarkness = EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS;
         }
+        nights.followRangeMultiplier = clampAtLeastOne("environmentalPressure.oppressiveNights.followRangeMultiplier",
+                nights.followRangeMultiplier);
+        if (nights.followRangeMultiplier > EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER) {
+            Tribulation.LOGGER.warn("environmentalPressure.oppressiveNights.followRangeMultiplier must be <= {}, got {}; clamped to {}",
+                    EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER, nights.followRangeMultiplier,
+                    EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER);
+            nights.followRangeMultiplier = EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER;
+        }
 
         for (Map.Entry<String, WeaponTier> entry : weaponEquipment.tiers.entrySet()) {
             WeaponTier wt = entry.getValue();
@@ -815,7 +823,10 @@ public class TribulationConfig {
     }
 
     private static double clampAtLeastOne(String name, double value) {
-        if (value < 1.0) {
+        // GSON's lenient reader lets NaN through, and NaN slips past every
+        // comparison-based clamp — reset it to the floor before it can reach
+        // an attribute modifier.
+        if (!Double.isFinite(value) || value < 1.0) {
             Tribulation.LOGGER.warn("{} must be >= 1.0, got {}; clamped to 1.0", name, value);
             return 1.0;
         }
@@ -1469,13 +1480,15 @@ public class TribulationConfig {
      * Slowness to the player (duration/amplifier configurable per effect).
      * Ranged and environmental damage never trigger it.
      *
-     * <p><b>Oppressive nights</b> — at or above its (separate) tier, night
-     * ambient light is subtly reduced for the affected player. Client-side
-     * visual only: the server syncs a per-player darkness strength; the
-     * client bounds it, applies it only at night in daylight-cycle
-     * dimensions, and honors both {@code clientEnabled} (read from the
-     * client's local config) and the vanilla Darkness Pulsing accessibility
-     * slider.
+     * <p><b>Oppressive nights</b> — at or above its (separate) tier, the dark
+     * itself hunts the player: hostiles scaled at night near them spawn with
+     * keener senses (a follow-range multiplier, so they notice and pursue
+     * from farther away), and night ambient light is subtly reduced for the
+     * affected player as the tell. The dimming is client-side: the server
+     * syncs a per-player darkness strength; the client bounds it, applies it
+     * only at night in daylight-cycle dimensions, and honors both
+     * {@code clientEnabled} (read from the client's local config) and the
+     * vanilla Darkness Pulsing accessibility slider.
      */
     public static class EnvironmentalPressure {
         public boolean enabled = false;
@@ -1498,12 +1511,19 @@ public class TribulationConfig {
 
         public static class OppressiveNights {
             public static final double MAX_NIGHT_DARKNESS = 0.6;
+            public static final double MAX_FOLLOW_RANGE_MULTIPLIER = 3.0;
 
             public boolean enabled = true;
             public int tierThreshold = 4;
             public double maxDarkness = 0.25;
             /** Client-side opt-out; only ever read from the client's local config. */
             public boolean clientEnabled = true;
+            /**
+             * Follow-range multiplier for hostiles scaled at night near an
+             * affected player. 1.0 disables the mechanical effect (dimming
+             * tell only).
+             */
+            public double followRangeMultiplier = 1.5;
         }
 
         /**
@@ -1523,6 +1543,17 @@ public class TribulationConfig {
             if (!enabled || !oppressiveNights.enabled) return 0.0;
             if (tier < oppressiveNights.tierThreshold) return 0.0;
             return oppressiveNights.maxDarkness;
+        }
+
+        /**
+         * Oppressive-nights follow-range multiplier for a mob scaled at night
+         * near a player at the given tier: {@code followRangeMultiplier} when
+         * active, else 1.0. Pure arithmetic — covered by unit tests.
+         */
+        public double nightFollowRangeMultiplierAtTier(int tier) {
+            if (!enabled || !oppressiveNights.enabled) return 1.0;
+            if (tier < oppressiveNights.tierThreshold) return 1.0;
+            return oppressiveNights.followRangeMultiplier;
         }
     }
 

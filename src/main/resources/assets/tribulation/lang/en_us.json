@@ -9,6 +9,7 @@
     "item.tribulation.shatter_shard.info.configurable": "All values are configurable by the server operator.",
     "itemGroup.tribulation.main": "Tribulation",
     "message.tribulation.level_up": "Your difficulty has risen to level %s.",
+    "message.tribulation.level_up_intro": "Your difficulty rises the longer you survive — mobs near you grow stronger with it.",
     "message.tribulation.level_up_tier": "Your difficulty has risen to level %s (Tier %s).",
     "message.tribulation.level_max": "You have reached the maximum difficulty level.",
     "message.tribulation.level_decay": "You were away %s days — your difficulty eased from level %s to %s.",

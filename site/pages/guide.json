@@ -39,6 +39,7 @@
       "blocks": [
         { "type": "prose", "html": [
           "Tribulation's difficulty is driven by a per-player <strong class='text-bone'>difficulty level</strong> from 0 to 250. It is <em>not</em> your XP level — it advances purely with playtime, one level roughly every hour of being in the world.",
+          "The mod introduces itself as you play: a toast pops the moment you join to confirm it's installed, and your <strong class='text-bone'>first level-up</strong> spells out the core loop — <em>your difficulty rises the longer you survive, and mobs near you grow stronger with it</em>.",
           "The higher your level, the stronger the mobs that spawn near you. But your level is only one of <strong class='text-bone'>four scaling axes</strong> that combine per stat:"
         ] },
         {

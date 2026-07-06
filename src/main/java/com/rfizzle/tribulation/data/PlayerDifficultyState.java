@@ -46,6 +46,7 @@ public class PlayerDifficultyState extends SavedData {
     private static final String NBT_LAST_DEATH_TICK_KEY = "LastDeathTick";
     private static final String NBT_HEARTS_LOST_KEY = "HeartsLost";
     private static final String NBT_LAST_SEEN_KEY = "LastSeenEpochMs";
+    private static final String NBT_SEEN_LEVEL_UP_INTRO_KEY = "SeenLevelUpIntro";
 
     public static final SavedData.Factory<PlayerDifficultyState> FACTORY = new SavedData.Factory<>(
             PlayerDifficultyState::new,
@@ -222,6 +223,29 @@ public class PlayerDifficultyState extends SavedData {
         }
     }
 
+    /**
+     * Whether the one-time first-level-up teaching sentence has already been
+     * shown to this player. Follows the {@link #NEVER_SEEN} precedent: the
+     * default is {@code false} and the flag is written to disk only once set,
+     * so a save where no player has ever leveled stays byte-identical.
+     */
+    public boolean hasSeenLevelUpIntro(UUID uuid) {
+        return getPlayerData(uuid).seenLevelUpIntro;
+    }
+
+    /**
+     * Record that the first-level-up teaching sentence has been shown so it
+     * never fires again — even if the player's level later decays back to 0
+     * and climbs through the first boundary a second time. Idempotent.
+     */
+    public void markLevelUpIntroSeen(UUID uuid) {
+        PlayerData pd = getPlayerData(uuid);
+        if (!pd.seenLevelUpIntro) {
+            pd.seenLevelUpIntro = true;
+            setDirty();
+        }
+    }
+
     public int getHeartsLost(UUID uuid) {
         return getPlayerData(uuid).heartsLost;
     }
@@ -319,6 +343,11 @@ public class PlayerDifficultyState extends SavedData {
             if (entry.getValue().lastSeenEpochMs != NEVER_SEEN) {
                 playerTag.putLong(NBT_LAST_SEEN_KEY, entry.getValue().lastSeenEpochMs);
             }
+            // Written only once the intro has been shown, so a save for players
+            // who have never leveled stays byte-identical to a pre-feature file.
+            if (entry.getValue().seenLevelUpIntro) {
+                playerTag.putBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY, true);
+            }
             list.add(playerTag);
         }
         tag.put(NBT_PLAYERS_KEY, list);
@@ -351,6 +380,7 @@ public class PlayerDifficultyState extends SavedData {
                     : NEVER_DIED;
             pd.heartsLost = Math.max(0, playerTag.getInt(NBT_HEARTS_LOST_KEY));
             pd.lastSeenEpochMs = Math.max(NEVER_SEEN, playerTag.getLong(NBT_LAST_SEEN_KEY));
+            pd.seenLevelUpIntro = playerTag.getBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY);
             state.data.put(uuid, pd);
         }
         return state;
@@ -362,6 +392,7 @@ public class PlayerDifficultyState extends SavedData {
         public long lastDeathTick = NEVER_DIED;
         public int heartsLost;
         public long lastSeenEpochMs = NEVER_SEEN;
+        public boolean seenLevelUpIntro;
 
         public PlayerData() {}
     }

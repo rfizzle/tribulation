@@ -417,11 +417,12 @@
                 },
                 {
                   "title": "Oppressive Nights",
-                  "html": ["At or above <code class='text-accent2'>oppressiveNights.tierThreshold</code> (default tier 4), night ambient light is subtly reduced for the affected player — a purely visual, per-player darkening that fades in through dusk and out at dawn."],
+                  "html": ["At or above <code class='text-accent2'>oppressiveNights.tierThreshold</code> (default tier 4), the dark itself hunts you: hostiles scaled at night nearby spawn with keener senses — a follow-range boost, so they notice and pursue you from farther away — while night ambient light is subtly reduced for the affected player as the tell."],
                   "bullets": [
-                    "Strength: <code class='text-accent2'>maxDarkness</code> (default 0.25), hard-capped at 0.6 on both server and client",
+                    "Senses: <code class='text-accent2'>followRangeMultiplier</code> (default 1.5, clamped to 1.0–3.0; 1.0 keeps the dimming tell only), frozen at spawn like all scaling",
+                    "Dimming strength: <code class='text-accent2'>maxDarkness</code> (default 0.25), hard-capped at 0.6 on both server and client",
                     "Night only, and only in dimensions with a daylight cycle — storms at noon never trigger it",
-                    "Client opt-out: <code class='text-accent2'>oppressiveNights.clientEnabled</code> in the client's own config, and the vanilla Darkness Pulsing accessibility slider bounds it too"
+                    "Client opt-out for the dimming: <code class='text-accent2'>oppressiveNights.clientEnabled</code> in the client's own config, and the vanilla Darkness Pulsing accessibility slider bounds it too"
                   ]
                 }
               ]

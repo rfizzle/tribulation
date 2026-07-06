@@ -15,6 +15,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.level.GameType;
 
@@ -314,6 +315,93 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
             helper.fail("A disabled feature must not send night pressure to anyone");
         }
         player.discard();
+        helper.succeed();
+    }
+
+    // ---- oppressive-nights senses (follow-range boost at spawn) ----
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void nightSensesBoostFollowRangeAboveThreshold(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, MOB_POS);
+        double base = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+
+        EnvironmentalPressureHandler.applyNightSenses(zombie, true, 4, cfg());
+
+        double boosted = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+        if (Math.abs(boosted - base * 1.5) > 1e-6) {
+            helper.fail("Night senses at tier 4 must multiply follow range by the default 1.5, got "
+                    + boosted + " from base " + base);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void nightSensesIdempotentOnReapply(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, MOB_POS);
+        double base = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+
+        EnvironmentalPressureHandler.applyNightSenses(zombie, true, 4, cfg());
+        EnvironmentalPressureHandler.applyNightSenses(zombie, true, 4, cfg());
+
+        double boosted = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+        if (Math.abs(boosted - base * 1.5) > 1e-6) {
+            helper.fail("Re-applying night senses must not stack the modifier, got "
+                    + boosted + " from base " + base);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void nightSensesInertBelowThresholdAtDayAndWhenDisabled(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, MOB_POS);
+        double base = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+        TribulationConfig disabled = cfg();
+        disabled.environmentalPressure.oppressiveNights.enabled = false;
+
+        EnvironmentalPressureHandler.applyNightSenses(zombie, true, 3, cfg());
+        EnvironmentalPressureHandler.applyNightSenses(zombie, false, 5, cfg());
+        EnvironmentalPressureHandler.applyNightSenses(zombie, true, 5, disabled);
+
+        if (zombie.getAttributeValue(Attributes.FOLLOW_RANGE) != base) {
+            helper.fail("Below-threshold, daytime, and disabled cases must leave follow range untouched");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void isOppressiveNightTracksWorldTime(GameTestHelper helper) {
+        long savedTime = helper.getLevel().getDayTime();
+        try {
+            helper.getLevel().setDayTime(18000);
+            if (!EnvironmentalPressureHandler.isOppressiveNight(helper.getLevel())) {
+                helper.fail("Midnight in the overworld must count as an oppressive night");
+            }
+            helper.getLevel().setDayTime(6000);
+            if (EnvironmentalPressureHandler.isOppressiveNight(helper.getLevel())) {
+                helper.fail("Noon in the overworld must not count as an oppressive night");
+            }
+        } finally {
+            helper.getLevel().setDayTime(savedTime);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void nightSensesWorldWrapperAppliesAtMidnight(GameTestHelper helper) {
+        Mob zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, MOB_POS);
+        double base = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+        long savedTime = helper.getLevel().getDayTime();
+        try {
+            helper.getLevel().setDayTime(18000);
+            EnvironmentalPressureHandler.applyNightSenses(zombie, helper.getLevel(), 4, cfg());
+        } finally {
+            helper.getLevel().setDayTime(savedTime);
+        }
+        double boosted = zombie.getAttributeValue(Attributes.FOLLOW_RANGE);
+        if (Math.abs(boosted - base * 1.5) > 1e-6) {
+            helper.fail("The world-aware wrapper must apply the boost at midnight, got "
+                    + boosted + " from base " + base);
+        }
         helper.succeed();
     }
 }

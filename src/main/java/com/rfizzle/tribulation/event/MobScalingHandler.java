@@ -112,6 +112,14 @@ public final class MobScalingHandler {
 
         ScalingEngine.applyModifiers(mob, world, playerLevel, cfg, scaling);
 
+        // Oppressive nights: hostiles scaled at night near an affected player
+        // spawn with keener senses (a follow-range multiplier). Gated on the
+        // resolved tier, so it inherits the per-player posture of the rest of
+        // the pipeline; Enemy (not Monster) for the same reason as champions.
+        if (mob instanceof Enemy) {
+            EnvironmentalPressureHandler.applyNightSenses(mob, world, tier, cfg);
+        }
+
         // Abilities and zombie variants are vanilla-only concerns — they key off
         // the mobToggles path and only make sense for the 21 vanilla mob types.
         // Modded mobs scaled via the fallback (or full-ID overrides on non-vanilla

@@ -60,7 +60,7 @@ At or above a configurable tier threshold (default tier 3), the classic pack mob
 Disabled by default. When enabled via the `environmentalPressure` section, the world itself pushes back at high tiers — gated on each player's *own* level, so a low-level player on the same server is unaffected:
 
 - **Debilitating Strikes** — at or above a tier threshold (default 3), a landed melee hit from a scaled hostile applies short Weakness and/or Slowness (per-effect toggles, duration and amplifier configurable)
-- **Oppressive Nights** — at or above a separate tier threshold (default 4), night ambient light is subtly reduced for the affected player (bounded intensity, client-side opt-out, respects the vanilla Darkness Pulsing accessibility slider)
+- **Oppressive Nights** — at or above a separate tier threshold (default 4), hostiles scaled at night nearby spawn with keener senses (a follow-range boost, default 1.5×), and night ambient light is subtly reduced for the affected player as the tell (bounded intensity, client-side opt-out, respects the vanilla Darkness Pulsing accessibility slider)
 
 ### Death Penalties
 

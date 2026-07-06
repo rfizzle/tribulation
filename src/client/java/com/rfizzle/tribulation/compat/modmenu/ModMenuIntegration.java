@@ -1212,6 +1212,13 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setMax(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_NIGHT_DARKNESS)
                 .setSaveConsumer(v -> nights.maxDarkness = v)
                 .build());
+        cat.addEntry(entry.startDoubleField(
+                        Component.translatable("config.tribulation.environmental_pressure.follow_range_multiplier"),
+                        nights.followRangeMultiplier)
+                .setDefaultValue(1.5).setMin(1.0)
+                .setMax(TribulationConfig.EnvironmentalPressure.OppressiveNights.MAX_FOLLOW_RANGE_MULTIPLIER)
+                .setSaveConsumer(v -> nights.followRangeMultiplier = v)
+                .build());
         cat.addEntry(entry.startBooleanToggle(
                         Component.translatable("config.tribulation.environmental_pressure.client_enabled"),
                         nights.clientEnabled)

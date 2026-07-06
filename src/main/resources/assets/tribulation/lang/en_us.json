@@ -288,6 +288,7 @@
     "config.tribulation.environmental_pressure.nights_enabled": "Oppressive Nights",
     "config.tribulation.environmental_pressure.nights_tier_threshold": "Oppressive Nights Tier Threshold",
     "config.tribulation.environmental_pressure.max_darkness": "Night Darkness Strength",
+    "config.tribulation.environmental_pressure.follow_range_multiplier": "Night Senses Follow-Range Multiplier",
     "config.tribulation.environmental_pressure.client_enabled": "Show Night Darkness (this client)",
 
     "config.tribulation.category.threat_particles": "Threat Telegraphing",

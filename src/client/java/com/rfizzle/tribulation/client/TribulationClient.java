@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.rfizzle.tribulation.compat.common.TooltipDetailProvider;
 import com.rfizzle.tribulation.particle.TribulationParticles;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -8,6 +9,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 
 public class TribulationClient implements ClientModInitializer {
@@ -27,6 +29,11 @@ public class TribulationClient implements ClientModInitializer {
                 "key.categories.tribulation"));
 
         ClientNetworkHandler.register();
+
+        // Feed the client-only tooltip inputs into the shared item classes.
+        TooltipDetailProvider.setShiftHeld(Screen::hasShiftDown);
+        TooltipDetailProvider.setEffectiveConfig(ClientConfigState::effective);
+
         HudRenderCallback.EVENT.register(new TribulationHudOverlay());
         HudRenderCallback.EVENT.register(new TierDetailPanelRenderer());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientTribulationState.reset());

@@ -7,6 +7,7 @@
     "item.tribulation.shatter_shard.info.consume": "Right-click to consume and reduce your difficulty level by %s.",
     "item.tribulation.shatter_shard.info.side_effects": "Applies Slowness II, Mining Fatigue II, and Weakness II for 10 seconds.",
     "item.tribulation.shatter_shard.info.configurable": "All values are configurable by the server operator.",
+    "item.tribulation.shatter_shard.info.hold_shift": "Hold Shift for details",
     "itemGroup.tribulation.main": "Tribulation",
     "message.tribulation.level_up": "Your difficulty has risen to level %s.",
     "message.tribulation.level_up_intro": "Your difficulty rises the longer you survive — mobs near you grow stronger with it.",
@@ -515,6 +516,10 @@
     "item.tribulation.heart_fragment.tooltip": "Right-click to restore a lost heart.",
     "item.tribulation.heart_fragment.used": "Restored %s hearts (%s/%s max HP)",
     "item.tribulation.heart_fragment.full": "You have not lost any hearts.",
+    "item.tribulation.heart_fragment.info.restore": "Right-click to restore %s half-hearts lost to Hardcore Hearts.",
+    "item.tribulation.heart_fragment.info.disabled": "Hardcore Hearts is currently disabled on this world.",
+    "item.tribulation.heart_fragment.info.configurable": "All values are configurable by the server operator.",
+    "item.tribulation.heart_fragment.info.hold_shift": "Hold Shift for details",
 
     "enchantment.tribulation.soulbound": "Soulbound",
     "enchantment.tribulation.soulbound.desc": "Item is kept on death when Soul Inventory is active.",

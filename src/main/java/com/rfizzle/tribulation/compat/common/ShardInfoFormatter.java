@@ -10,8 +10,8 @@ import java.util.Locale;
 
 /**
  * Generates info text for the Shatter Shard item, used by EMI, REI, and JEI
- * info panels. Callers pass the effective config so the panel reflects the
- * server's tuning: the client plugins resolve it through
+ * info panels and by the item's base tooltip. Callers pass the effective config
+ * so the text reflects the server's tuning: the client plugins resolve it through
  * {@code ClientConfigState.effective()} (synced server config, falling back to
  * the local file when not connected to a server that syncs).
  *

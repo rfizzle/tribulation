@@ -94,8 +94,8 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
     @Override
     public void onHudRender(GuiGraphics graphics, DeltaTracker delta) {
         // Same visibility rules as the badge (F1, open screen, spectator, death),
-        // plus the hold-to-peek gate. The keymapping is unbound by default, so
-        // isDown() stays false until the player binds it.
+        // plus the hold-to-peek gate: the panel shows only while the bound key is
+        // held down.
         if (!TribulationHudOverlay.isHudVisible()) return;
         if (TribulationClient.KEY_TIER_DETAIL == null || !TribulationClient.KEY_TIER_DETAIL.isDown()) return;
 

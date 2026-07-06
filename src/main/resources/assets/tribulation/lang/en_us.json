@@ -15,6 +15,13 @@
     "message.tribulation.level_max": "You have reached the maximum difficulty level.",
     "message.tribulation.level_decay": "You were away %s days — your difficulty eased from level %s to %s.",
     "message.tribulation.death_relief": "Your trials ease — difficulty level %s → %s",
+    "message.tribulation.tier_discovery_hint": "Hold %s to peek what nearby mobs can do at your tier — rebind it in Options → Controls → Tribulation.",
+    "message.tribulation.tier_headline_generic": "Nearby mobs can now use %s.",
+    "message.tribulation.tier_headline.zombie_reinforcements": "Zombies near you can now call reinforcements when struck.",
+    "message.tribulation.tier_headline.skeleton_sword_switch": "Skeletons near you now draw a sword when you close in.",
+    "message.tribulation.tier_headline.zombie_door_breaking": "Zombies near you can now break down wooden doors.",
+    "message.tribulation.tier_headline.skeleton_flame_arrows": "Skeletons near you now loose flaming arrows.",
+    "message.tribulation.tier_headline.zombie_sprinting": "Zombies near you now sprint to run you down.",
     "message.tribulation.blood_moon_rises": "A Blood Moon rises...",
     "message.tribulation.blood_moon_no_sleep": "You cannot sleep during a Blood Moon.",
 

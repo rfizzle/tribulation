@@ -153,4 +153,84 @@ class MobAbilitiesTest {
                     "toggle " + toggle.getName() + " gates no registry entry (orphaned toggle)");
         }
     }
+
+    @Test
+    void newlyUnlockedAt_isBoundaryOnly_notCumulative() {
+        TribulationConfig cfg = defaultCfg();
+        for (int tier = 1; tier <= 5; tier++) {
+            int finalTier = tier;
+            assertTrue(MobAbilities.newlyUnlockedAt(tier, cfg).stream()
+                            .allMatch(a -> a.unlockTier() == finalTier),
+                    "newlyUnlockedAt(" + tier + ") must contain only abilities unlocking at that tier");
+        }
+        // The boundary slices partition the cumulative set: summing them equals activeAt(5).
+        int summed = 0;
+        for (int tier = 1; tier <= 5; tier++) {
+            summed += MobAbilities.newlyUnlockedAt(tier, cfg).size();
+        }
+        assertEquals(MobAbilities.activeAt(5, cfg).size(), summed,
+                "boundary slices must partition the cumulative active set");
+    }
+
+    @Test
+    void headlineAt_defaultConfig_picksCuratedFlagship() {
+        TribulationConfig cfg = defaultCfg();
+        for (var entry : MobAbilities.TIER_HEADLINES.entrySet()) {
+            MobAbility headline = MobAbilities.headlineAt(entry.getKey(), cfg);
+            assertNotNull(headline, "tier " + entry.getKey() + " should have a headline by default");
+            assertEquals(entry.getValue(), headline.abilityKey(),
+                    "tier " + entry.getKey() + " should headline its curated flagship");
+            assertTrue(MobAbilities.isFlagship(entry.getKey(), headline));
+        }
+    }
+
+    @Test
+    void headlineAt_flagshipDisabled_fallsBackToAnotherEnabledAbility() {
+        TribulationConfig cfg = defaultCfg();
+        // Tier 1's flagship is zombie_reinforcements; disable it. Other tier-1
+        // abilities (e.g. creeper_shorter_fuse) remain, so a fallback is picked.
+        cfg.abilities.zombieReinforcements = false;
+        MobAbility headline = MobAbilities.headlineAt(1, cfg);
+        assertNotNull(headline, "tier 1 still has enabled abilities after disabling the flagship");
+        assertNotEquals("zombie_reinforcements", headline.abilityKey());
+        assertEquals(1, headline.unlockTier());
+        assertFalse(MobAbilities.isFlagship(1, headline),
+                "the fallback pick is not the curated flagship");
+    }
+
+    @Test
+    void headlineAt_allTierAbilitiesDisabled_isNull() {
+        TribulationConfig cfg = defaultCfg();
+        // Disable every ability unlocking at tier 1 so the boundary is empty.
+        for (MobAbility ability : MobAbilities.newlyUnlockedAt(1, cfg)) {
+            flipToggle(cfg.abilities, ability);
+        }
+        assertTrue(MobAbilities.newlyUnlockedAt(1, cfg).isEmpty(), "precondition: tier 1 boundary empty");
+        assertNull(MobAbilities.headlineAt(1, cfg),
+                "no headline when every ability unlocking at the tier is disabled");
+    }
+
+    /**
+     * Flip the config toggle gating {@code ability} to false by finding the one
+     * boolean field whose value changes the ability's {@code enabled} result.
+     */
+    private static void flipToggle(TribulationConfig.Abilities abilities, MobAbility ability) {
+        if (!ability.enabled().test(abilities)) {
+            return; // already disabled, e.g. via a toggle shared with an earlier ability
+        }
+        for (Field f : TribulationConfig.Abilities.class.getFields()) {
+            if (f.getType() != boolean.class) continue;
+            try {
+                boolean prior = f.getBoolean(abilities);
+                f.setBoolean(abilities, false);
+                if (!ability.enabled().test(abilities)) {
+                    return; // this is the gating toggle — leave it disabled
+                }
+                f.setBoolean(abilities, prior); // unrelated toggle — restore its prior value
+            } catch (IllegalAccessException e) {
+                fail("could not flip toggle " + f.getName() + ": " + e);
+            }
+        }
+        fail("no toggle gates ability " + ability.abilityKey());
+    }
 }

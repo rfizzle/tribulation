@@ -769,6 +769,67 @@ class PlayerDifficultyStateTest {
         assertFalse(loaded.hasSeenLevelUpIntro(uuid));
     }
 
+    // ---- seenTierDiscoveryHint (tier detail panel discovery moment) ----
+
+    @Test
+    void hasSeenTierDiscoveryHint_defaultsToFalse() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        assertFalse(state.hasSeenTierDiscoveryHint(UUID.randomUUID()));
+    }
+
+    @Test
+    void markTierDiscoveryHintSeen_setsFlagAndIsIdempotent() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.markTierDiscoveryHintSeen(uuid);
+        assertTrue(state.hasSeenTierDiscoveryHint(uuid));
+        // Second call is a no-op, not an error.
+        state.markTierDiscoveryHintSeen(uuid);
+        assertTrue(state.hasSeenTierDiscoveryHint(uuid));
+    }
+
+    @Test
+    void save_omitsSeenTierDiscoveryHintKeyWhenUnset() {
+        // A player who has never crossed a tier must not grow the save file.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 42;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        CompoundTag playerTag = tag.getList("Players", 10).getCompound(0);
+
+        assertFalse(playerTag.contains("SeenTierDiscoveryHint"),
+                "unshown discovery hint must not grow the save file");
+    }
+
+    @Test
+    void nbt_roundTrip_preservesSeenTierDiscoveryHint() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.markTierDiscoveryHintSeen(uuid);
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertTrue(loaded.hasSeenTierDiscoveryHint(uuid));
+    }
+
+    @Test
+    void nbt_backwardCompat_missingSeenTierDiscoveryHintDefaultsToFalse() {
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
+        CompoundTag playerTag = new CompoundTag();
+        UUID uuid = UUID.randomUUID();
+        playerTag.putUUID("UUID", uuid);
+        playerTag.putInt("Level", 10);
+        list.add(playerTag);
+        tag.put("Players", list);
+
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertFalse(loaded.hasSeenTierDiscoveryHint(uuid));
+    }
+
     // ---- NBT serialization round-trip ----
 
     @Test

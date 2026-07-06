@@ -71,6 +71,18 @@ Disabled by default. When enabled via the `environmentalPressure` section, the w
 - **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment (or any enchantment in the `#c:soulbound` convention tag, e.g. Meridian's Tether)
 - **Totem interaction** — Configure how a popped Totem of Undying interacts with the penalties via the `totems` section: `countsAsDeathRelief` (whether a totem pop still applies the Death Relief level loss) and `protectsHearts` (whether a totem pop shields you from the Hardcore Hearts loss)
 
+### Blood Moon *(rare event night)*
+
+The moon axis stops being a quiet stat curve and becomes something you plan around. At nightfall on a full moon, the Overworld rolls a configurable chance (`chance`, 25% by default) to turn the night into a Blood Moon that lasts until dawn:
+
+- **Amplified moon bonus** — every mob spawned during the event has its moon-axis factor multiplied by `moonBonusMultiplier` (3× by default). Global stat caps still apply, so the surge never pushes a mob past the configured ceilings.
+- **Raised spawn caps** — hostile (`MONSTER`) spawn caps, both the global per-category cap and the per-player local cap, are multiplied by `spawnCapMultiplier` (2× by default) for a measurably denser night. Nether and End caps stay vanilla.
+- **No sleeping through it** — with `blockSleep` on, beds refuse until dawn with an on-screen message. The event always ends at daybreak and everything reverts.
+- **You'll know it's coming** — with `clientEffects` on, the sky, fog, and moon tint blood red for the duration and an ominous warning sting plays at nightfall.
+- **Restart resilient** — event state is synced to clients (so it works on dedicated servers) and survives a server restart mid-night.
+
+Each piece is individually toggleable under the `bloodMoon` config section, with `enabled` as the master switch. Admins can force or clear an event with `/tribulation bloodmoon [start|stop]`.
+
 ### Statistics
 
 Tribulation registers seven custom statistics (highest level reached, levels lost to death relief, levels lost to offline decay, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
@@ -118,6 +130,9 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 | `/tribulation hearts <player> restore <n>` | 2 | Restore lost half-hearts for a player |
 | `/tribulation hearts <player> reset` | 2 | Clear all heart penalties for a player |
 | `/tribulation inventory <player>` | 2 | Count soulbound items in a player's inventory |
+| `/tribulation bloodmoon` | 2 | Show whether a Blood Moon is currently active |
+| `/tribulation bloodmoon start` | 2 | Force-start a Blood Moon in the current world |
+| `/tribulation bloodmoon stop` | 2 | End the active Blood Moon |
 
 [Full command reference →](https://tribulation.rfizzle.com/commands.html)
 
@@ -135,7 +150,7 @@ Bind it under **Options → Controls → Key Binds**, in the **Tribulation** cat
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `shards`, `hardcoreHearts`, `soulInventory`, `bloodMoon`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `hud`, `threatParticles`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

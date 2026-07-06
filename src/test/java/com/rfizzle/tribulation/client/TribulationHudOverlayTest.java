@@ -154,4 +154,30 @@ class TribulationHudOverlayTest {
         int color = TribulationHudOverlay.getAnimatedColor(3, -1);
         assertEquals(TribulationHudOverlay.getTierColor(3), color);
     }
+
+    @Test
+    void getAnimatedColor_noFlash_returnsTierColor() {
+        int color = TribulationHudOverlay.getAnimatedColor(2, -1, -1);
+        assertEquals(TribulationHudOverlay.getTierColor(2), color);
+    }
+
+    @Test
+    void getAnimatedColor_drop_blendsFromCooling() {
+        long now = System.currentTimeMillis();
+        // Start of the flash blends from the cooling start color, distinct
+        // from both the tier color and the gold level-up color.
+        int color = TribulationHudOverlay.getAnimatedColor(0, -1, now);
+        assertNotEquals(TribulationHudOverlay.getTierColor(0), color);
+        assertNotEquals(TribulationHudOverlay.getAnimatedColor(0, now, -1), color,
+                "drop flash should differ from the gold level-up flash");
+    }
+
+    @Test
+    void getAnimatedColor_moreRecentFlashWins() {
+        long now = System.currentTimeMillis();
+        // Drop happened more recently than the up-flash: cooling wins.
+        int both = TribulationHudOverlay.getAnimatedColor(0, now - 500, now);
+        int dropOnly = TribulationHudOverlay.getAnimatedColor(0, -1, now);
+        assertEquals(dropOnly, both);
+    }
 }

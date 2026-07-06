@@ -6,34 +6,49 @@ import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.stat.TribulationStats;
 import com.rfizzle.tribulation.network.TribulationNetworking;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 
 /**
- * Applies death relief on a qualifying player death: subtracts
- * {@link TribulationConfig.DeathRelief#amount} levels from the dying
- * player's difficulty level, floored at
+ * Applies death relief when a player respawns after dying: subtracts
+ * {@link TribulationConfig.DeathRelief#amount} levels from the player's
+ * difficulty level, floored at
  * {@link TribulationConfig.DeathRelief#minimumLevel}. A cooldown keyed on
  * {@code cooldownTicks} suppresses rapid-suicide exploits. All death causes
- * count; the cooldown is the sole gate.
+ * count; the cooldown is the sole gate. Running on respawn (rather than at
+ * death) means the actionbar message and HUD cooling flash land once the
+ * death screen has closed and the player can see them.
  */
 public final class DeathReliefHandler {
 
     private DeathReliefHandler() {}
 
     public static void register() {
-        ServerLivingEntityEvents.AFTER_DEATH.register(DeathReliefHandler::onAfterDeath);
+        // Apply on respawn, not at AFTER_DEATH: the actionbar message and the
+        // HUD cooling flash are only drawn once the death screen closes and the
+        // in-game HUD returns, so both player-facing signals must land on the
+        // freshly respawned player to be seen.
+        ServerPlayerEvents.AFTER_RESPAWN.register(DeathReliefHandler::onAfterRespawn);
     }
 
-    public static void onAfterDeath(LivingEntity entity, DamageSource damageSource) {
-        if (!(entity instanceof ServerPlayer player)) return;
+    public static void onAfterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
+        // {@code alive} is true when the player conquered the End and returned
+        // without dying — no death, so no relief.
+        if (alive) return;
+        maybeApplyPenalty(newPlayer);
+    }
 
+    /**
+     * Applies death relief to the given player if the mechanic is enabled.
+     * The config gate lives here so both the respawn event and direct callers
+     * (gametests, totem integration entry point) share it.
+     */
+    public static void maybeApplyPenalty(ServerPlayer player) {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null || !cfg.deathRelief.enabled) return;
-
         applyPenalty(player);
     }
 
@@ -67,6 +82,10 @@ public final class DeathReliefHandler {
             if (before != after) {
                 player.awardStat(TribulationStats.LEVELS_LOST_TO_DEATH_RELIEF, before - after);
                 TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, before, after);
+                player.displayClientMessage(
+                        Component.translatable("message.tribulation.death_relief", before, after)
+                                .withStyle(ChatFormatting.AQUA),
+                        true);
                 Tribulation.LOGGER.debug(
                         "Death relief: {} reduced from level {} to {}",
                         player.getGameProfile().getName(),

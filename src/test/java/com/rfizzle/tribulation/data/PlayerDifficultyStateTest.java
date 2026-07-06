@@ -391,6 +391,95 @@ class PlayerDifficultyStateTest {
         assertFalse(state.isDirty());
     }
 
+    // ---- raisePlayerLevel (for ascendant shards) ----
+
+    @Test
+    void raisePlayerLevel_addsAmountAndMarksDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 12;
+        int after = state.raisePlayerLevel(uuid, 25, 250);
+        assertEquals(37, after);
+        assertEquals(37, state.getLevel(uuid));
+        assertTrue(state.isDirty());
+    }
+
+    @Test
+    void raisePlayerLevel_clampsToMaxLevel() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 240;
+        int after = state.raisePlayerLevel(uuid, 25, 250);
+        assertEquals(250, after);
+        assertEquals(250, state.getLevel(uuid));
+    }
+
+    @Test
+    void raisePlayerLevel_noopAtCeilingDoesNotDirty() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 250;
+        int after = state.raisePlayerLevel(uuid, 25, 250);
+        assertEquals(250, after);
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void raisePlayerLevel_neverLowersAPlayerAboveALoweredCap() {
+        // Stored levels are not re-clamped when an operator lowers general.maxLevel.
+        // A raise must never turn into a reduction for a player sitting above the
+        // new cap — it is a strict no-op that keeps the level and stays clean.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 300;
+        int after = state.raisePlayerLevel(uuid, 25, 250);
+        assertEquals(300, after);
+        assertEquals(300, state.getLevel(uuid));
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void raisePlayerLevel_zeroAmountIsNoop() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 40;
+        int after = state.raisePlayerLevel(uuid, 0, 250);
+        assertEquals(40, after);
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void raisePlayerLevel_negativeAmountClampedToZeroIsNoop() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.getPlayerData(uuid).level = 40;
+        int after = state.raisePlayerLevel(uuid, -5, 250);
+        assertEquals(40, after);
+        assertFalse(state.isDirty());
+    }
+
+    @Test
+    void raisePlayerLevel_resetsTickCounterOnSuccessfulRaise() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState.PlayerData pd = state.getPlayerData(uuid);
+        pd.level = 40;
+        pd.tickCounter = 900;
+        state.raisePlayerLevel(uuid, 25, 250);
+        assertEquals(0, pd.tickCounter);
+    }
+
+    @Test
+    void raisePlayerLevel_leavesDeathTickUntouched() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState.PlayerData pd = state.getPlayerData(uuid);
+        pd.level = 10;
+        pd.lastDeathTick = 500L;
+        state.raisePlayerLevel(uuid, 5, 250);
+        assertEquals(500L, pd.lastDeathTick);
+    }
+
     // ---- setLevel (for /tribulation set) ----
 
     @Test

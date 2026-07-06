@@ -61,6 +61,7 @@ public class TribulationConfig {
     public DeathRelief deathRelief = new DeathRelief();
     public LevelDecay levelDecay = new LevelDecay();
     public Shards shards = new Shards();
+    public Ascension ascension = new Ascension();
     public HardcoreHearts hardcoreHearts = new HardcoreHearts();
     public SoulInventory soulInventory = new SoulInventory();
     public Map<String, MobScaling> scaling = defaultScaling();
@@ -378,6 +379,7 @@ public class TribulationConfig {
         if (deathRelief == null) deathRelief = new DeathRelief();
         if (levelDecay == null) levelDecay = new LevelDecay();
         if (shards == null) shards = new Shards();
+        if (ascension == null) ascension = new Ascension();
         if (hardcoreHearts == null) hardcoreHearts = new HardcoreHearts();
         if (soulInventory == null) soulInventory = new SoulInventory();
         if (specialZombies == null) specialZombies = new SpecialZombies();
@@ -630,6 +632,11 @@ public class TribulationConfig {
             shards.shardPower = 0;
         }
         shards.dropChance = clampUnit("shards.dropChance", shards.dropChance);
+
+        if (ascension.raisePower < 0) {
+            Tribulation.LOGGER.warn("ascension.raisePower must be >= 0, got {}; clamped to 0", ascension.raisePower);
+            ascension.raisePower = 0;
+        }
 
         if (hardcoreHearts.heartsLostPerDeath < 1) {
             Tribulation.LOGGER.warn("hardcoreHearts.heartsLostPerDeath must be >= 1, got {}; clamped to 1", hardcoreHearts.heartsLostPerDeath);
@@ -1168,6 +1175,12 @@ public class TribulationConfig {
         public int shardPower = 5;
         public double dropChance = 0.005;
         public boolean sideEffects = true;
+    }
+
+    public static class Ascension {
+        public boolean enabled = true;
+        public int raisePower = 25;
+        public boolean sideEffects = false;
     }
 
     public static class HardcoreHearts {

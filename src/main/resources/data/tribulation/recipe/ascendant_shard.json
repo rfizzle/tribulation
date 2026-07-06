@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " S ",
+        "SNS",
+        " S "
+    ],
+    "key": {
+        "S": {
+            "item": "tribulation:shatter_shard"
+        },
+        "N": {
+            "item": "minecraft:nether_star"
+        }
+    },
+    "result": {
+        "id": "tribulation:ascendant_shard",
+        "count": 1
+    }
+}

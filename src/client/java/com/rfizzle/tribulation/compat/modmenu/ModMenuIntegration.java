@@ -82,6 +82,7 @@ public final class ModMenuIntegration implements ModMenuApi {
             addDeathRelief(builder, entry, current);
             addLevelDecay(builder, entry, current);
             addShards(builder, entry, current);
+            addAscension(builder, entry, current);
             addHardcoreHearts(builder, entry, current);
             addSoulInventory(builder, entry, current);
             addTotems(builder, entry, current);
@@ -770,6 +771,30 @@ public final class ModMenuIntegration implements ModMenuApi {
                         config.shards.sideEffects)
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.shards.sideEffects = v)
+                .build());
+        applyTooltips(cat);
+    }
+
+    private static void addAscension(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
+        ConfigCategory cat = builder.getOrCreateCategory(
+                Component.translatable("config.tribulation.category.ascension"));
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.ascension.enabled"),
+                        config.ascension.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> config.ascension.enabled = v)
+                .build());
+        cat.addEntry(entry.startIntField(
+                        Component.translatable("config.tribulation.ascension.raise_power"),
+                        config.ascension.raisePower)
+                .setDefaultValue(25).setMin(0)
+                .setSaveConsumer(v -> config.ascension.raisePower = v)
+                .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.ascension.side_effects"),
+                        config.ascension.sideEffects)
+                .setDefaultValue(false)
+                .setSaveConsumer(v -> config.ascension.sideEffects = v)
                 .build());
         applyTooltips(cat);
     }

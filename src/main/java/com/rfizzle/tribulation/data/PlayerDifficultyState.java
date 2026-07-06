@@ -201,6 +201,30 @@ public class PlayerDifficultyState extends SavedData {
     }
 
     /**
+     * Raise a player's level by {@code amount}, capped at {@code maxLevel}.
+     * Mirrors {@link #reducePlayerLevel} for voluntary increases such as
+     * ascendant shards: no cooldown and the death-relief timer is untouched.
+     * The tick counter is reset to zero on a successful raise (as
+     * {@link #setLevel} does) so accrued progress toward the next natural
+     * level-up isn't double-counted on top of the boost. Returns the new level.
+     */
+    public int raisePlayerLevel(UUID uuid, int amount, int maxLevel) {
+        PlayerData pd = getPlayerData(uuid);
+        int clamped = Math.max(0, amount);
+        int ceiling = Math.max(1, maxLevel);
+        // Strictly monotonic-up: never drop a player already sitting above a
+        // lowered cap (stored levels are not re-clamped on config change), so a
+        // raise can never turn into a reduction.
+        int newLevel = Math.max(pd.level, Math.min(ceiling, pd.level + clamped));
+        if (newLevel != pd.level) {
+            pd.level = newLevel;
+            pd.tickCounter = 0;
+            setDirty();
+        }
+        return newLevel;
+    }
+
+    /**
      * Wall-clock timestamp (epoch millis) of the player's last disconnect,
      * used as the offline level-decay anchor. {@link #NEVER_SEEN} when the
      * player has never been stamped (fresh player, or a save from before the

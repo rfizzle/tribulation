@@ -19,11 +19,14 @@ import net.minecraft.world.item.Rarity;
  */
 public final class TribulationItems {
     public static final String SHATTER_SHARD_PATH = "shatter_shard";
+    public static final String ASCENDANT_SHARD_PATH = "ascendant_shard";
     public static final String HEART_FRAGMENT_PATH = "heart_fragment";
     public static final String CREATIVE_TAB_PATH = "main";
 
     public static final ResourceLocation SHATTER_SHARD_ID =
             Tribulation.id(SHATTER_SHARD_PATH);
+    public static final ResourceLocation ASCENDANT_SHARD_ID =
+            Tribulation.id(ASCENDANT_SHARD_PATH);
     public static final ResourceLocation HEART_FRAGMENT_ID =
             Tribulation.id(HEART_FRAGMENT_PATH);
     public static final ResourceLocation CREATIVE_TAB_ID =
@@ -33,6 +36,13 @@ public final class TribulationItems {
             new Item.Properties()
                     .stacksTo(16)
                     .rarity(Rarity.UNCOMMON)
+                    .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+    );
+
+    public static final Item ASCENDANT_SHARD = new AscendantShardItem(
+            new Item.Properties()
+                    .stacksTo(16)
+                    .rarity(Rarity.RARE)
                     .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
     );
 
@@ -52,6 +62,7 @@ public final class TribulationItems {
         registered = true;
 
         Registry.register(BuiltInRegistries.ITEM, SHATTER_SHARD_ID, SHATTER_SHARD);
+        Registry.register(BuiltInRegistries.ITEM, ASCENDANT_SHARD_ID, ASCENDANT_SHARD);
         Registry.register(BuiltInRegistries.ITEM, HEART_FRAGMENT_ID, HEART_FRAGMENT);
 
         CreativeModeTab tab = FabricItemGroup.builder()
@@ -59,6 +70,7 @@ public final class TribulationItems {
                 .title(Component.translatable("itemGroup.tribulation.main"))
                 .displayItems((params, entries) -> {
                     entries.accept(SHATTER_SHARD);
+                    entries.accept(ASCENDANT_SHARD);
                     entries.accept(HEART_FRAGMENT);
                 })
                 .build();

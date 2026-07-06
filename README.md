@@ -71,6 +71,10 @@ Disabled by default. When enabled via the `environmentalPressure` section, the w
 - **Soul Inventory** *(opt-in)* — Inventory destroyed on death unless items have the Soulbound enchantment (or any enchantment in the `#c:soulbound` convention tag, e.g. Meridian's Tether)
 - **Totem interaction** — Configure how a popped Totem of Undying interacts with the penalties via the `totems` section: `countsAsDeathRelief` (whether a totem pop still applies the Death Relief level loss) and `protectsHearts` (whether a totem pop shields you from the Hardcore Hearts loss)
 
+### Ascension *(opt-in difficulty boost)*
+
+- **Ascendant Shards** — The Shatter Shard's dark twin: a consumable that *raises* your difficulty level by 25 on use (configurable via the `ascension` section), clamped at `general.maxLevel`. It's the survival path to Tier 5 mobs, champion spawns, and the richer XP/loot payoff without waiting out the passive climb. The raised level is the cost — consumption is costless by default, with an optional short Strength II / Resistance II buff (`sideEffects`, off by default). Crafted from a Nether Star ringed by four Shatter Shards, so opting into difficulty is a deliberate, expensive choice. When already at the maximum level, using one is a no-op and keeps the item. Note the interplay with **Death Relief** (on by default): each death bleeds 2 levels back off the boost — a thematic risk/reward, not a bug.
+
 ### Blood Moon *(rare event night)*
 
 The moon axis stops being a quiet stat curve and becomes something you plan around. At nightfall on a full moon, the Overworld rolls a configurable chance (`chance`, 25% by default) to turn the night into a Blood Moon that lasts until dawn:
@@ -85,11 +89,11 @@ Each piece is individually toggleable under the `bloodMoon` config section, with
 
 ### Statistics
 
-Tribulation registers seven custom statistics (highest level reached, levels lost to death relief, levels lost to offline decay, Shatter Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
+Tribulation registers eight custom statistics (highest level reached, levels lost to death relief, levels lost to offline decay, Shatter Shards used, Ascendant Shards used, half-hearts lost, half-hearts restored, and Tier-5 scaled mobs killed). View them in-game from the vanilla **Statistics** screen under *Custom*.
 
 ### Advancements
 
-A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 ladder, surviving death with a Soulbound item, using a Shatter Shard, restoring a heart with a Heart Fragment, and killing a Tier-5 scaled mob. Crossing a tier fires an advancement toast plus a custom sound sting on the leveling player only. All criteria are server-side and work on dedicated servers.
+A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 ladder, surviving death with a Soulbound item, using a Shatter Shard, using an Ascendant Shard, restoring a heart with a Heart Fragment, and killing a Tier-5 scaled mob. Crossing a tier fires an advancement toast plus a custom sound sting on the leveling player only. All criteria are server-side and work on dedicated servers.
 
 ### Additional Features
 

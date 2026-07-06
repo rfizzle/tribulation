@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.compat.emi;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.client.ClientConfigState;
+import com.rfizzle.tribulation.compat.common.AscendantInfoFormatter;
 import com.rfizzle.tribulation.compat.common.HeartFragmentInfoFormatter;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
@@ -20,6 +21,11 @@ public final class EmiShardPlugin implements EmiPlugin {
                 List.of(EmiStack.of(TribulationItems.SHATTER_SHARD)),
                 ShardInfoFormatter.infoLines(ClientConfigState.effective()),
                 Tribulation.id("/shard_info")));
+
+        registry.addRecipe(new EmiInfoRecipe(
+                List.of(EmiStack.of(TribulationItems.ASCENDANT_SHARD)),
+                AscendantInfoFormatter.infoLines(ClientConfigState.effective()),
+                Tribulation.id("/ascendant_shard_info")));
 
         registry.addRecipe(new EmiInfoRecipe(
                 List.of(EmiStack.of(TribulationItems.HEART_FRAGMENT)),

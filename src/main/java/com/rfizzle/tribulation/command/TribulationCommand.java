@@ -59,6 +59,14 @@ import java.util.UUID;
  * <player>} is an admin lookup for other players (2); everything else also
  * requires op (2). All mutations route through {@link PlayerDifficultyState}
  * so they persist across restarts and trigger {@code setDirty()} correctly.
+ *
+ * <p>Localization scope: the permission-0, player-facing surfaces ({@code info}
+ * and self {@code hearts}) build translatable {@code command.tribulation.*}
+ * components so a localized client never sees English. The op-gated diagnostics
+ * ({@code config}, {@code debug}, {@code inspect}, {@code level}, and the admin
+ * mutations) stay literal on purpose — they are dense operator telemetry no
+ * ordinary player can reach, and their format strings carry no player-facing
+ * value that a translation would serve.
  */
 public final class TribulationCommand {
     public static final String ROOT = "tribulation";
@@ -217,18 +225,18 @@ public final class TribulationCommand {
         ServerPlayer player = src.getPlayerOrException();
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) {
-            src.sendFailure(Component.literal("Tribulation config not loaded"));
+            src.sendFailure(Component.translatable("command.tribulation.config_not_loaded"));
             return 0;
         }
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
         UUID uuid = player.getUUID();
-        for (String line : formatPlayerInfo(
+        for (Component line : formatPlayerInfo(
                 player.getGameProfile().getName(),
                 state.getLevel(uuid),
                 state.getTickCounter(uuid),
                 state.getHeartsLost(uuid),
                 cfg)) {
-            src.sendSuccess(() -> Component.literal(line), false);
+            src.sendSuccess(() -> line, false);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -318,7 +326,7 @@ public final class TribulationCommand {
         ServerPlayer player = src.getPlayerOrException();
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null || !cfg.hardcoreHearts.enabled) {
-            src.sendFailure(Component.literal("Hardcore Hearts is disabled"));
+            src.sendFailure(Component.translatable("command.tribulation.hearts.disabled"));
             return 0;
         }
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(src.getServer());
@@ -327,9 +335,8 @@ public final class TribulationCommand {
         if (heartsLost == 0) {
             src.sendSuccess(() -> Component.translatable("item.tribulation.heart_fragment.full"), false);
         } else {
-            src.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                    "You have lost %d half-hearts (%d/%d max HP)",
-                    heartsLost, currentMax, 20)), false);
+            src.sendSuccess(() -> Component.translatable("command.tribulation.hearts.self",
+                    heartsLost, currentMax, 20), false);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -541,27 +548,23 @@ public final class TribulationCommand {
      * the next level. Inputs are primitives so this stays pure and testable
      * without a {@link ServerPlayer} or a live {@link PlayerDifficultyState}.
      */
-    static List<String> formatPlayerInfo(String name, int level, int tickCounter, int heartsLost, TribulationConfig cfg) {
-        List<String> lines = new ArrayList<>();
+    static List<Component> formatPlayerInfo(String name, int level, int tickCounter, int heartsLost, TribulationConfig cfg) {
+        List<Component> lines = new ArrayList<>();
         int maxLevel = Math.max(1, cfg.general.maxLevel);
         int levelUpTicks = Math.max(1, cfg.general.levelUpTicks);
         int tier = TierManager.getTier(level, cfg.tiers);
-        lines.add(String.format(Locale.ROOT, "=== Tribulation: %s ===", name));
-        lines.add(String.format(Locale.ROOT,
-                "Level: %d / %d (tier %d)",
-                level, maxLevel, tier));
+        lines.add(Component.translatable("command.tribulation.info.header", name));
+        lines.add(Component.translatable("command.tribulation.info.level", level, maxLevel, tier));
         if (level >= maxLevel) {
-            lines.add("Progress: max level reached");
+            lines.add(Component.translatable("command.tribulation.info.progress.max"));
         } else {
             int remaining = Math.max(0, levelUpTicks - tickCounter);
-            lines.add(String.format(Locale.ROOT,
-                    "Progress: %d / %d ticks (%s until next level)",
+            lines.add(Component.translatable("command.tribulation.info.progress",
                     Math.max(0, tickCounter), levelUpTicks, formatTicksAsDuration(remaining)));
         }
         if (cfg.hardcoreHearts.enabled && heartsLost > 0) {
             int currentMax = 20 - heartsLost;
-            lines.add(String.format(Locale.ROOT,
-                    "Hearts: %d/%d max HP (%d half-hearts lost)",
+            lines.add(Component.translatable("command.tribulation.info.hearts",
                     currentMax, 20, heartsLost));
         }
         return lines;

@@ -3,6 +3,8 @@ package com.rfizzle.tribulation.command;
 
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.scaling.StructureBoostManager;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
@@ -111,18 +113,38 @@ class TribulationCommandTest {
         assertFalse(joined.contains("  Height:"));
     }
 
-    // ---- formatPlayerInfo ----
+    // ---- formatPlayerInfo (translatable) ----
+
+    /** Translation key of a {@link Component} built via {@code Component.translatable}. */
+    private static String keyOf(Component c) {
+        return ((TranslatableContents) c.getContents()).getKey();
+    }
+
+    /** Format args of a translatable {@link Component}. */
+    private static Object[] argsOf(Component c) {
+        return ((TranslatableContents) c.getContents()).getArgs();
+    }
+
+    private static Component lineWithKey(List<Component> lines, String key) {
+        return lines.stream().filter(c -> keyOf(c).equals(key)).findFirst().orElse(null);
+    }
 
     @Test
     void formatPlayerInfo_showsNameLevelTierAndProgress() {
         TribulationConfig cfg = new TribulationConfig();
-        List<String> lines = TribulationCommand.formatPlayerInfo("Alice", 5, 0, 0, cfg);
-        String joined = String.join("\n", lines);
-        assertTrue(joined.contains("Alice"), "includes player name");
-        assertTrue(joined.contains("Level: 5 / " + cfg.general.maxLevel), "shows level / max level");
-        assertTrue(joined.contains("tier "), "shows tier");
-        assertTrue(joined.contains("Progress:"), "shows progress line");
-        assertTrue(joined.contains("until next level"), "shows time remaining");
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Alice", 5, 0, 0, cfg);
+
+        Component header = lineWithKey(lines, "command.tribulation.info.header");
+        assertTrue(header != null && argsOf(header)[0].equals("Alice"), "includes player name");
+
+        Component level = lineWithKey(lines, "command.tribulation.info.level");
+        assertEquals(5, argsOf(level)[0], "shows current level");
+        assertEquals(cfg.general.maxLevel, argsOf(level)[1], "shows max level");
+
+        assertTrue(lineWithKey(lines, "command.tribulation.info.progress") != null,
+                "shows progress line with time remaining");
+        assertTrue(lineWithKey(lines, "command.tribulation.info.progress.max") == null,
+                "not at max level");
     }
 
     @Test
@@ -130,18 +152,19 @@ class TribulationCommandTest {
         TribulationConfig cfg = new TribulationConfig();
         // Halfway through a one-hour level @ 20 tps → 30 minutes remaining.
         int halfway = cfg.general.levelUpTicks / 2;
-        List<String> lines = TribulationCommand.formatPlayerInfo("Bob", 10, halfway, 0, cfg);
-        String joined = String.join("\n", lines);
-        assertTrue(joined.contains("30m"), "remaining time rendered as duration: " + joined);
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Bob", 10, halfway, 0, cfg);
+        Component progress = lineWithKey(lines, "command.tribulation.info.progress");
+        assertEquals("30m", argsOf(progress)[2], "remaining time rendered as duration");
     }
 
     @Test
     void formatPlayerInfo_atMaxLevelOmitsProgress() {
         TribulationConfig cfg = new TribulationConfig();
-        List<String> lines = TribulationCommand.formatPlayerInfo("Carol", cfg.general.maxLevel, 0, 0, cfg);
-        String joined = String.join("\n", lines);
-        assertTrue(joined.contains("max level reached"));
-        assertFalse(joined.contains("until next level"));
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Carol", cfg.general.maxLevel, 0, 0, cfg);
+        assertTrue(lineWithKey(lines, "command.tribulation.info.progress.max") != null,
+                "shows max-level progress line");
+        assertTrue(lineWithKey(lines, "command.tribulation.info.progress") == null,
+                "omits countdown progress line");
     }
 
     // ---- Variant enum ----
@@ -177,29 +200,30 @@ class TribulationCommandTest {
     void formatPlayerInfo_showsHeartsWhenEnabledAndLost() {
         TribulationConfig cfg = new TribulationConfig();
         cfg.hardcoreHearts.enabled = true;
-        List<String> lines = TribulationCommand.formatPlayerInfo("Dave", 10, 0, 6, cfg);
-        String joined = String.join("\n", lines);
-        assertTrue(joined.contains("Hearts:"), "shows hearts line when penalty exists");
-        assertTrue(joined.contains("14/20"), "shows reduced max HP");
-        assertTrue(joined.contains("6 half-hearts lost"), "shows amount lost");
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Dave", 10, 0, 6, cfg);
+        Component hearts = lineWithKey(lines, "command.tribulation.info.hearts");
+        assertTrue(hearts != null, "shows hearts line when penalty exists");
+        assertEquals(14, argsOf(hearts)[0], "shows reduced max HP");
+        assertEquals(20, argsOf(hearts)[1], "shows base max HP");
+        assertEquals(6, argsOf(hearts)[2], "shows amount lost");
     }
 
     @Test
     void formatPlayerInfo_omitsHeartsWhenDisabled() {
         TribulationConfig cfg = new TribulationConfig();
         cfg.hardcoreHearts.enabled = false;
-        List<String> lines = TribulationCommand.formatPlayerInfo("Eve", 10, 0, 6, cfg);
-        String joined = String.join("\n", lines);
-        assertFalse(joined.contains("Hearts:"), "no hearts line when feature disabled");
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Eve", 10, 0, 6, cfg);
+        assertTrue(lineWithKey(lines, "command.tribulation.info.hearts") == null,
+                "no hearts line when feature disabled");
     }
 
     @Test
     void formatPlayerInfo_omitsHeartsWhenNoneLost() {
         TribulationConfig cfg = new TribulationConfig();
         cfg.hardcoreHearts.enabled = true;
-        List<String> lines = TribulationCommand.formatPlayerInfo("Frank", 10, 0, 0, cfg);
-        String joined = String.join("\n", lines);
-        assertFalse(joined.contains("Hearts:"), "no hearts line when no penalty");
+        List<Component> lines = TribulationCommand.formatPlayerInfo("Frank", 10, 0, 0, cfg);
+        assertTrue(lineWithKey(lines, "command.tribulation.info.hearts") == null,
+                "no hearts line when no penalty");
     }
 
     // ---- formatConfigSummary with new features ----

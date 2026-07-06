@@ -501,6 +501,15 @@
     "config.tribulation.threat_particles.particle_frequency_ticks": "Particle Interval (ticks)",
     "config.tribulation.threat_particles.particle_frequency_ticks.tooltip": "Average ticks between particle emissions per mob (higher is sparser). Default: 40.",
 
+    "command.tribulation.config_not_loaded": "Tribulation config not loaded",
+    "command.tribulation.info.header": "=== Tribulation: %s ===",
+    "command.tribulation.info.level": "Level: %s / %s (tier %s)",
+    "command.tribulation.info.progress.max": "Progress: max level reached",
+    "command.tribulation.info.progress": "Progress: %s / %s ticks (%s until next level)",
+    "command.tribulation.info.hearts": "Hearts: %s/%s max HP (%s half-hearts lost)",
+    "command.tribulation.hearts.disabled": "Hardcore Hearts is disabled",
+    "command.tribulation.hearts.self": "You have lost %s half-hearts (%s/%s max HP)",
+
     "item.tribulation.heart_fragment": "Heart Fragment",
     "item.tribulation.heart_fragment.tooltip": "Right-click to restore a lost heart.",
     "item.tribulation.heart_fragment.used": "Restored %s hearts (%s/%s max HP)",

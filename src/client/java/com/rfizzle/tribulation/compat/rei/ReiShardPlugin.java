@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.compat.rei;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.client.ClientConfigState;
 import com.rfizzle.tribulation.compat.common.ShardInfoFormatter;
 import com.rfizzle.tribulation.item.TribulationItems;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
@@ -21,7 +22,7 @@ public final class ReiShardPlugin implements REIClientPlugin {
         DefaultInformationDisplay info = DefaultInformationDisplay.createFromEntry(
                 EntryStacks.of(TribulationItems.SHATTER_SHARD),
                 Component.translatable("item.tribulation.shatter_shard"));
-        for (Component line : ShardInfoFormatter.infoLines()) {
+        for (Component line : ShardInfoFormatter.infoLines(ClientConfigState.effective())) {
             info.line(line);
         }
         registry.add(info);

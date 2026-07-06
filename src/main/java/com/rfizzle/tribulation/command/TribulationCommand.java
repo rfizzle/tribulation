@@ -211,6 +211,9 @@ public final class TribulationCommand {
             // Same for per-player night pressure: a toggled feature reaches
             // clients now instead of on the next level sync.
             EnvironmentalPressureHandler.broadcast(src.getServer(), Tribulation.getConfig());
+            // Push the reloaded config to clients so recipe-viewer info panels
+            // reflect the new tuning without a reconnect.
+            TribulationNetworking.broadcastConfig(src.getServer());
             src.sendSuccess(() -> Component.literal("Reloaded Tribulation config"), true);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {

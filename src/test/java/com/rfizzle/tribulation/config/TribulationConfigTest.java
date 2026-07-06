@@ -24,6 +24,41 @@ class TribulationConfigTest {
     }
 
     @Test
+    void jsonRoundTrip_preservesSyncedFields() {
+        TribulationConfig original = new TribulationConfig();
+        original.shards.dropStartLevel = 40;
+        original.shards.shardPower = 9;
+        original.shards.dropChance = 0.12;
+        original.shards.sideEffects = false;
+
+        TribulationConfig restored = TribulationConfig.fromJson(original.toJson());
+
+        assertEquals(40, restored.shards.dropStartLevel);
+        assertEquals(9, restored.shards.shardPower);
+        assertEquals(0.12, restored.shards.dropChance);
+        assertFalse(restored.shards.sideEffects);
+    }
+
+    @Test
+    void fromJson_clampsOutOfRangeValues() {
+        // A synced blob is trusted no more than a hand-edited file: out-of-range
+        // fields are clamped, not passed through.
+        TribulationConfig restored = TribulationConfig.fromJson(
+                "{\"shards\":{\"dropStartLevel\":-5,\"dropChance\":2.0}}");
+
+        assertEquals(0, restored.shards.dropStartLevel);
+        assertEquals(1.0, restored.shards.dropChance);
+    }
+
+    @Test
+    void fromJson_malformedBlob_returnsDefaults() {
+        TribulationConfig restored = TribulationConfig.fromJson("not json");
+
+        assertNotNull(restored.shards);
+        assertEquals(new TribulationConfig().shards.dropStartLevel, restored.shards.dropStartLevel);
+    }
+
+    @Test
     void defaultConfig_hasValidValues() {
         TribulationConfig cfg = new TribulationConfig();
 

@@ -10,8 +10,10 @@ import java.util.Locale;
 
 /**
  * Generates info text for the Shatter Shard item, used by EMI, REI, and JEI
- * info panels. Reads current config values so the panel reflects the server's
- * tuning (or local defaults on a dedicated-multiplayer client).
+ * info panels. Callers pass the effective config so the panel reflects the
+ * server's tuning: the client plugins resolve it through
+ * {@code ClientConfigState.effective()} (synced server config, falling back to
+ * the local file when not connected to a server that syncs).
  *
  * <p>Lines are returned as translatable {@link Component}s so the panels render
  * in the viewer's locale; the config-derived numbers are passed as pre-formatted
@@ -22,13 +24,18 @@ public final class ShardInfoFormatter {
 
     private ShardInfoFormatter() {}
 
+    /**
+     * Info lines derived from the local config. Client info panels should call
+     * {@link #infoLines(TribulationConfig)} with the effective (server-synced)
+     * config instead; this overload is the local-only fallback.
+     */
     public static List<Component> infoLines() {
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null) cfg = new TribulationConfig();
         return infoLines(cfg);
     }
 
-    static List<Component> infoLines(TribulationConfig cfg) {
+    public static List<Component> infoLines(TribulationConfig cfg) {
         List<Component> lines = new ArrayList<>();
 
         lines.add(Component.translatable(

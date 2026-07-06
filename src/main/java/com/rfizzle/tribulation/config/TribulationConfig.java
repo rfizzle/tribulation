@@ -32,6 +32,12 @@ public class TribulationConfig {
             .disableHtmlEscaping()
             .create();
 
+    // Compact form for the server→client sync payload: no indentation, so the
+    // wire blob is roughly half the size of the pretty-printed disk file.
+    private static final Gson WIRE_GSON = new GsonBuilder()
+            .disableHtmlEscaping()
+            .create();
+
     public static final String[] MOB_KEYS = {
             "zombie", "skeleton", "creeper", "spider", "cave_spider",
             "endermite", "silverfish", "drowned", "husk", "stray",
@@ -130,6 +136,47 @@ public class TribulationConfig {
             return fallback;
         } catch (IOException e) {
             Tribulation.LOGGER.error("Failed to read config at {}; using defaults", path, e);
+            TribulationConfig fallback = new TribulationConfig();
+            fallback.fillDefaults();
+            fallback.validate();
+            return fallback;
+        }
+    }
+
+    /**
+     * Serializes this config to the same JSON form written to disk, for the
+     * server→client sync payload. Transient caches are omitted (Gson skips
+     * them); the client rebuilds them lazily.
+     */
+    public String toJson() {
+        return WIRE_GSON.toJson(this);
+    }
+
+    /**
+     * Rebuilds a config from a synced JSON blob produced by {@link #toJson()}.
+     * The blob is already at the current schema (it came from a live in-memory
+     * config), so migration is deliberately not run here — only the same
+     * null-heal and clamp passes the load path uses, so a hostile or malformed
+     * payload still yields a sane object. Returns a fresh default config if the
+     * blob cannot be parsed.
+     */
+    public static TribulationConfig fromJson(String json) {
+        try {
+            TribulationConfig config = WIRE_GSON.fromJson(json, TribulationConfig.class);
+            if (config == null) {
+                Tribulation.LOGGER.warn("Synced config deserialized to null; using defaults");
+                config = new TribulationConfig();
+            }
+            config.fillDefaults();
+            config.validate();
+            return config;
+        } catch (Exception e) {
+            // Untrusted network input: a hostile or buggy server can send JSON
+            // that parses but is shaped to trip an NPE/ClassCastException inside
+            // fillDefaults/validate. Catch broadly so a bad blob falls back to
+            // defaults rather than escaping onto the netty thread and dropping
+            // the connection.
+            Tribulation.LOGGER.error("Failed to parse synced config; using defaults", e);
             TribulationConfig fallback = new TribulationConfig();
             fallback.fillDefaults();
             fallback.validate();

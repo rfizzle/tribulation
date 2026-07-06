@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.compat.modmenu;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.network.TribulationNetworking;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.event.EnvironmentalPressureHandler;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
@@ -108,8 +109,12 @@ public final class ModMenuIntegration implements ModMenuApi {
                 // time scaling is disabled.
                 MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
                 if (server != null) {
-                    server.execute(() ->
-                            EnvironmentalPressureHandler.broadcast(server, Tribulation.getConfig()));
+                    server.execute(() -> {
+                        EnvironmentalPressureHandler.broadcast(server, Tribulation.getConfig());
+                        // Push the fresh config to any connected clients (LAN
+                        // guests) so their viewer panels reflect the new tuning.
+                        TribulationNetworking.broadcastConfig(server);
+                    });
                 }
             });
 

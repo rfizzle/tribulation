@@ -80,5 +80,6 @@ public final class ClientTribulationState {
         goalTicks = 1;
         bloodMoonActive = false;
         oppressiveNightDarkness = 0f;
+        ClientConfigState.clear();
     }
 }

@@ -266,6 +266,10 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
             graphics.pose().popPose();
         }
         graphics.setColor(1f, 1f, 1f, 1f);
+
+        // Commit the batch before anything can re-batch or read the framebuffer,
+        // so ImmediatelyFast / Blur+ can't drop these sprites (Concord HUD Standard).
+        graphics.flush();
     }
 
     /**

@@ -787,6 +787,8 @@ A dedicated `tribulation` advancement tab records progression milestones, evalua
 
 The tier ladder is chained (each tier parents the previous, off `root`); the five milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the five leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§31).
 
+**Statistics.** Custom stats registered by `TribulationStats` and awarded across the systems above (eight total): `highest_level_reached`, `levels_lost_to_death_relief`, `levels_lost_to_decay`, `shatter_shards_used`, `ascendant_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
+
 ---
 
 ## 27. Public API — `TribulationAPI`
@@ -1113,31 +1115,10 @@ Parameterized messages use `%s`-style placeholders. Command output (`/info`, `/d
 
 ---
 
-## 33. Statistics
-
-Custom stats registered by `TribulationStats` and awarded across the systems above (eight total): `highest_level_reached`, `levels_lost_to_death_relief`, `levels_lost_to_decay`, `shatter_shards_used`, `ascendant_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
-
----
-
-## 34. Persistence & Networking Architecture
-
-- **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost, and the last-seen wall-clock timestamp (the level-decay anchor, §24, written only when set). Backed by a `ConcurrentHashMap`, serialized in sorted-UUID order. Survives restarts.
-- **World state** — `BloodMoonState extends SavedData`, stored on the overworld (`tribulation_blood_moon`): the active flag and `lastRolledDay`, so a Blood Moon (§22) survives a mid-event restart.
-- **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier (synced to the client for threat particles) and `CHAMPION_AFFIXES` holds a champion's affix ids (persistent + synced, §21); the `tribulation_processed`, `tribulation_variant_processed`, `tribulation_skeleton_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`, and `tribulation_patrol_processed` scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
-- **Networking** — four S2C payloads registered in `TribulationNetworking`: `TribulationLevelPayload(level, progressTicks, goalTicks)` (join + any level change, drives the HUD and piggybacks the oppressive-nights darkness resync), `BloodMoonPayload(active)` (blood-moon tint state), `EnvironmentalPressurePayload(darkness)` (per-player night dimming, §25), and `ConfigSyncPayload(json)` (server→client config sync on join/reload). The tier-up and blood-moon-warning sounds are sent as vanilla `ClientboundSoundPacket`s.
-
----
-
-## 35. Testing Strategy
+## 33. Testing Strategy
 
 ### Unit Tests (`src/test/`, fabric-loader-junit)
 Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, dimension-/biome-/structure-offset resolution, moon-factor math, group-health-bonus math, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie- and skeleton-variant rolls, champion gate/affix-selection/XP math, blood-moon roll/end/spawn-cap math, level-decay math, environmental-pressure tier predicates and night-time math, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color, threat-cue decisions.
 
 ### Gametests (`src/gametest/`, Fabric Gametest API)
 `MobScalingGameTest`, `DeathPenaltiesGameTest`, `DeathReliefGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `PackTacticsGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest`, `ChampionGameTest`, `BloodMoonGameTest`, `LevelDecayGameTest`, `EnvironmentalPressureGameTest` — verify end-to-end behavior on a running server (scaling application, penalty and death-relief flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, pack-tactics shared aggro, particle registration, stat awards, champion promotion and affix effects, blood-moon transitions and spawn-cap boost, offline level decay, and environmental-pressure strikes and night senses).
-
----
-
-## 36. Future Considerations
-- Tier threshold icon set and death-penalty mode icons (DESIGN §3) are designed but not yet rendered in-game.
-- No custom blocks ship; the mod's footprint is intentionally behavioral.

@@ -55,154 +55,13 @@ lives in [`ASSETS.md`](ASSETS.md).
 
 ---
 
-## 3. Generation Prompts
-
-### Gemini Prompts (Logos / High-Res Art)
-
-**Open Graph / Social Card:**
-```
-Pixel art style, 1200x630 banner image for a Minecraft mod called "Tribulation".
-Center the logo: a stone-framed hourglass with a glowing red pixel heart in the
-upper chamber and skulls/bones in the lower chamber. Cracked stone circular
-border with thorny dark vines. The word "TRIBULATION" in blocky pixel font
-below. Dark crimson-black (#1a0a0a) background. Red glow and ember particle
-effects. Blood splatter accents. Style consistent with the existing
-Tribulation logo.
-```
-
-**Website Hero Background:**
-```
-Pixel art tileable background texture, 1920x600. Dark red-brown brickwork
-(#1a0a0a to #2e1010 gradient) with subtle blood splatter marks and cracks.
-Faint bone fragments embedded in mortar. Occasional ember spark. Very
-subtle — this is a background behind text. Minecraft pixel art style,
-16-pixel grid aligned.
-```
-
-**Discord Banner:**
-```
-Pixel art banner, 1280x640. The Tribulation hourglass icon centered on a
-dark crimson-black (#1a0a0a) background. Deep red glow radiating from center.
-Ember particles rising. "Tribulation" in crimson-red pixel font below the
-icon. "Difficulty Overhaul" subtitle in lighter text. Clean, minimal.
-```
-
-### Glyph Specs (In-Game Pixel Art)
-
-In-game pixel art — HUD/UI glyphs, recipe-browser icons, item textures, and
-tier-icon sets — is authored through Concord's glyph pipeline: write the
-ASCII-grid `.glyph` spec, then render it deterministically with `/glyph` (the
-`mc-textures` skill is the craft reference). Every PNG master commits its
-`.glyph` source beside it in `art/glyphs/`, so each texture re-renders from its
-spec rather than being hand-patched. Design at the target size with hard pixels,
-a limited palette, and an `ink` (#0a0a0a) 1px outline so the glyph reads against
-any background. The normative spec is concord's `design/DESIGN-SYSTEM.md` §8.
-The specs below seed that work.
-
-**Recipe Browser Icon (EMI/REI/JEI Tab):**
-```
-Theme: Danger / difficulty / mortality
-Subject: Small hourglass with a heart dripping into skulls, or a skull with
-         upward red arrow
-Style: Minecraft item icon, pixel art
-Size: 32x32
-Colors: Crimson (#DC143C) primary, dark red (#8B0000) shadows,
-        bone white (#e8e0d4) skull/accents
-Notes: Must read clearly at 16x16 downscale. No text. Single centered motif.
-       Should suggest "increasing danger" at a glance.
-```
-
-**HUD Difficulty Level Icon:**
-```
-Theme: Danger / difficulty escalation
-Subject: Small skull or flame icon for the shared HUD element strip
-Style: Minecraft HUD icon, pixel art, minimal and flat
-Size: 16x16
-Colors: Bone white (#e8e0d4) skull or crimson (#DC143C) flame,
-        tier-dependent intensity (warm orange tier 1 → deep crimson tier 5)
-Notes: Icon-only badge — no inline text label; tier is conveyed by the
-       icon tint and a 2px progress bar beneath it. Must be legible at
-       native 16x16. Transparent PNG. No frame or border — the badge is
-       blitted directly and tinted per tier.
-```
-
-### HUD
+## 3. HUD
 
 Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `hud.enabled` client config option.
 
-**Tier Threshold Icons (set of 5):**
-```
-Theme: Escalating mob danger
-Subject: Five 16x16 icons representing difficulty tiers:
-  1. Tier 1 (Level 50) — single small flame, warm orange
-  2. Tier 2 (Level 100) — double flame, red-orange
-  3. Tier 3 (Level 150) — skull with flame, crimson
-  4. Tier 4 (Level 200) — flaming skull, dark red glow
-  5. Tier 5 (Level 250) — inferno skull with crown, maximum danger
-Style: Minecraft item icons, pixel art, consistent set
-Size: 16x16 each
-Colors: Progression from warm orange (#FF6B35) through crimson (#DC143C)
-        to deep blood red (#8B0000) with increasing intensity
-```
-
-**Shatter Shard Item Texture:**
-```
-Theme: Crystalline power / level reduction
-Subject: Angular crystal shard, cracked, with inner energy
-Style: Minecraft item texture, pixel art
-Size: 16x16
-Colors: Deep purple (#7B2FBE) crystal body, crimson (#DC143C) energy veins,
-        white (#FFFFFF) edge highlights
-Notes: Standard Minecraft item texture format. Should look like a fragment
-       broken from something larger. Subtle inner glow effect.
-```
-
-**Heart Fragment Item Texture:**
-```
-Theme: Restored vitality / health recovery
-Subject: Half or quarter of a pixel heart, glowing
-Style: Minecraft item texture, pixel art
-Size: 16x16
-Colors: Red (#FF0000) heart body matching vanilla hearts, gold (#DAA520) glow/trim,
-        pink (#FF6B9D) highlight
-Notes: Standard Minecraft item texture format. Should clearly read as a
-       "piece of a heart" — the recovery item for Hardcore Hearts mode.
-       Resembles a cracked half-heart with golden repair lines (kintsugi style).
-```
-
-**Death Penalty Mode Icons (set of 4):**
-```
-Theme: Death penalty mechanics
-Subject: Four 16x16 icons representing penalty modes:
-  1. Death Relief — downward arrow with level number, calming blue tint
-  2. Shatter Shards — crystal shard breaking, purple/red
-  3. Hardcore Hearts — heart with crack/X, permanent loss
-  4. Soul Inventory — ghostly inventory grid, spectral blue
-Style: Minecraft item icons, pixel art, consistent set
-Size: 16x16 each
-Colors: Each uses crimson (#DC143C) as base with mode-specific secondary:
-        blue for relief, purple for shatter, red for hearts, spectral blue for soul
-```
-
 ---
 
-## 4. Image References
-
-| Image | Reference Source | Notes |
-|-------|----------------|-------|
-| Hourglass motif | Tribulation-Icon.png | Stone-framed hourglass with heart → skulls |
-| Heart symbolism | Tribulation-Logo.png upper chamber | Glowing red pixel heart — Minecraft-style |
-| Skull/bone detail | Tribulation-Logo.png lower chamber | Hearts and skulls collecting at bottom |
-| Thorny vines | Tribulation-Icon.png border | Dark, dead-looking vines unlike Mercantile's lush ones |
-| Blood/splatter | Tribulation-Logo.png background | Red splatter marks on dark brickwork |
-| Red glow style | Tribulation-Icon.png outer glow | Deep crimson radial, ominous |
-| Pixel density | `assets/tribulation/icon.png` | Skull + flame — sets in-game pixel style |
-| Ember particles | Tribulation-Logo.png background | Orange sparks among the blood and bone |
-| Website color scheme | `site/site.json` theme (rendered by the shared Concord template) | Crimson/ember gradient, existing design tokens |
-
----
-
-## 5. Website & Listing Brand Notes
+## 4. Website & Listing Brand Notes
 
 How the brand lands on the mod's outward surfaces. The *content* lives in its own
 home — page copy in [`site/`](../site/) (rendered by concord's shared template and
@@ -218,11 +77,11 @@ section carries only what is *brand*.
   ember `#FF6B35` warms fire and secondary highlights; both sit over the obsidian
   and dark-stone neutrals. The site theme tokens in `site/site.json` mirror the §1
   palette rather than defining their own.
-- **Hero & Open Graph art direction** — the crimson-on-blood-brick world from the
-  §4 prompts: dark `#1a0a0a`→`#2e1010` brickwork, blood splatter, drifting embers,
-  the hourglass–heart–skull motif centred. The Open Graph / social card is a
-  1200×630 framing of that world (prompt in §4); the hero background is its
-  tileable, text-safe variant.
+- **Hero & Open Graph art direction** — the crimson-on-blood-brick world: dark
+  `#1a0a0a`→`#2e1010` brickwork, blood splatter, drifting embers, the
+  hourglass–heart–skull motif centred. The Open Graph / social card is a
+  1200×630 framing of that world; the hero background is its tileable,
+  text-safe variant.
 - **Promotional screenshots** — 1920×1080, vanilla or a clarity-friendly shader,
   each framed on a legible danger read: a scaled mob with a visible stat boost (the
   level badge or a Jade tooltip in shot), a tier-5 ability mid-action, the special
@@ -231,7 +90,7 @@ section carries only what is *brand*.
 
 ---
 
-## 6. Companion Mod Context
+## 5. Companion Mod Context
 
 Tribulation is part of a four-mod suite. Each mod overhauls a different Minecraft system:
 

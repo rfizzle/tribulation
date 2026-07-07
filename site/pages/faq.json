@@ -47,7 +47,7 @@
             },
             {
               "q": "Does the level badge HUD conflict with other HUD mods?",
-              "a": "It's designed not to. The badge follows the rfizzle overhaul-suite HUD convention, so it stacks predictably alongside HUD elements from Meridian, Mercantile, and other suite mods. It's anchorable to any screen corner with a pixel offset via the <code class='text-accent2'>hud</code> client config, and auto-hides during F1, open screens, and spectator mode. If it overlaps something, move it to a free corner or disable it with <code class='text-accent2'>hud.enabled = false</code>."
+              "a": "It's designed not to. The badge follows the rfizzle overhaul-suite HUD convention, so it stacks predictably alongside HUD elements from Meridian, Mercantile, and other suite mods. It's anchorable to any screen corner with a pixel offset via the <code class='text-accent2'>hudAnchor</code>/<code class='text-accent2'>hudOffsetX</code>/<code class='text-accent2'>hudOffsetY</code> client config, and auto-hides during F1, open screens, and spectator mode. If it overlaps something, move it to a free corner or disable it with <code class='text-accent2'>enableTierHud = false</code>."
             },
             {
               "q": "Can other mods read a player's Tribulation level?",

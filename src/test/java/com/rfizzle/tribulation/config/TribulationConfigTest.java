@@ -760,6 +760,34 @@ class TribulationConfigTest {
     }
 
     @Test
+    void load_hudOffsetOutOfRange_clamped(@TempDir Path tmp) throws IOException {
+        Path path = tmp.resolve("tribulation.json");
+        Files.writeString(path, """
+                {
+                    "hudOffsetX": -50,
+                    "hudOffsetY": 999999
+                }
+                """);
+
+        TribulationConfig loaded = TribulationConfig.load(path);
+
+        assertEquals(0, loaded.hudOffsetX);
+        assertEquals(TribulationConfig.MAX_HUD_OFFSET, loaded.hudOffsetY);
+    }
+
+    @Test
+    void validate_hudOffsetInRange_unchanged() {
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.hudOffsetX = 12;
+        cfg.hudOffsetY = 20;
+
+        cfg.validate();
+
+        assertEquals(12, cfg.hudOffsetX);
+        assertEquals(20, cfg.hudOffsetY);
+    }
+
+    @Test
     void defaultConfig_hardcoreHeartsHasValidDefaults() {
         TribulationConfig cfg = new TribulationConfig();
         assertNotNull(cfg.hardcoreHearts);

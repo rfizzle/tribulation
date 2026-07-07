@@ -84,6 +84,8 @@ public class TribulationConfig {
 
     // Client-only HUD fields (flat, per the Concord HUD Standard §4). The client
     // renders the badge from its own local file, so these are never server-authoritative.
+    /** Upper bound for a HUD offset — well past any real screen while blocking absurd values. */
+    public static final int MAX_HUD_OFFSET = 10_000;
     public boolean enableTierHud = true;
     public Anchor hudAnchor = Anchor.TOP_LEFT;
     public int hudOffsetX = 4;
@@ -835,6 +837,9 @@ public class TribulationConfig {
                 return false;
             });
         }
+
+        hudOffsetX = clampIntRange("hudOffsetX", hudOffsetX, 0, MAX_HUD_OFFSET);
+        hudOffsetY = clampIntRange("hudOffsetY", hudOffsetY, 0, MAX_HUD_OFFSET);
     }
 
     private static void clampMobScaling(String prefix, MobScaling m) {

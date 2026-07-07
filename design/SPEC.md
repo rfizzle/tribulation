@@ -2,7 +2,7 @@
 
 Minecraft 1.21.1 Fabric mod. Difficulty overhaul: formula-driven mob scaling and opt-in death penalties.
 
-**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. The genuinely mod-specific visuals are custom pixel art authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept in `art/glyphs/`): the `heart_fragment` and `shatter_shard` item textures, the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier), the tier-detail panel frame (`textures/gui/tier_detail_panel.png`, drawn nine-sliced), and three threat-telegraphing particle sprites (`textures/particle/threat_{tier,big,speed}.png`). The mod registers no custom blocks. It registers exactly one custom `SoundEvent` — `tribulation:tier_up`, a synthesized milestone sting authored through the `/sfx` pipeline (`art/audio/tier-up.sfx`, concord `design/DESIGN-SYSTEM.md` §9) — because a tier-up is the one moment that benefits from its own identity; every other cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shard, player level-up for the fragment). Scaled-mob visual identity (Big/Speed zombies, Brute skeletons) reuses vanilla rendering: large variants drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
+**Asset philosophy:** Tribulation is overwhelmingly a behavioral mod — its surface is attribute math, AI tweaks, and player progression, not new visual content — so it ships almost entirely vanilla assets and reuses vanilla mechanics where they already read correctly. The genuinely mod-specific visuals are custom pixel art authored through Concord's glyph pipeline (`/glyph`, the `mc-textures` skill, concord `design/DESIGN-SYSTEM.md` §8, with `.glyph` sources kept in `art/glyphs/`): the `heart_fragment`, `shatter_shard`, and `ascendant_shard` item textures, the HUD difficulty badge (`textures/gui/hud_icon.png`, a 32×32 master blitted at 16×16, tinted per tier), the tier-detail panel frame (`textures/gui/tier_detail_panel.png`, drawn nine-sliced), and three threat-telegraphing particle sprites (`textures/particle/threat_{tier,big,speed}.png`). The mod registers no custom blocks. It registers two custom `SoundEvent`s, both authored through the `/sfx` pipeline (concord `design/DESIGN-SYSTEM.md` §9) — `tribulation:tier_up`, a synthesized milestone sting (`art/audio/tier-up.sfx`), and `tribulation:blood_moon_warning`, the nightfall event cue — because a tier-up and a Blood Moon rising are the two moments that benefit from their own identity; every other cue is a vanilla sound chosen to fit the moment (amethyst shatter for the shards, player level-up for the fragment). Scaled-mob visual identity (Big/Speed zombies, Brute skeletons) reuses vanilla rendering: large variants drive `Attributes.SCALE`, which natively grows both model and hitbox, and charged creepers use the vanilla powered flag.
 
 ---
 
@@ -69,7 +69,11 @@ Default `maxBonus=0.1` (+10% at the full moon; the half-moons land at +5%). The 
 
 Creative players count in all three modes; spectators never do.
 
-**Dimension offset.** Once a qualifying player is found, a flat per-dimension level boost is folded into the result: `effectiveLevel = min(rawLevel + max(0, offset), maxLevel)`. Offsets come from `dimensionOffsets`, a `Map<dimensionId, int>` defaulting to `minecraft:the_nether → 25` and `minecraft:the_end → 40`; the Overworld and any unlisted dimension default to 0. The offset is the single value returned by `getEffectiveLevel`, so it raises **both** scaled stats and the mob's ability/equipment tier — a level-100 player near a mob in the End yields an effective level of 140. The "no player in range" paths return 0 unchanged (the offset is not added to mobs that would not scale anyway).
+**Effective-level offsets.** Once a qualifying player is found, a flat level boost is folded into the resolved raw level before the axes see it: `effectiveLevel = min(rawLevel + max(0, offset), maxLevel)`, where `offset` is the **sum** of three independent per-position boosts (each individually clamped to `≥ 0`). The offset is the single value returned by `getEffectiveLevel`/`getEffectiveLevelAt`, so it raises **both** scaled stats and the mob's ability/equipment/champion tier alike. The "no player in range" paths return 0 unchanged — the offset is never added to mobs that would not scale anyway.
+
+- **Dimension offset** — `dimensionOffsets`, a `Map<dimensionId, int>` defaulting to `minecraft:the_nether → 25` and `minecraft:the_end → 40`; the Overworld and any unlisted dimension default to 0. A level-100 player near a mob in the End yields an effective level of 140.
+- **Biome offset** — `biomeOffsets`, a `Map<biomeKey, int>` folded in only when non-empty (the `hasBiomeOffsets` guard keeps the biome lookup off the hot path when unconfigured). A key is a plain biome ID (`minecraft:deep_dark`) or a `#`-prefixed biome tag; an exact-ID entry wins outright, otherwise the **largest** offset among matching tags applies. Modded biomes and whole tag categories can carry their own boost. Default: `minecraft:deep_dark → 30`. Resolved through an immutable `BiomeOffsetResolver` rebuilt once per config generation.
+- **Structure danger zones** — `structureBoosts.boosts`, a `Map<structureKey, int>` folded in only when non-empty (`hasStructureBoosts` guard). A mob spawning inside — or within `structureBoosts.marginBlocks` (default 16, max 128) of — a configured structure's overall bounding box uses the mapped boost, resolved with the same exact-ID-wins / largest-matching-tag rule over structure IDs (`minecraft:fortress`) or `#`-prefixed structure tags. Defaults: `fortress` & `bastion_remnant` `+20`, `monument` & `trial_chambers` `+15`, `ancient_city` `+30`, `end_city` `+25`. Only spawn-time position matters — a mob wandering into a structure later is unaffected. `StructureBoostManager` caches the resolved, margin-inflated zones per chunk (keyed by config identity, evicted on chunk/world unload) so the per-spawn cost is one containment test; membership is tested against the structure start's whole footprint, so corridors and courtyards between pieces count as inside.
 
 ### Per-Attribute Combination and Global Cap
 
@@ -148,7 +152,7 @@ Each player carries a difficulty **level** (0–`maxLevel`, default 250) that ad
 
 `Tribulation` registers a `ServerTickEvents.END_SERVER_TICK` handler that fires every 20 ticks (1 s). When `timeScaling.enabled` and at least one player is online, every online player's tick counter advances by 20. Crossing `levelUpTicks` (default 72000 ticks = 1 hour) grants one level, carrying the remainder. At `maxLevel` the counter is zeroed and no further levels are gained.
 
-On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`. Crossing a tier boundary additionally fires the tier advancement and the tier-up sting (§20, §25).
+On a level gain the new level is synced to the client and `TribulationLevelCallback` fires. If `general.notifyLevelUp`, the player receives a chat message: `message.tribulation.level_max` at the cap, `message.tribulation.level_up_tier` when `notifyLevelUpShowTier` and the tier changed, otherwise `message.tribulation.level_up`. Crossing a tier boundary additionally fires the tier advancement and the tier-up sting (§26, §31).
 
 ### Persistence
 
@@ -548,7 +552,222 @@ Three custom `SimpleParticleType`s are registered into `BuiltInRegistries.PARTIC
 
 ---
 
-## 20. Advancements
+## 20. Group Health Bonus (Multiplayer)
+
+An opt-in multiplayer knob that scales a mob's health — and only its health — with the size of the group it spawns near, so a raid party does not trivialize scaling tuned for one player.
+
+### Behavior
+
+`groupHealthBonus.enabled` defaults **false**. When on, `MobScalingHandler` layers a group bonus on top of the frozen axis scaling for every non-boss mob: it counts the non-spectator players within `general.mobDetectionRange` of the spawn (`ScalingEngine.countNearbyPlayers`, the same proximity and creative/spectator rules as the effective-level scan) and applies
+
+```
+groupHealthBonus = min((nearbyPlayers − 1) × perPlayerBonus, maxBonus)
+```
+
+as a `tribulation:group_health` `MAX_HEALTH` modifier (`ADD_MULTIPLIED_BASE`). A lone player (or an empty scan) yields 0, so single-player behavior is untouched. Defaults: `perPlayerBonus=0.2` (+20% of base HP per extra player), `maxBonus=1.0` (+100% ceiling).
+
+### Scope
+
+- **Health only.** Damage, speed, and XP are deliberately left alone — the bonus is extra health for the group to chew through, not extra reward or extra threat per hit. Because it lives outside the axes with its own modifier, it does **not** inflate the MAX_HEALTH axis sum that drives XP/loot scaling (§8).
+- **Outside the global cap.** The bonus stacks *on top of* `statCaps.maxFactorHealth`, so when it is enabled the axis health cap is not the mob's absolute HP ceiling.
+- **Bosses excluded** — they keep the gentler `BossScalingEngine` formula (§3) untouched.
+- **Frozen at spawn** like all scaling: the player count is sampled once when the mob loads and never recomputed, so a mob does not gain or shed health as players come and go.
+- Trial-spawner mobs are counted by proximity like any other spawn; since trial spawners already add mobs per detected player (§9), a group there faces both more and tougher mobs — tune `perPlayerBonus` down if that compounds too hard.
+
+### Config
+
+`groupHealthBonus.enabled` (false), `perPlayerBonus` (0.2, clamped `≥ 0`), `maxBonus` (1.0, clamped `≥ 0` — a `0` cap disables the bonus).
+
+### Implementation Notes
+
+- `ScalingEngine.computeGroupHealthBonus` is pure and unit-tested; `applyGroupHealthBonus` writes the single modifier and is idempotent (remove-before-add). The count uses `countNearbyPlayers`, the allocation-light twin of the effective-level player scan.
+
+---
+
+## 21. Champions
+
+Above a level threshold, a small share of hostile spawns are promoted to named elites carrying one or two affixes, boosted stats, and a richer reward — a spike of danger that punctuates a high-tier world.
+
+### Behavior
+
+`champions.enabled` defaults **true**. `ChampionManager.tryApply` runs from `MobScalingHandler` **after** normal scaling, for any non-boss `Enemy` (the `Enemy` interface, so hoglins, slimes, ghasts, and phantoms outside the `Monster` hierarchy are eligible too). The gate: the effective player level (including offsets, §1) must be `≥ levelThreshold` (default 50) **and** a `championChance` roll (default 0.05 = 5%) must succeed. On promotion the mob:
+
+1. Draws `1..maxAffixes` (default max 2) distinct affixes uniformly from the enabled pool (count is uniform over `[1, maxAffixes]`, clamped to the pool size) and stores their ids in the persistent, client-synced `CHAMPION_AFFIXES` attachment — both the "is champion" flag and the source of truth for affix behavior.
+2. Gains `tribulation:champion_health` / `champion_damage` modifiers (`ADD_MULTIPLIED_TOTAL`, so they stack on the fully-scaled value) of `healthMultiplier` (1.5) on `MAX_HEALTH` and `damageMultiplier` (1.25) on `ATTACK_DAMAGE`.
+3. When `showNameTag` (default true), gets an always-visible custom name (e.g. "Vampiric Zombie Champion", or "Vampiric Thorns Zombie Champion" for two affixes).
+
+### Affixes
+
+Five affixes, each with its own `champions.affixes.*` toggle (all default `true`); a zero fraction/strength/power disables that affix's effect independently of its toggle.
+
+| Affix (`id`) | Trigger | Effect | Default knobs |
+|---|---|---|---|
+| Vampiric (`vampiric`) | `AFTER_DAMAGE`, champion is the direct attacker | Heals `vampiricHealFraction` of unblocked damage dealt (thorns-typed damage excluded, so it never heals off a reflected hit) | `vampiricHealFraction=0.5` |
+| Explosive (`explosive`) | `AFTER_DEATH` | An explosion of power `explosivePower` that hurts nearby entities but spares dropped items and XP orbs (cosmetic terrain, `ExplosionInteraction.NONE`) | `explosivePower=2.0` |
+| Knockback aura (`knockback_aura`) | Server-tick pulse every `knockbackAuraIntervalTicks` | Knocks non-spectator, non-creative players within `knockbackAuraRadius` away with strength `knockbackAuraStrength` | `knockbackAuraStrength=0.8`, `knockbackAuraRadius=4.0`, `knockbackAuraIntervalTicks=60` |
+| Thorns (`thorns`) | `AFTER_DAMAGE`, champion is the direct victim | Reflects `thornsFraction` of unblocked damage back at a living attacker (thorns-typed sources skipped, so two thorns champions cannot ping-pong) | `thornsFraction=0.3` |
+| Regenerating (`regenerating`) | Server-tick pulse each second (20 ticks) | Heals `regenHealthPerSecond` while below max HP | `regenHealthPerSecond=1.0` |
+
+### Rewards
+
+A champion's XP reward is multiplied by `xpMultiplier` (default 3.0) in the XP hook (`ChampionManager.applyChampionXp`, applied after the health-factor XP scaling of §8). On death it rolls its **own** loot table `bonusLootRolls` (default 1) extra times — fresh draws, not copies — gated by the `doMobLoot` gamerule. No custom loot tables ship.
+
+### Scope
+
+- Server-authoritative; effects gate on the champion attachment, which syncs to clients only for the particle aura.
+- The regen and knockback-aura pulses only scan champions within 16 blocks of a player (an aura no one can see costs nothing) and de-dupe a champion seen from multiple players in one tick.
+- Bosses never roll champion (they route through §3 before the champion gate). Modded hostiles that implement `Enemy` are eligible.
+- `championChance ≤ 0` or an empty enabled-affix pool means no promotion.
+
+### Config
+
+`champions.enabled` (true), `levelThreshold` (50, `≥ 0`), `championChance` (0.05, `[0, 1]`), `maxAffixes` (2, `≥ 1`), `healthMultiplier` (1.5, `≥ 1`), `damageMultiplier` (1.25, `≥ 1`), `xpMultiplier` (3.0, `≥ 1`), `bonusLootRolls` (1, `≥ 0`), `showNameTag` (true), `particleAura` (true), plus the per-affix `affixes.*` toggles and knobs above.
+
+### Implementation Notes
+
+- `ChampionManager` (roll/apply; the pure gate and affix-selection helpers are unit-tested), `ChampionEffectHandler` (`AFTER_DAMAGE` / `AFTER_DEATH` / server-tick runtime), and the `ChampionAffix` enum (stable ids, per-affix toggles).
+- Stat modifiers and the affix attachment persist in NBT and surface in `/tribulation inspect`.
+- The particle aura is emitted client-side by `TribulationParticleEmitter` (a vanilla soul-fire mote about every 5 ticks), gated by `champions.particleAura` — it telegraphs at any tier, independent of the threat cues (§19).
+
+---
+
+## 22. Blood Moon
+
+On rare full-moon nights the moon axis stops being a quiet stat curve and becomes an event the player plans around: a night of amplified scaling, denser spawns, no sleep, and a blood-red sky.
+
+### Behavior
+
+`bloodMoon.enabled` defaults **true**. `BloodMoonHandler` checks every second (20 ticks) in the **Overworld only**. At nightfall on a full moon (moon phase 0) it rolls once per in-game day: with probability `chance` (default 0.25) the night becomes a Blood Moon that runs until dawn. The roll is spent whether or not it succeeds (`lastRolledDay`), so one full-moon night gets exactly one roll. While active:
+
+- the moon scaling axis (§1) is multiplied by `moonBonusMultiplier` (default 3.0) via `BloodMoonHandler.moonMultiplier`;
+- hostile spawn caps are multiplied by `spawnCapMultiplier` (default 2.0), rounded and never below the vanilla base, through `LocalMobCapCalculatorMixin` and `NaturalSpawnerSpawnStateMixin`;
+- sleeping is blocked when `blockSleep` (default true): a bed attempt is denied with `message.tribulation.blood_moon_no_sleep`;
+- when `clientEffects` (default true), every player gets the nightfall warning (`message.tribulation.blood_moon_rises` plus the `tribulation:blood_moon_warning` sting) and clients render the red sky, fog, and moon tint.
+
+Everything reverts at dawn — `shouldEnd` fires the moment it is no longer night.
+
+### Persistence & Multiplayer
+
+Event state lives in `BloodMoonState`, overworld `SavedData` (`tribulation_blood_moon`): the active flag and `lastRolledDay`. The live flag is mirrored into a `volatile` so the per-spawn scaling and spawn-cap hot paths never touch the SavedData lookup; the mirror is rebuilt from disk on server start, so a restart mid-event resumes the night. Start and stop broadcast the tint flag to every player, and a joining player is synced on connect. The client tint honors the server's `clientEffects` toggle — the sync sends "inactive" when it is off, so no client-side config read is needed.
+
+### Scope
+
+- Overworld only — dimensions without a daylight cycle are out of scope by design.
+- Admin `/tribulation bloodmoon start` forces the event on and spends the night's roll (so stopping a command-started event will not be instantly re-rolled by the scheduler); `stop` ends it at once (§28).
+- Disabling the feature mid-event ends any active Blood Moon on the next tick.
+
+### Config
+
+`bloodMoon.enabled` (true), `chance` (0.25, `[0, 1]`), `moonBonusMultiplier` (3.0, `≥ 1`), `spawnCapMultiplier` (2.0, `≥ 1`), `blockSleep` (true), `clientEffects` (true).
+
+### Implementation Notes
+
+- `BloodMoonHandler` (scheduler plus the pure `rollDue` / `shouldEnd` / `scaledMobCap` helpers, unit-tested), `BloodMoonState` (persistence), `BloodMoonPayload` (S2C tint sync), the two spawn-cap mixins, and client `BloodMoonClientEffects` with `BloodMoonSkyColorMixin` / `BloodMoonFogMixin` / `BloodMoonMoonTintMixin` for the visuals.
+- The warning sting is a targeted `ClientboundSoundPacket` (`SoundSource.AMBIENT`), not a broadcast.
+
+---
+
+## 23. Ascendant Shard (opt-in path to difficulty)
+
+The Shatter Shard's dark twin: a craftable consumable that *raises* the user's difficulty level, trading safety for the tougher mobs, champion spawns, and richer XP/loot payoff of a higher tier without waiting out the passive climb.
+
+### Behavior
+
+`ascension.enabled` defaults **true**. Right-clicking `tribulation:ascendant_shard` raises the player's level by `raisePower` (default 25), clamped at `general.maxLevel` (`PlayerDifficultyState.raisePlayerLevel`). An ascendant shard only ever raises: if the player is already at (or above) the cap — or the raise is zero — the use is a **no-op that keeps the item** and shows `item.tribulation.ascendant_shard.at_ceiling`; the level is never pushed down. On a successful raise the stack is consumed (kept in creative), the `ascendant_shards_used` stat and the `ascendant_shard_used` advancement fire, `minecraft:block.amethyst_block.break` plays at pitch 0.8, the client level is synced, `TribulationLevelCallback` fires, and the player sees `item.tribulation.ascendant_shard.used` (before → after). When `ascension.sideEffects` (default **false**), the user also gains Strength II and Resistance II for 10 s (200 ticks).
+
+### Interaction with Death Relief
+
+Death Relief (§12, on by default) bleeds 2 levels back off on each death, so a raised level is a standing wager rather than a permanent gift — intended risk/reward, not a bug.
+
+### Item & Recipe
+
+`tribulation:ascendant_shard` — stacks to 16, Rare rarity, enchantment-glint override on. Custom 16×16 texture (`textures/item/ascendant_shard.png`) with its `.glyph` source at `art/glyphs/ascendant-shard-32.glyph`, flat `item/generated` model. Crafted from a plus-shape of 4 Shatter Shards around a central Nether Star:
+
+```
+ S
+SNS     S = tribulation:shatter_shard, N = minecraft:nether_star → 1 ascendant_shard
+ S
+```
+
+So opting into difficulty is a deliberate, expensive choice.
+
+### Config
+
+`ascension.enabled` (true), `raisePower` (25, clamped `≥ 0`), `sideEffects` (false).
+
+### Implementation Notes
+
+- `AscendantShardItem#use` runs server-side only; `PlayerDifficultyState.raisePlayerLevel` clamps at `maxLevel` and never lowers.
+- The shift-tooltip detail is built by `AscendantInfoFormatter`, and the recipe-viewer plugins (EMI/REI/JEI) show an info panel for the shard (§30).
+
+---
+
+## 24. Level Decay (opt-in)
+
+An opt-in anti-staleness rule for long-absent players: after a grace period away, a returning player's difficulty level bleeds down, so a level earned months ago does not greet them with mobs they have fallen out of practice against.
+
+### Behavior
+
+`levelDecay.enabled` defaults **false**. Each disconnect stamps a wall-clock anchor in `PlayerDifficultyState` (`lastSeen`); the next login computes the absence and sheds
+
+```
+decay = floor(levelsPerDay × max(0, absenceDays − graceDays))
+```
+
+levels, floored at `floor`. No decay accrues within `graceDays` (default 7) real-time days; beyond it, `levelsPerDay` (default 2) per day, whole levels only (a partial day's remainder is dropped, not banked). The anchor is re-stamped to *now* on every login, so a re-login a minute later decays nothing more, and mid-session level changes are never decayed retroactively. On an actual drop the level syncs, `levels_lost_to_decay` is awarded, `TribulationLevelCallback` fires, and the player sees `message.tribulation.level_decay` (days away, before, after).
+
+### Scope
+
+- **Only ever pulls down.** A player already at or below `floor` (fresh, or lowered via `/tribulation set`) is never lifted up to it by the clamp.
+- **Robust to clock anomalies.** A crashed server whose DISCONNECT never fired decays at worst from the previous login, never from an ancient stamp; negative elapsed time (host clock stepped back) decays nothing; a pathological product saturates at `Integer.MAX_VALUE` instead of overflowing.
+- **Disabled is invisible.** When off, nothing is stamped or decayed and the persisted state stays byte-identical to pre-feature saves; a player whose anchor is `NEVER_SEEN` (fresh player, old save, or feature just enabled) never decays on that login — the stamp cycle just begins from it.
+- `floor` is clamped to `[0, general.maxLevel]`; non-positive `levelsPerDay` disables decay.
+
+### Config
+
+`levelDecay.enabled` (false), `graceDays` (7.0, clamped `≥ 0`), `levelsPerDay` (2.0, clamped `≥ 0`), `floor` (0, clamped `[0, general.maxLevel]`).
+
+### Implementation Notes
+
+- `LevelDecayHandler` on the `JOIN` / `DISCONNECT` play-connection events; `computeDecayLevels` is pure and unit-tested.
+- The `lastSeen` epoch-millisecond anchor persists in `PlayerDifficultyState`, written only when non-`NEVER_SEEN` so a disabled server never grows the extra NBT field.
+
+---
+
+## 25. Environmental Pressure (opt-in)
+
+An opt-in pair of tier-gated pressures that let the world itself push back on high-level players — each gated on the *player's own* level, so a low-level player on the same server is untouched.
+
+### Behavior
+
+`environmentalPressure.enabled` defaults **false** (master switch); each of the two effects has its own toggle and tier threshold, both keyed to the victim player's own stored-level tier.
+
+**Debilitating Strikes** (`debilitatingStrikes`, default on, tier ≥ 3) — hooked on `AFTER_DAMAGE`, so there is no per-tick cost. A landed, unblocked **melee** hit (`mob_attack` / `mob_attack_no_aggro` damage types only — projectiles, explosions, warden booms, guardian beams, and thorns are all excluded by type) from a Tribulation-scaled hostile (one carrying the `SCALED_TIER` attachment) applies short debuffs to the player: Weakness (`applyWeakness` default true, `weaknessDurationTicks` 100, amplifier `weaknessAmplifier` 0) and/or Slowness (`applySlowness` default **false**, `slownessDurationTicks` 100, amplifier `slownessAmplifier` 0).
+
+**Oppressive Nights** (`oppressiveNights`, default on, tier ≥ 4) — two halves:
+
+- *Night senses (mechanical):* hostiles scaled at night in a daylight-cycle dimension near an affected player spawn with a `FOLLOW_RANGE` multiplier (`followRangeMultiplier`, default 1.5) — they notice and pursue from farther. Applied through `tribulation:oppressive_night_senses`, frozen at spawn like all scaling.
+- *Night dimming (the tell):* the server computes a per-player darkness strength (`maxDarkness`, default 0.25, hard cap 0.6) and syncs it only when it changes, piggybacked on the level syncs that already fire on join, level-up, decay, relief, shards, and admin commands. Rendering is client-side (`EnvironmentalPressureClientEffects`): it applies only at night in daylight-cycle dimensions and honors both the client's local `clientEnabled` opt-out and the vanilla Darkness Pulsing accessibility slider.
+
+### Scope
+
+- **Per-player.** Both effects read the victim's own tier, so mixed-level servers pressure each player individually.
+- **"Night" is pure time math** — the fully-dark band of the day cycle, not `Level.isDay()` — so a thunderstorm at noon never triggers it and a fixed-time modded dimension never counts as permanent night. The mechanical gate opens exactly where the client dimming reaches full strength.
+- A `followRangeMultiplier` of 1.0 (or a closed gate) applies nothing; a fresh client defaults to 0 darkness, so an initial 0 is never sent.
+- `/tribulation reload` re-evaluates and resyncs every online player's night pressure immediately (`broadcast`).
+
+### Config
+
+`environmentalPressure.enabled` (false). `debilitatingStrikes`: `enabled` (true), `tierThreshold` (3, `≥ 0`), `applyWeakness` (true), `weaknessDurationTicks` (100, `[0, 2400]`), `weaknessAmplifier` (0, `[0, 4]`), `applySlowness` (false), `slownessDurationTicks` (100, `[0, 2400]`), `slownessAmplifier` (0, `[0, 4]`). `oppressiveNights`: `enabled` (true), `tierThreshold` (4, `≥ 0`), `maxDarkness` (0.25, `[0, 0.6]`), `clientEnabled` (true, read only from the client's local config), `followRangeMultiplier` (1.5, `[1, 3]`).
+
+### Implementation Notes
+
+- `EnvironmentalPressureHandler` — the `AFTER_DAMAGE` strike hook, `applyNightSenses` called from the mob-scaling pipeline, and `syncNightPressure` (per-player change dedup), each with a pure or injectable core exercised by gametests — plus `EnvironmentalPressurePayload` (S2C darkness) and client `EnvironmentalPressureClientEffects`.
+- The strike / night-senses / darkness tier predicates live on the config class (`strikesActiveAtTier`, `nightDarknessAtTier`, `nightFollowRangeMultiplierAtTier`) and are unit-tested.
+
+---
+
+## 26. Advancements
 
 A dedicated `tribulation` advancement tab records progression milestones, evaluated server-side (works on dedicated servers). Generated by `TribulationAdvancementProvider` (datagen).
 
@@ -562,14 +781,15 @@ A dedicated `tribulation` advancement tab records progression milestones, evalua
 | `tribulation:tier_5` | Apex Tribulation | reach tier 5 |
 | `tribulation:soulbound_survived` | Beyond the Grave | carry a Soulbound item through your own death |
 | `tribulation:shatter_shard_used` | A Moment's Mercy | use a Shatter Shard |
+| `tribulation:ascendant_shard_used` | Courting Ruin | use an Ascendant Shard |
 | `tribulation:heart_fragment_used` | Mended | restore a heart with a Heart Fragment |
 | `tribulation:tier_five_mob_killed` | Giant Slayer | kill a mob scaled to the maximum tier |
 
-The tier ladder is chained (each tier parents the previous, off `root`); the four milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the four leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§25).
+The tier ladder is chained (each tier parents the previous, off `root`); the five milestone leaves parent off `root`. Tier criteria use `TierReachedCriterion`; the five leaves use simple player triggers in `TribulationCriteria`. Tier-reached fires from `Tribulation.onTierCrossed` when the player's tier changes, which also plays the tier-up sting (§31).
 
 ---
 
-## 21. Public API — `TribulationAPI`
+## 27. Public API — `TribulationAPI`
 
 `com.rfizzle.tribulation.api.TribulationAPI` is the stable (`@Stable`) soft-dependency surface. All methods are safe to call when guarded by `FabricLoader.isModLoaded("tribulation")`.
 
@@ -595,7 +815,7 @@ Drop-chance providers (`ArmorDropChanceProvider`, `WeaponDropChanceProvider`) ar
 
 ---
 
-## 22. Commands
+## 28. Commands
 
 ### `/tribulation` Command Tree
 
@@ -616,6 +836,9 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 | `/tribulation hearts <player> restore <amount>` | 2 | Restore lost half-hearts |
 | `/tribulation hearts <player> reset` | 2 | Clear a player's heart penalty |
 | `/tribulation inventory <player>` | 2 | Count soulbound items in a player's inventory |
+| `/tribulation bloodmoon` | 2 | Whether a Blood Moon is currently active |
+| `/tribulation bloodmoon start` | 2 | Force-start a Blood Moon in the current world |
+| `/tribulation bloodmoon stop` | 2 | End the active Blood Moon |
 
 ### Implementation Notes
 
@@ -625,9 +848,9 @@ Root `tribulation`. Permission 0 = any player (self-service); permission 2 = ope
 
 ---
 
-## 23. Configuration
+## 29. Configuration
 
-Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **10**; `ConfigMigrator` migrates older files on load (v0→v10: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles, v6 renames `xpAndLoot`→`xp` and drops the extra-loot fields, v7 adds blood-moon, v8 adds champions, v9 adds biome-offsets, v10 adds pack-tactics). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
+Config lives at `config/tribulation.json` (created with defaults on first launch), is hot-reloadable, and is editable in-game via the ModMenu/Cloth Config screen. `configVersion` is **14**; `ConfigMigrator` migrates older files on load (v0→v14: v2 adds hardcore-hearts/soul-inventory, v3 adds trial-spawner, v4 adds raid-scaling, v5 adds threat-particles, v6 renames `xpAndLoot`→`xp` and drops the extra-loot fields, v7 adds blood-moon, v8 adds champions, v9 adds biome-offsets, v10 adds pack-tactics, v11 adds structure-boosts, v12 adds level-decay, v13 adds group-health-bonus, v14 adds environmental-pressure). Unknown/missing fields are filled with defaults and clamped to valid ranges on load; unknown legacy keys are silently dropped.
 
 ### General
 
@@ -641,6 +864,11 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `general.notifyLevelUp` | bool | true |
 | `general.notifyLevelUpShowTier` | bool | true |
 | `dimensionOffsets` | map\<id,int\> | `{the_nether: 25, the_end: 40}` |
+| `biomeOffsets` | map\<id-or-#tag,int\> | `{deep_dark: 30}` |
+| `structureBoosts.marginBlocks` | int `[0,128]` | 16 |
+| `structureBoosts.boosts` | map\<id-or-#tag,int\> | `{fortress:20, bastion_remnant:20, monument:15, trial_chambers:15, ancient_city:30, end_city:25}` |
+
+Offset map values are each clamped `≥ 0`; unparseable keys are logged and dropped. An empty `biomeOffsets`/`structureBoosts.boosts` map disables that feature and its spawn-path lookups entirely.
 
 ### Scaling Axes
 
@@ -665,6 +893,15 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `moonPhaseScaling.maxBonus` | double | 0.1 |
 | `moonPhaseScaling.surfaceOnly` | bool | false |
 | `moonPhaseScaling.surfaceY` | double | 63 |
+| `bloodMoon.enabled` | bool | true |
+| `bloodMoon.chance` | double `[0,1]` | 0.25 |
+| `bloodMoon.moonBonusMultiplier` | double `≥1` | 3.0 |
+| `bloodMoon.spawnCapMultiplier` | double `≥1` | 2.0 |
+| `bloodMoon.blockSleep` | bool | true |
+| `bloodMoon.clientEffects` | bool | true |
+| `groupHealthBonus.enabled` | bool | **false** |
+| `groupHealthBonus.perPlayerBonus` | double `≥0` | 0.2 |
+| `groupHealthBonus.maxBonus` | double `≥0` | 1.0 |
 
 ### Stat Caps & Tiers
 
@@ -691,11 +928,18 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `deathRelief.amount` | int | 2 |
 | `deathRelief.cooldownTicks` | int | 6000 |
 | `deathRelief.minimumLevel` | int | 0 |
+| `levelDecay.enabled` | bool | **false** |
+| `levelDecay.graceDays` | double `≥0` | 7.0 |
+| `levelDecay.levelsPerDay` | double `≥0` | 2.0 |
+| `levelDecay.floor` | int `[0,maxLevel]` | 0 |
 | `shards.enabled` | bool | true |
 | `shards.dropStartLevel` | int | 25 |
 | `shards.shardPower` | int | 5 |
 | `shards.dropChance` | double | 0.005 |
 | `shards.sideEffects` | bool | true |
+| `ascension.enabled` | bool | true |
+| `ascension.raisePower` | int `≥0` | 25 |
+| `ascension.sideEffects` | bool | false |
 | `hardcoreHearts.enabled` | bool | **false** |
 | `hardcoreHearts.heartsLostPerDeath` | int | 2 |
 | `hardcoreHearts.minimumHearts` | int | 2 |
@@ -734,6 +978,21 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `bosses.bossDistanceFactor` | double | 0.1 |
 | `bosses.bossTimeFactor` | double | 0.3 |
 | `xp.xpMultiplier` | double | 1.0 |
+| `champions.enabled` | bool | true |
+| `champions.levelThreshold` | int `≥0` | 50 |
+| `champions.championChance` | double `[0,1]` | 0.05 |
+| `champions.maxAffixes` | int `≥1` | 2 |
+| `champions.healthMultiplier` | double `≥1` | 1.5 |
+| `champions.damageMultiplier` | double `≥1` | 1.25 |
+| `champions.xpMultiplier` | double `≥1` | 3.0 |
+| `champions.bonusLootRolls` | int `≥0` | 1 |
+| `champions.showNameTag` | bool | true |
+| `champions.particleAura` | bool | true |
+| `champions.affixes.vampiric` / `.vampiricHealFraction` | bool / double `[0,1]` | true / 0.5 |
+| `champions.affixes.explosive` / `.explosivePower` | bool / double `≥0` | true / 2.0 |
+| `champions.affixes.knockbackAura` / `.knockbackAuraStrength` / `.knockbackAuraRadius` / `.knockbackAuraIntervalTicks` | bool / double `≥0` / double `≥0` / int `≥1` | true / 0.8 / 4.0 / 60 |
+| `champions.affixes.thorns` / `.thornsFraction` | bool / double `≥0` | true / 0.3 |
+| `champions.affixes.regenerating` / `.regenHealthPerSecond` | bool / double `≥0` | true / 1.0 |
 
 ### Equipment
 
@@ -767,6 +1026,20 @@ Config lives at `config/tribulation.json` (created with defaults on first launch
 | `packTactics.alertRadius` | double `[0,64]` | 16.0 |
 | `packTactics.groupSizeBonus` | int `[0,16]` | 2 |
 | `packTactics.eligibleMobs` | string list | zombie, skeleton, spider |
+| `environmentalPressure.enabled` | bool | **false** |
+| `environmentalPressure.debilitatingStrikes.enabled` | bool | true |
+| `environmentalPressure.debilitatingStrikes.tierThreshold` | int `≥0` | 3 |
+| `environmentalPressure.debilitatingStrikes.applyWeakness` | bool | true |
+| `environmentalPressure.debilitatingStrikes.weaknessDurationTicks` | int `[0,2400]` | 100 |
+| `environmentalPressure.debilitatingStrikes.weaknessAmplifier` | int `[0,4]` | 0 |
+| `environmentalPressure.debilitatingStrikes.applySlowness` | bool | false |
+| `environmentalPressure.debilitatingStrikes.slownessDurationTicks` | int `[0,2400]` | 100 |
+| `environmentalPressure.debilitatingStrikes.slownessAmplifier` | int `[0,4]` | 0 |
+| `environmentalPressure.oppressiveNights.enabled` | bool | true |
+| `environmentalPressure.oppressiveNights.tierThreshold` | int `≥0` | 4 |
+| `environmentalPressure.oppressiveNights.maxDarkness` | double `[0,0.6]` | 0.25 |
+| `environmentalPressure.oppressiveNights.clientEnabled` | bool (client) | true |
+| `environmentalPressure.oppressiveNights.followRangeMultiplier` | double `[1,3]` | 1.5 |
 | `abilities.*` | bool | true (29 flags, one per ability in §4) |
 | `hud.enabled` | bool | true |
 | `hud.anchor` | enum | TOP_LEFT |
@@ -779,7 +1052,7 @@ Drop-chance fields accept `[0, 2]` — a value ≥1.0 requests a guaranteed + pr
 
 ---
 
-## 24. Compatibility
+## 30. Compatibility
 
 ### Required
 - Fabric Loader ≥0.16.10, Fabric API, Minecraft ~1.21.1, Java ≥21. **Zero hard third-party dependencies.**
@@ -787,7 +1060,7 @@ Drop-chance fields accept `[0, 2]` — a value ≥1.0 requests a guaranteed + pr
 ### Optional Integrations
 - **ModMenu + Cloth Config** — config screen (`ModMenuIntegration`); enum dropdowns render friendly title-cased labels.
 - **Jade / WTHIT** — mob-scaling tooltip overlay (`JadeTribulationPlugin`, `WthitClientPlugin`/`WthitCommonPlugin`) showing the looked-at mob's scaling state via a shared `MobScalingDataCollector` + `TribulationTooltipFormatter`.
-- **EMI / REI / JEI** — Shatter Shard / Heart Fragment recipe display (`EmiShardPlugin`, `ReiShardPlugin`, `JeiShardPlugin`).
+- **EMI / REI / JEI** — Shatter Shard / Ascendant Shard / Heart Fragment recipe and info display (`EmiShardPlugin`, `ReiShardPlugin`, `JeiShardPlugin`).
 
 ### Modded Mob Support
 - Modded hostile mobs (any `Monster` not in `excludedNamespaces`) get conservative health+damage fallback scaling automatically.
@@ -799,22 +1072,28 @@ Tribulation is a single self-contained jar; users should remove any prior mob-sc
 
 ---
 
-## 25. Sound Design
+## 31. Sound Design
 
-Tribulation registers **one** custom `SoundEvent`, `tribulation:tier_up` (`TribulationSounds`), backed by `assets/tribulation/sounds/tier_up.ogg` with subtitle `tribulation.subtitle.tier_up` and a `/sfx` synthesis source at `art/audio/tier-up.sfx` (a rising arpeggio milestone sting). It plays for the **single** leveling player — sent via a targeted `ClientboundSoundPacket` (`SoundSource.PLAYERS`), not a broadcast — when `Tribulation.onTierCrossed` fires on a tier change, layered over the HUD badge's gold flash and the tier advancement toast.
+Tribulation registers **two** custom `SoundEvent`s (`TribulationSounds`), each with a `/sfx` synthesis source and a subtitle:
 
-The two item-use feedbacks reuse vanilla sounds whose character already fits:
+| Sound event | Trigger | Delivery | Subtitle |
+|---|---|---|---|
+| `tribulation:tier_up` (`art/audio/tier-up.sfx`, a rising arpeggio milestone sting) | `Tribulation.onTierCrossed` fires on a tier change | Targeted `ClientboundSoundPacket` (`SoundSource.PLAYERS`) to the **single** leveling player, layered over the HUD gold flash and tier toast | `tribulation.subtitle.tier_up` |
+| `tribulation:blood_moon_warning` (the nightfall event cue) | A Blood Moon begins (§22) | Targeted `ClientboundSoundPacket` (`SoundSource.AMBIENT`) to each player, gated by `bloodMoon.clientEffects` | `tribulation.subtitle.blood_moon_warning` |
+
+The item-use feedbacks reuse vanilla sounds whose character already fits:
 
 | Feature | Vanilla Sound | Pitch |
 |---|---|---|
 | Shatter Shard — use | `minecraft:block.amethyst_block.break` | 1.2 |
+| Ascendant Shard — use | `minecraft:block.amethyst_block.break` | 0.8 |
 | Heart Fragment — use | `minecraft:entity.player.levelup` | 1.4 |
 
 All other feedback is visual (HUD tint flash, threat particles, chat/action-bar messages) or relies on the vanilla sounds attached to the abilities themselves (charged-creeper, trident).
 
 ---
 
-## 26. Localization
+## 32. Localization
 
 All user-facing text uses translation keys in `assets/tribulation/lang/en_us.json`.
 
@@ -834,30 +1113,31 @@ Parameterized messages use `%s`-style placeholders. Command output (`/info`, `/d
 
 ---
 
-## 27. Statistics
+## 33. Statistics
 
-Custom stats registered by `TribulationStats` and awarded across the systems above: `highest_level_reached`, `levels_lost_to_death_relief`, `shatter_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
-
----
-
-## 28. Persistence & Networking Architecture
-
-- **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost. Backed by a `ConcurrentHashMap`, serialized in sorted-UUID order. Survives restarts.
-- **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier (synced to the client for threat particles); the `tribulation_processed`, `tribulation_variant_processed`, `tribulation_skeleton_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`, and `tribulation_patrol_processed` scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
-- **Networking** — one S2C payload, `TribulationLevelPayload(level, progressTicks, goalTicks)`, sent on join and on any level change to drive the client HUD. Registered in `TribulationNetworking`. The tier-up sound is sent as a vanilla `ClientboundSoundPacket`.
+Custom stats registered by `TribulationStats` and awarded across the systems above (eight total): `highest_level_reached`, `levels_lost_to_death_relief`, `levels_lost_to_decay`, `shatter_shards_used`, `ascendant_shards_used`, `hearts_lost`, `hearts_restored`, `tier_5_mobs_killed`.
 
 ---
 
-## 29. Testing Strategy
+## 34. Persistence & Networking Architecture
+
+- **Player state** — `PlayerDifficultyState extends SavedData`, stored on the overworld (`tribulation_players`): level, tick counter, last-death tick, hearts lost, and the last-seen wall-clock timestamp (the level-decay anchor, §24, written only when set). Backed by a `ConcurrentHashMap`, serialized in sorted-UUID order. Survives restarts.
+- **World state** — `BloodMoonState extends SavedData`, stored on the overworld (`tribulation_blood_moon`): the active flag and `lastRolledDay`, so a Blood Moon (§22) survives a mid-event restart.
+- **Per-entity state** — `TribulationAttachments.SCALED_TIER` records a mob's frozen tier (synced to the client for threat particles) and `CHAMPION_AFFIXES` holds a champion's affix ids (persistent + synced, §21); the `tribulation_processed`, `tribulation_variant_processed`, `tribulation_skeleton_variant_processed`, `tribulation_armor_processed`, `tribulation_weapon_processed`, and `tribulation_patrol_processed` scoreboard tags prevent re-processing on reload. Scaling values themselves live as persistent attribute modifiers, so they survive reload for free.
+- **Networking** — four S2C payloads registered in `TribulationNetworking`: `TribulationLevelPayload(level, progressTicks, goalTicks)` (join + any level change, drives the HUD and piggybacks the oppressive-nights darkness resync), `BloodMoonPayload(active)` (blood-moon tint state), `EnvironmentalPressurePayload(darkness)` (per-player night dimming, §25), and `ConfigSyncPayload(json)` (server→client config sync on join/reload). The tier-up and blood-moon-warning sounds are sent as vanilla `ClientboundSoundPacket`s.
+
+---
+
+## 35. Testing Strategy
 
 ### Unit Tests (`src/test/`, fabric-loader-junit)
-Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, dimension-offset and moon-factor math, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie- and skeleton-variant rolls, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color, threat-cue decisions.
+Pure-math and config logic with no Minecraft runtime: scaling-mode resolution, dimension-/biome-/structure-offset resolution, moon-factor math, group-health-bonus math, ability-manager dispatch, config parse/migrate, command formatting, scaling-engine factor math and attribute-bridge, boss-scaling math, tier classification, shard/XP/loot roll gates, zombie- and skeleton-variant rolls, champion gate/affix-selection/XP math, blood-moon roll/end/spawn-cap math, level-decay math, environmental-pressure tier predicates and night-time math, soul-inventory and hardcore-hearts logic, payload round-trip, HUD overlay geometry/color, threat-cue decisions.
 
 ### Gametests (`src/gametest/`, Fabric Gametest API)
-`MobScalingGameTest`, `DeathPenaltiesGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `PackTacticsGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest` — verify end-to-end behavior on a running server (scaling application, penalty flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, pack-tactics shared aggro, particle registration, stat awards).
+`MobScalingGameTest`, `DeathPenaltiesGameTest`, `DeathReliefGameTest`, `TotemGameTest`, `APIGameTest`, `ArmorEquipmentGameTest`, `WeaponEquipmentGameTest`, `StatisticsGameTest`, `TrialSpawnerGameTest`, `SkeletonVariantGameTest`, `RaidScalingGameTest`, `PackTacticsGameTest`, `AdvancementsGameTest`, `AbilitiesGameTest`, `ParticleRegistrationGameTest`, `ChampionGameTest`, `BloodMoonGameTest`, `LevelDecayGameTest`, `EnvironmentalPressureGameTest` — verify end-to-end behavior on a running server (scaling application, penalty and death-relief flows, totem interaction, API surface, equipment rolls, trial-spawner and raid/patrol scaling, variant rolls, advancement grants, ability dispatch, pack-tactics shared aggro, particle registration, stat awards, champion promotion and affix effects, blood-moon transitions and spawn-cap boost, offline level decay, and environmental-pressure strikes and night senses).
 
 ---
 
-## 30. Future Considerations
+## 36. Future Considerations
 - Tier threshold icon set and death-penalty mode icons (DESIGN §3) are designed but not yet rendered in-game.
 - No custom blocks ship; the mod's footprint is intentionally behavioral.

@@ -49,7 +49,7 @@ Loom's `splitEnvironmentSourceSets()` is enabled — three source sets:
 |---|---|---|
 | `main` | `src/main/java` | Server + common logic. Entrypoint: `Tribulation.java` |
 | `client` | `src/client/java` | Client-only code. Entrypoint: `TribulationClient.java` |
-| `gametest` | `src/gametest/java` | Fabric gametests (run with `runGametest`). Has `main` on its classpath but is NOT included in the jar. Two entrypoints: `MobScalingGameTest`, `DeathPenaltiesGameTest`. |
+| `gametest` | `src/gametest/java` | Fabric gametests (run with `runGametest`). Has `main` on its classpath but is NOT included in the jar. Each `*GameTest` class is registered as a `fabric-gametest` entrypoint in `fabric.mod.json`. |
 
 JUnit tests go in the standard `src/test/java` directory. The test classpath
 includes `fabric-loader-junit` but excludes `fabric-api` — tests that need
@@ -64,8 +64,9 @@ Fabric APIs must use gametests instead.
   names everywhere (`CompoundTag`, not `NbtCompound`; `Level`, not `World`).
 - **Assets:** Tribulation has its own custom assets at `assets/tribulation/`
   (textures, models, sounds).
-- **Mixin config:** `tribulation.mixins.json` in `src/main/resources`. Mixin
-  package: `com.rfizzle.tribulation.mixin`.
+- **Mixin config:** `tribulation.mixins.json` in `src/main/resources` for
+  common/server mixins, plus a client-only `tribulation.client.mixins.json` in
+  `src/client/resources`. Mixin package: `com.rfizzle.tribulation.mixin`.
 - **Performance hot path:** the mob scaling handler runs on every hostile
   spawn — avoid per-spawn allocations and expensive lookups in scaling-formula
   code paths.

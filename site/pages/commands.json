@@ -29,7 +29,10 @@
             ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "View another player's heart penalty"],
             ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt; restore &lt;n&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Restore lost half-hearts for a player"],
             ["<code class='text-accent2 whitespace-nowrap'>/tribulation hearts &lt;player&gt; reset</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Clear all heart penalties for a player"],
-            ["<code class='text-accent2 whitespace-nowrap'>/tribulation inventory &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Count soulbound items in a player's inventory"]
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation inventory &lt;player&gt;</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Count soulbound items in a player's inventory"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation bloodmoon</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Show whether a Blood Moon is currently active"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation bloodmoon start</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "Force-start a Blood Moon in the current world"],
+            ["<code class='text-accent2 whitespace-nowrap'>/tribulation bloodmoon stop</code>", "<span class='inline-block px-2 py-0.5 text-xs font-semibold rounded bg-accent/15 border border-accent/30 text-accent'>2</span>", "End the active Blood Moon"]
           ]
         }
       ]
@@ -87,6 +90,14 @@
               "body": [
                 { "type": "code", "code": "/tribulation reload" },
                 { "type": "prose", "html": "Reloads <code class='text-accent2'>config/tribulation.json</code> without restarting the server. New mobs use the updated values; existing mobs keep their current modifiers until they despawn." }
+              ]
+            },
+            {
+              "title": "Force a Blood Moon",
+              "suffix": "(op 2)",
+              "body": [
+                { "type": "code", "code": "/tribulation bloodmoon\n/tribulation bloodmoon start\n/tribulation bloodmoon stop" },
+                { "type": "prose", "html": "Check whether a Blood Moon is active, or force-start and end one in the current world — handy for testing the event without waiting for a full-moon roll." }
               ]
             }
           ]

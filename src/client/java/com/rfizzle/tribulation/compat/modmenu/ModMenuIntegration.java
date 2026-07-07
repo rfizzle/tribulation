@@ -327,13 +327,13 @@ public final class ModMenuIntegration implements ModMenuApi {
         cat.addEntry(entry.startIntField(
                         Component.translatable("config.tribulation.hudOffsetX"),
                         config.hudOffsetX)
-                .setDefaultValue(4).setMin(0)
+                .setDefaultValue(4).setMin(0).setMax(TribulationConfig.MAX_HUD_OFFSET)
                 .setSaveConsumer(v -> config.hudOffsetX = v)
                 .build());
         cat.addEntry(entry.startIntField(
                         Component.translatable("config.tribulation.hudOffsetY"),
                         config.hudOffsetY)
-                .setDefaultValue(4).setMin(0)
+                .setDefaultValue(4).setMin(0).setMax(TribulationConfig.MAX_HUD_OFFSET)
                 .setSaveConsumer(v -> config.hudOffsetY = v)
                 .build());
         applyTooltips(cat);

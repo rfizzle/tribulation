@@ -310,32 +310,31 @@ public final class ModMenuIntegration implements ModMenuApi {
     private static void addHud(ConfigBuilder builder, ConfigEntryBuilder entry, TribulationConfig config) {
         ConfigCategory cat = builder.getOrCreateCategory(
                 Component.translatable("config.tribulation.category.hud"));
-        TribulationConfig.Hud hud = config.hud;
         cat.addEntry(entry.startBooleanToggle(
-                        Component.translatable("config.tribulation.hud.enabled"),
-                        hud.enabled)
+                        Component.translatable("config.tribulation.enableTierHud"),
+                        config.enableTierHud)
                 .setDefaultValue(true)
-                .setSaveConsumer(v -> hud.enabled = v)
+                .setSaveConsumer(v -> config.enableTierHud = v)
                 .build());
         cat.addEntry(entry.startSelector(
-                        Component.translatable("config.tribulation.hud.anchor"),
+                        Component.translatable("config.tribulation.hudAnchor"),
                         TribulationConfig.Anchor.values(),
-                        hud.anchor)
+                        config.hudAnchor)
                 .setDefaultValue(TribulationConfig.Anchor.TOP_LEFT)
                 .setNameProvider(ModMenuIntegration::enumLabel)
-                .setSaveConsumer(v -> hud.anchor = v)
+                .setSaveConsumer(v -> config.hudAnchor = v)
                 .build());
         cat.addEntry(entry.startIntField(
-                        Component.translatable("config.tribulation.hud.offset_x"),
-                        hud.offsetX)
+                        Component.translatable("config.tribulation.hudOffsetX"),
+                        config.hudOffsetX)
                 .setDefaultValue(4).setMin(0)
-                .setSaveConsumer(v -> hud.offsetX = v)
+                .setSaveConsumer(v -> config.hudOffsetX = v)
                 .build());
         cat.addEntry(entry.startIntField(
-                        Component.translatable("config.tribulation.hud.offset_y"),
-                        hud.offsetY)
+                        Component.translatable("config.tribulation.hudOffsetY"),
+                        config.hudOffsetY)
                 .setDefaultValue(4).setMin(0)
-                .setSaveConsumer(v -> hud.offsetY = v)
+                .setSaveConsumer(v -> config.hudOffsetY = v)
                 .build());
         applyTooltips(cat);
     }

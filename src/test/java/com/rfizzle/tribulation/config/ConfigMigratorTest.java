@@ -300,9 +300,9 @@ class ConfigMigratorTest {
     }
 
     @Test
-    void migrate_v14_isIdempotent() {
+    void migrate_v15_isIdempotent() {
         JsonObject json = new JsonObject();
-        json.addProperty("configVersion", 14);
+        json.addProperty("configVersion", 15);
         json.add("hardcoreHearts", new JsonObject());
         json.add("soulInventory", new JsonObject());
         json.add("trialSpawner", new JsonObject());
@@ -317,9 +317,62 @@ class ConfigMigratorTest {
         json.add("levelDecay", new JsonObject());
         json.add("groupHealthBonus", new JsonObject());
         json.add("environmentalPressure", new JsonObject());
+        json.addProperty("enableTierHud", true);
+        json.addProperty("hudAnchor", "TOP_LEFT");
+        json.addProperty("hudOffsetX", 4);
+        json.addProperty("hudOffsetY", 4);
 
         assertFalse(ConfigMigrator.migrate(json));
-        assertEquals(14, json.get("configVersion").getAsInt());
+        assertEquals(15, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v14ToV15_flattensHudFields() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 14);
+        JsonObject hud = new JsonObject();
+        hud.addProperty("enabled", false);
+        hud.addProperty("anchor", "BOTTOM_RIGHT");
+        hud.addProperty("offsetX", 12);
+        hud.addProperty("offsetY", 20);
+        json.add("hud", hud);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.has("hud"), "nested hud object must be removed");
+        assertFalse(json.get("enableTierHud").getAsBoolean());
+        assertEquals("BOTTOM_RIGHT", json.get("hudAnchor").getAsString());
+        assertEquals(12, json.get("hudOffsetX").getAsInt());
+        assertEquals(20, json.get("hudOffsetY").getAsInt());
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_v14ToV15_doesNotOverwriteExistingFlatFields() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 14);
+        JsonObject hud = new JsonObject();
+        hud.addProperty("offsetX", 12);
+        json.add("hud", hud);
+        json.addProperty("hudOffsetX", 99);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertEquals(99, json.get("hudOffsetX").getAsInt(),
+                "a pre-existing flat field must win over the legacy nested value");
+        assertFalse(json.has("hud"));
+    }
+
+    @Test
+    void migrate_v14ToV15_missingHudSectionIsHarmless() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", 14);
+
+        assertTrue(ConfigMigrator.migrate(json));
+
+        assertFalse(json.has("hud"));
+        assertFalse(json.has("enableTierHud"), "no hud object to carry forward → fillDefaults supplies the default");
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
     }
 
     @Test

@@ -21,7 +21,7 @@ import com.rfizzle.tribulation.Tribulation;
  */
 final class ConfigMigrator {
 
-    static final int CURRENT_VERSION = 14;
+    static final int CURRENT_VERSION = 15;
 
     @FunctionalInterface
     interface Migration {
@@ -142,8 +142,29 @@ final class ConfigMigrator {
                 if (!json.has("environmentalPressure")) {
                     json.add("environmentalPressure", new JsonObject());
                 }
+            },
+            // v14 → v15: flatten the client HUD section to top-level fields,
+            // aligning with the Concord HUD Standard §4 and sibling mods. Carry
+            // each existing value forward under its new key and drop the old
+            // nested object.
+            json -> {
+                JsonElement legacy = json.remove("hud");
+                if (legacy != null && legacy.isJsonObject()) {
+                    JsonObject hud = legacy.getAsJsonObject();
+                    carryHudField(json, hud, "enabled", "enableTierHud");
+                    carryHudField(json, hud, "anchor", "hudAnchor");
+                    carryHudField(json, hud, "offsetX", "hudOffsetX");
+                    carryHudField(json, hud, "offsetY", "hudOffsetY");
+                }
             }
     };
+
+    /** Copy {@code hud.<oldKey>} to the top-level {@code newKey}, without clobbering an existing value. */
+    private static void carryHudField(JsonObject json, JsonObject hud, String oldKey, String newKey) {
+        if (hud.has(oldKey) && !json.has(newKey)) {
+            json.add(newKey, hud.get(oldKey));
+        }
+    }
 
     private ConfigMigrator() {}
 

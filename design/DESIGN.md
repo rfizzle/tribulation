@@ -120,10 +120,10 @@ Style: Minecraft HUD icon, pixel art, minimal and flat
 Size: 16x16
 Colors: Bone white (#e8e0d4) skull or crimson (#DC143C) flame,
         tier-dependent intensity (warm orange tier 1 → deep crimson tier 5)
-Notes: Sits inside the shared semi-transparent HUD box alongside a text
-       label like "Lv. 127 · T3". Must be legible at native 16x16 against
-       the dark box background. Transparent PNG. No frame or border — the
-       shared HUD box provides the container.
+Notes: Icon-only badge — no inline text label; tier is conveyed by the
+       icon tint and a 2px progress bar beneath it. Must be legible at
+       native 16x16. Transparent PNG. No frame or border — the badge is
+       blitted directly and tinted per tier.
 ```
 
 ### HUD
@@ -202,109 +202,36 @@ Colors: Each uses crimson (#DC143C) as base with mode-specific secondary:
 
 ---
 
-## 5. Website Specification
+## 5. Website & Listing Brand Notes
 
-### Domain & Hosting
+How the brand lands on the mod's outward surfaces. The *content* lives in its own
+home — page copy in [`site/`](../site/) (rendered by concord's shared template and
+deployed by `build-site.yml`, with the domain and theme tokens in
+[`site/site.json`](../site/site.json)), store copy in
+[`site/listing-curseforge.md`](../site/listing-curseforge.md) and
+[`site/listing-modrinth.md`](../site/listing-modrinth.md) (structure per the
+`mc-listing` skill), release notes in [`changelogs/`](../changelogs/) (per the
+`mc-changelog` skill), and the README badges in [`README.md`](../README.md). This
+section carries only what is *brand*.
 
-- **Domain:** `tribulation.rfizzle.com`
-- **Hosting:** GitHub Pages (source: Actions) — `site/` content built and deployed by
-  concord's reusable `build-site.yml` via the repo's `site.yml` stub
-- **CNAME:** `site/site.json` `domain` field → `tribulation.rfizzle.com`
-
-### Current Pages
-
-| Page | File | Content |
-|------|------|---------|
-| Home | `index.html` | Hero with logo, feature overview, download links |
-| Features | `features.html` | Detailed feature breakdown |
-| Config | `config.html` | Configuration reference |
-| Commands | `commands.html` | Command reference |
-
-### Pages to Add
-
-| Page | File | Content |
-|------|------|---------|
-| Getting Started | `guide.html` | Installation, understanding levels/tiers, choosing penalty modes |
-| Mob Reference | `mobs.html` | Per-mob scaling rates, caps, and tier abilities |
-| FAQ | `faq.html` | Performance impact, multiplayer fairness, compatibility |
-| Changelog | `changelog.html` | Version history |
-
-### Website Design Tokens (Tailwind)
-
-```javascript
-colors: {
-    base: '#0a0a0a',
-    card: '#1a1a1a',
-    elevated: '#222222',
-    crimson: { DEFAULT: '#DC143C', dark: '#8B0000' },
-    ember: { DEFAULT: '#FF6B35', bright: '#FF4500' },
-    bone: '#e8e0d4',
-    ash: '#a89f93',
-    smoke: '#6b6359',
-}
-```
-
-### SEO & Social
-
-- **Title pattern:** `{Page} — Tribulation | Difficulty Overhaul for Minecraft`
-- **og:image:** Must be absolute URL (`https://tribulation.rfizzle.com/logo.png`)
-- **og:url:** Already set (`https://tribulation.rfizzle.com`)
-- **twitter:card:** `summary_large_image` (upgrade from `summary`)
-- **Favicon:** `<link rel="icon" type="image/png" href="icon.png">`
-- **Apple Touch:** `<link rel="apple-touch-icon" href="apple-touch-icon.png">` (need to create)
-
-### Cross-Mod Navigation
-
-Footer section linking to all companion mods:
-```
-Part of the rfizzle mod suite:
-[Meridian] [Mercantile] [Tribulation] [Prosperity]
-```
+- **Accent usage** — crimson `#DC143C` carries interactive elements and glows;
+  ember `#FF6B35` warms fire and secondary highlights; both sit over the obsidian
+  and dark-stone neutrals. The site theme tokens in `site/site.json` mirror the §1
+  palette rather than defining their own.
+- **Hero & Open Graph art direction** — the crimson-on-blood-brick world from the
+  §4 prompts: dark `#1a0a0a`→`#2e1010` brickwork, blood splatter, drifting embers,
+  the hourglass–heart–skull motif centred. The Open Graph / social card is a
+  1200×630 framing of that world (prompt in §4); the hero background is its
+  tileable, text-safe variant.
+- **Promotional screenshots** — 1920×1080, vanilla or a clarity-friendly shader,
+  each framed on a legible danger read: a scaled mob with a visible stat boost (the
+  level badge or a Jade tooltip in shot), a tier-5 ability mid-action, the special
+  zombie/skeleton variants, `/tribulation info` output, or hearts lost to a hardcore
+  death.
 
 ---
 
-## 6. Distribution Listings
-
-### CurseForge / Modrinth
-
-**Description Template:**
-1. Logo image (centered)
-2. One-paragraph summary
-3. Feature list with headers (Three-Axis Scaling, Tier Abilities, Zombie Variants, Boss Scaling, Death Penalties, Rewards)
-4. Screenshot gallery (3–5 images)
-5. Requirements section (Fabric Loader, Fabric API — no other required dependencies)
-6. Optional integrations (ModMenu, Jade/WTHIT, EMI/REI/JEI)
-7. Links to companion mods
-
-**Screenshot Standards:**
-- Resolution: 1920×1080
-- Shader: Complementary Shaders (or vanilla for clarity)
-- HUD: F3 debug or Jade tooltip showing mob stats preferred
-- Subjects: (1) Scaled mob with visible stat boost, (2) Tier 5 mob ability in action, (3) Big/Speed zombie variants, (4) `/tribulation info` command output, (5) Hardcore hearts after death
-
-**Changelog Format:**
-```markdown
-## [0.1.1] — 2025-XX-XX
-### Added
-- Feature description
-### Changed
-- Change description
-### Fixed
-- Fix description
-```
-
-### README Badges
-
-```markdown
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-green)
-![Fabric](https://img.shields.io/badge/Loader-Fabric-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![GitHub](https://img.shields.io/github/v/release/rfizzle/tribulation)
-```
-
----
-
-## 7. Companion Mod Context
+## 6. Companion Mod Context
 
 Tribulation is part of a four-mod suite. Each mod overhauls a different Minecraft system:
 
@@ -313,7 +240,7 @@ Tribulation is part of a four-mod suite. Each mod overhauls a different Minecraf
 | **Meridian** | Enchanting | Violet / Gold | Compass rose |
 | **Mercantile** | Villagers & Trade | Green / Emerald | Market stall / scales |
 | **Tribulation** | Difficulty & Scaling | Crimson / Red | Hourglass with hearts |
-| **Prosperity** | Loot & Containers | Gold / Diamond Cyan | Trophy chalice |
+| **Prosperity** | Loot & Containers | Gold / Diamond Cyan | Treasure chest / key |
 
 All four share:
 - Minecraft 1.21.1, Java 21, Fabric

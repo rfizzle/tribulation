@@ -1,8 +1,8 @@
 # Tribulation — Asset Manifest
 
 > Where every committed asset lives: its source under `art/` (a re-renderable
-> `.glyph` for pixel art, or a `.png` master for logos) and the final file it
-> ships as. **`MISSING`** in the glyph column flags a pixel asset that has no
+> `.glyph` for pixel art, a `.sfx` for audio, or a `.png` master for logos) and
+> the final file it ships as. **`MISSING`** in the glyph column flags a pixel asset that has no
 > `.glyph` source yet — a candidate for the glyph pipeline (concord
 > [`design/DESIGN-SYSTEM.md`](../../concord/design/DESIGN-SYSTEM.md) §8).
 > [`DESIGN.md`](DESIGN.md) covers *why* each asset exists; this file covers *where* it lives.
@@ -25,6 +25,7 @@
 | Tier detail panel frame | `art/glyphs/panel-frame-64.glyph` | `assets/tribulation/textures/gui/tier_detail_panel.png` (64×64, drawn nine-sliced) |
 | Heart Fragment item | `art/glyphs/heart-fragment-32.glyph` | `assets/tribulation/textures/item/heart_fragment.png` |
 | Shatter Shard item | `art/glyphs/shatter-shard-32.glyph` | `assets/tribulation/textures/item/shatter_shard.png` |
+| Ascendant Shard item | `art/glyphs/ascendant-shard-32.glyph` | `assets/tribulation/textures/item/ascendant_shard.png` |
 | Threat particle — cursed mote (tier 4+) | `art/glyphs/threat-tier-16.glyph` | `assets/tribulation/textures/particle/threat_tier.png` |
 | Threat particle — Big-zombie dust | `art/glyphs/threat-big-16.glyph` | `assets/tribulation/textures/particle/threat_big.png` |
 | Threat particle — Speed-zombie streak | `art/glyphs/threat-speed-16.glyph` | `assets/tribulation/textures/particle/threat_speed.png` |
@@ -34,6 +35,7 @@
 | Asset | `.sfx` source | Final asset |
 |---|---|---|
 | Tier-up sting (`tribulation:tier_up`) | `art/audio/tier-up.sfx` | `assets/tribulation/sounds/tier_up.ogg` |
+| Blood Moon warning (`tribulation:blood_moon_warning`) | `art/audio/blood-moon-warning.sfx` | `assets/tribulation/sounds/blood_moon_warning.ogg` |
 
 ## Not yet created
 

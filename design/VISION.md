@@ -98,9 +98,9 @@ not.
 - **What it is** — a small badge in the corner of your screen shows your level and tier at a
   glance. Hold a key to peek a detail panel: your progress to the next tier and a live list
   of what the mobs near you can actually do at your current tier.
-- **How you use it** — the badge is always there unless you turn it off. The peek key starts
-  unbound — bind it under Options → Controls → Tribulation. Your first level-up and first
-  tier each come with a one-time note teaching you what just happened.
+- **How you use it** — the badge is always there unless you turn it off. Hold **Tab** to
+  peek the panel (rebind it under Options → Controls → Tribulation). Your first level-up and
+  first tier each come with a one-time note teaching you what just happened.
 - **What changes for you** — the escalating world is always legible. You can read your own
   danger and the room's danger without opening a menu or guessing.
 

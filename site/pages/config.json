@@ -496,20 +496,20 @@
     },
     {
       "id": "hud",
-      "title": "hud",
+      "title": "HUD",
       "intro": "Client-side settings for the on-screen <a href='/features.html#level-hud' class='text-accent hover:text-accent2 underline'>Level Badge</a>. Stored locally per client and never synced.",
       "blocks": [
         {
           "type": "table",
           "headers": ["Key", "Type", "Default", "Description"],
           "rows": [
-            ["<code class='text-accent2 whitespace-nowrap'>enabled</code>", "boolean", "true", "Show the level badge overlay"],
-            ["<code class='text-accent2 whitespace-nowrap'>anchor</code>", "enum", "TOP_LEFT", "Screen corner: TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT"],
-            ["<code class='text-accent2 whitespace-nowrap'>offsetX</code>", "int", "4", "Horizontal pixels from the anchored edge"],
-            ["<code class='text-accent2 whitespace-nowrap'>offsetY</code>", "int", "4", "Vertical pixels from the anchored edge"]
+            ["<code class='text-accent2 whitespace-nowrap'>enableTierHud</code>", "boolean", "true", "Show the level badge overlay"],
+            ["<code class='text-accent2 whitespace-nowrap'>hudAnchor</code>", "enum", "TOP_LEFT", "Screen corner: TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT"],
+            ["<code class='text-accent2 whitespace-nowrap'>hudOffsetX</code>", "int", "4", "Horizontal pixels from the anchored edge"],
+            ["<code class='text-accent2 whitespace-nowrap'>hudOffsetY</code>", "int", "4", "Vertical pixels from the anchored edge"]
           ]
         },
-        { "type": "code", "small": true, "topGap": true, "code": "{\n  \"hud\": {\n    \"enabled\": true,\n    \"anchor\": \"TOP_LEFT\",\n    \"offsetX\": 4,\n    \"offsetY\": 4\n  }\n}" }
+        { "type": "code", "small": true, "topGap": true, "code": "{\n  \"enableTierHud\": true,\n  \"hudAnchor\": \"TOP_LEFT\",\n  \"hudOffsetX\": 4,\n  \"hudOffsetY\": 4\n}" }
       ]
     },
     {

@@ -502,7 +502,7 @@ A persistent client HUD element showing difficulty level/tier, following the Con
 
 `TribulationHudOverlay` (a `HudRenderCallback`) draws an **icon-only** badge: the 32×32 `hud_icon.png` blitted at 16×16, tinted by tier color, with a 2px progress bar beneath showing the fraction of ticks toward the next level. Tier color ramp (0→5): white, yellow, orange, light red, red, dark crimson. On a level-up the tint flashes gold and lerps to the tier color over 2 s.
 
-The element occupies **priority 1** (topmost) in the shared HUD strip and contributes a standard 20px + 2px gap when visible. It is hidden during F1 (`hideGui`), any open screen, spectator mode, and death/dying. Position is set by `hud.anchor` (default `TOP_LEFT`) and `hud.offsetX`/`offsetY` (default 4/4).
+The element occupies **priority 1** (topmost) in the shared HUD strip and contributes a standard 20px + 2px gap when visible. It is hidden during F1 (`hideGui`), any open screen, spectator mode, and death/dying. Position is set by `hudAnchor` (default `TOP_LEFT`) and `hudOffsetX`/`hudOffsetY` (default 4/4).
 
 ### Implementation Notes
 
@@ -517,7 +517,7 @@ A hold-to-peek client overlay that shows the full difficulty picture on demand.
 
 ### Behavior
 
-Binding `key.tribulation.tier_detail` ("Peek Tier Detail", category Tribulation) is **unbound by default**. While held — like vanilla's hold-Tab player list, never capturing the mouse or pausing the game — `TierDetailPanelRenderer` (a `HudRenderCallback`) overlays a framed panel showing:
+Binding `key.tribulation.peek_detail` ("Peek Tier Detail", category Tribulation) defaults to **Left Alt** — unused by vanilla and ergonomic to hold, deliberately not Tab (which holds the vanilla player list this panel imitates). While held — like vanilla's hold-Tab player list, never capturing the mouse or pausing the game — `TierDetailPanelRenderer` (a `HudRenderCallback`) overlays a framed panel showing:
 
 - the exact level, the tier as **"Tier n / 5"** in the tier color, and a progress bar with the precise `progressTicks / goalTicks` figures and percent;
 - the level at which the next tier unlocks (or "Maximum tier reached" at tier 5);
@@ -1043,9 +1043,9 @@ Offset map values are each clamped `≥ 0`; unparseable keys are logged and drop
 | `environmentalPressure.oppressiveNights.clientEnabled` | bool (client) | true |
 | `environmentalPressure.oppressiveNights.followRangeMultiplier` | double `[1,3]` | 1.5 |
 | `abilities.*` | bool | true (29 flags, one per ability in §4) |
-| `hud.enabled` | bool | true |
-| `hud.anchor` | enum | TOP_LEFT |
-| `hud.offsetX` / `hud.offsetY` | int | 4 / 4 |
+| `enableTierHud` | bool (client) | true |
+| `hudAnchor` | enum (client) | TOP_LEFT |
+| `hudOffsetX` / `hudOffsetY` | int (client) | 4 / 4 |
 | `threatParticles.enabled` | bool | true |
 | `threatParticles.minimumTier` | int | 4 |
 | `threatParticles.particleFrequencyTicks` | int | 40 |
@@ -1107,7 +1107,7 @@ All user-facing text uses translation keys in `assets/tribulation/lang/en_us.jso
 | `enchantment.tribulation.soulbound` | — | Soulbound enchantment name + `.desc` |
 | `stat.tribulation.*` | `stat.tribulation.shatter_shards_used` | Custom statistics |
 | `advancements.tribulation.*` | `advancements.tribulation.tier_5.title` | Advancement titles/descriptions |
-| `key.tribulation.tier_detail` | — | Peek Tier Detail keybind |
+| `key.tribulation.peek_detail` | — | Peek Tier Detail keybind |
 | `subtitles`/`tribulation.subtitle.tier_up` | — | Tier-up sound subtitle |
 | `itemGroup.tribulation.main` | — | Creative tab |
 

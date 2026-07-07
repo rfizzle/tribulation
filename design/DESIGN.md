@@ -57,7 +57,7 @@ lives in [`ASSETS.md`](ASSETS.md).
 
 ## 3. HUD
 
-Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `hud.enabled` client config option.
+Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `enableTierHud` client config option.
 
 ---
 

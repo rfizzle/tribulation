@@ -146,15 +146,15 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 
 | Control | Default | Description |
 |---------|---------|-------------|
-| **Peek Tier Detail** | **Tab** | Hold to overlay a detail panel showing your level, tier, progress to the next level, and the abilities that nearby scaled mobs have at your tier. Release to dismiss. |
+| **Peek Tier Detail** | **Left Alt** | Hold to overlay a detail panel showing your level, tier, progress to the next level, and the abilities that nearby scaled mobs have at your tier. Release to dismiss. |
 
-Rebind it under **Options → Controls → Key Binds**, in the **Tribulation** category. It is bound to **Tab** by default — the panel behaves like vanilla's hold-Tab player list (never capturing the mouse or pausing the game), so it shares that key until you assign your own. It hides automatically during F1, open screens, and spectator mode.
+Rebind it under **Options → Controls → Key Binds**, in the **Tribulation** category. It is bound to **Left Alt** by default — unused by vanilla and ergonomic to hold. The panel behaves like vanilla's hold-Tab player list (never capturing the mouse or pausing the game), so it is deliberately not bound to Tab, which that list already holds. It hides automatically during F1, open screens, and spectator mode.
 
 ---
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `levelDecay`, `shards`, `ascension`, `hardcoreHearts`, `soulInventory`, `bloodMoon`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `environmentalPressure`, `hud`, `threatParticles`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `levelDecay`, `shards`, `ascension`, `hardcoreHearts`, `soulInventory`, `bloodMoon`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `environmentalPressure`, `threatParticles`, and the client HUD fields `enableTierHud`/`hudAnchor`/`hudOffsetX`/`hudOffsetY`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 

@@ -722,11 +722,10 @@ class TribulationConfigTest {
     @Test
     void defaultConfig_hudHasValidDefaults() {
         TribulationConfig cfg = new TribulationConfig();
-        assertNotNull(cfg.hud);
-        assertTrue(cfg.hud.enabled);
-        assertEquals(TribulationConfig.Anchor.TOP_LEFT, cfg.hud.anchor);
-        assertEquals(4, cfg.hud.offsetX);
-        assertEquals(4, cfg.hud.offsetY);
+        assertTrue(cfg.enableTierHud);
+        assertEquals(TribulationConfig.Anchor.TOP_LEFT, cfg.hudAnchor);
+        assertEquals(4, cfg.hudOffsetX);
+        assertEquals(4, cfg.hudOffsetY);
     }
 
     @Test
@@ -736,29 +735,28 @@ class TribulationConfigTest {
 
         TribulationConfig loaded = TribulationConfig.load(path);
 
-        assertNotNull(loaded.hud);
-        assertTrue(loaded.hud.enabled);
-        assertEquals(TribulationConfig.Anchor.TOP_LEFT, loaded.hud.anchor);
-        assertEquals(4, loaded.hud.offsetX);
-        assertEquals(4, loaded.hud.offsetY);
+        assertTrue(loaded.enableTierHud);
+        assertEquals(TribulationConfig.Anchor.TOP_LEFT, loaded.hudAnchor);
+        assertEquals(4, loaded.hudOffsetX);
+        assertEquals(4, loaded.hudOffsetY);
     }
 
     @Test
     void roundTrip_hudPreservesValues(@TempDir Path tmp) {
         Path path = tmp.resolve("tribulation.json");
         TribulationConfig original = new TribulationConfig();
-        original.hud.enabled = false;
-        original.hud.anchor = TribulationConfig.Anchor.BOTTOM_RIGHT;
-        original.hud.offsetX = 12;
-        original.hud.offsetY = 20;
+        original.enableTierHud = false;
+        original.hudAnchor = TribulationConfig.Anchor.BOTTOM_RIGHT;
+        original.hudOffsetX = 12;
+        original.hudOffsetY = 20;
         original.save(path);
 
         TribulationConfig reloaded = TribulationConfig.load(path);
 
-        assertFalse(reloaded.hud.enabled);
-        assertEquals(TribulationConfig.Anchor.BOTTOM_RIGHT, reloaded.hud.anchor);
-        assertEquals(12, reloaded.hud.offsetX);
-        assertEquals(20, reloaded.hud.offsetY);
+        assertFalse(reloaded.enableTierHud);
+        assertEquals(TribulationConfig.Anchor.BOTTOM_RIGHT, reloaded.hudAnchor);
+        assertEquals(12, reloaded.hudOffsetX);
+        assertEquals(20, reloaded.hudOffsetY);
     }
 
     @Test

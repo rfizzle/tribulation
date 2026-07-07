@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Hold-to-peek tier detail panel. While {@link TribulationClient#KEY_TIER_DETAIL}
+ * Hold-to-peek tier detail panel. While {@link TribulationClient#KEY_PEEK_DETAIL}
  * is held — and the HUD's normal visibility rules pass — this overlays a framed
  * panel with the player's level, tier, progress to the next level, and the
  * abilities that nearby scaled mobs have at the current tier.
@@ -97,7 +97,7 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
         // plus the hold-to-peek gate: the panel shows only while the bound key is
         // held down.
         if (!TribulationHudOverlay.isHudVisible()) return;
-        if (TribulationClient.KEY_TIER_DETAIL == null || !TribulationClient.KEY_TIER_DETAIL.isDown()) return;
+        if (TribulationClient.KEY_PEEK_DETAIL == null || !TribulationClient.KEY_PEEK_DETAIL.isDown()) return;
 
         Minecraft mc = Minecraft.getInstance();
         TribulationConfig config = Tribulation.getConfig();
@@ -121,8 +121,8 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
             groups.add(new Group(Component.translatable("entity.minecraft." + mobKey), abilities));
         }
         boolean hasList = !groups.isEmpty();
-        Component emptyText = Component.translatable("hud.tribulation.tier_detail.no_abilities");
-        Component nearbyHeading = Component.translatable("hud.tribulation.tier_detail.nearby_heading");
+        Component emptyText = Component.translatable("hud.tribulation.detail.no_abilities");
+        Component nearbyHeading = Component.translatable("hud.tribulation.detail.nearby_heading");
 
         // Fixed-height "chrome" (everything but the ability rows) sets the row budget.
         int chromeH = 2 * INSET
@@ -161,18 +161,18 @@ public final class TierDetailPanelRenderer implements HudRenderCallback {
                 : font.width(emptyText);
 
         // ---- Header / progress strings ----
-        Component title = Component.translatable("hud.tribulation.tier_detail.title");
-        Component tierLabel = Component.translatable("hud.tribulation.tier_detail.tier_label", tier);
-        Component levelText = Component.translatable("hud.tribulation.tier_detail.level", level);
+        Component title = Component.translatable("hud.tribulation.detail.title");
+        Component tierLabel = Component.translatable("hud.tribulation.detail.tier_label", tier);
+        Component levelText = Component.translatable("hud.tribulation.detail.level", level);
         int nextLevel = nextTierLevel(tier, config.tiers);
         Component nextText = nextLevel < 0
-                ? Component.translatable("hud.tribulation.tier_detail.max_tier")
-                : Component.translatable("hud.tribulation.tier_detail.next_tier", nextLevel);
+                ? Component.translatable("hud.tribulation.detail.max_tier")
+                : Component.translatable("hud.tribulation.detail.next_tier", nextLevel);
         float fraction = ClientTribulationState.getProgressFraction();
         int percent = Math.round(fraction * 100f);
-        Component progressText = Component.translatable("hud.tribulation.tier_detail.progress",
+        Component progressText = Component.translatable("hud.tribulation.detail.progress",
                 ClientTribulationState.getProgressTicks(), ClientTribulationState.getGoalTicks());
-        Component percentText = Component.translatable("hud.tribulation.tier_detail.percent", percent);
+        Component percentText = Component.translatable("hud.tribulation.detail.percent", percent);
 
         int dotsW = numPages > 1 ? numPages * DOT_SIZE + (numPages - 1) * DOT_GAP : 0;
         int headingRowW = font.width(nearbyHeading) + (dotsW > 0 ? 12 + dotsW : 0);

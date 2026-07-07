@@ -45,7 +45,7 @@ public class TribulationConfig {
             "hoglin", "zoglin", "ravager", "piglin", "zombified_piglin", "bogged"
     };
 
-    public int configVersion = 14;
+    public int configVersion = 15;
     public General general = new General();
     public TimeScaling timeScaling = new TimeScaling();
     public DistanceScaling distanceScaling = new DistanceScaling();
@@ -81,7 +81,13 @@ public class TribulationConfig {
     public PackTactics packTactics = new PackTactics();
     public EnvironmentalPressure environmentalPressure = new EnvironmentalPressure();
     public ThreatParticles threatParticles = new ThreatParticles();
-    public Hud hud = new Hud();
+
+    // Client-only HUD fields (flat, per the Concord HUD Standard §4). The client
+    // renders the badge from its own local file, so these are never server-authoritative.
+    public boolean enableTierHud = true;
+    public Anchor hudAnchor = Anchor.TOP_LEFT;
+    public int hudOffsetX = 4;
+    public int hudOffsetY = 4;
 
     public static TribulationConfig load() {
         return load(configPath());
@@ -414,8 +420,7 @@ public class TribulationConfig {
             if (wt.materialWeights == null) wt.materialWeights = new LinkedHashMap<>();
         }
 
-        if (hud == null) hud = new Hud();
-        if (hud.anchor == null) hud.anchor = Anchor.TOP_LEFT;
+        if (hudAnchor == null) hudAnchor = Anchor.TOP_LEFT;
 
         if (champions == null) champions = new Champions();
         if (champions.affixes == null) champions.affixes = new Champions.Affixes();
@@ -1305,13 +1310,6 @@ public class TribulationConfig {
         public int tier3 = 150;
         public int tier4 = 200;
         public int tier5 = 250;
-    }
-
-    public static class Hud {
-        public boolean enabled = true;
-        public Anchor anchor = Anchor.TOP_LEFT;
-        public int offsetX = 4;
-        public int offsetY = 4;
     }
 
     public enum Anchor {

@@ -59,7 +59,7 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         if (mc.player.isDeadOrDying()) return false;
 
         TribulationConfig config = Tribulation.getConfig();
-        return config != null && config.hud != null && config.hud.enabled;
+        return config != null && config.enableTierHud;
     }
 
     /**
@@ -92,9 +92,9 @@ public final class TribulationHudOverlay implements HudRenderCallback {
 
         int screenW = graphics.guiWidth();
         int screenH = graphics.guiHeight();
-        TribulationConfig.Anchor anchor = config.hud.anchor != null ? config.hud.anchor : TribulationConfig.Anchor.TOP_LEFT;
-        int x = computeOriginX(anchor, screenW, config.hud.offsetX);
-        int y = computeOriginY(anchor, screenH, config.hud.offsetY);
+        TribulationConfig.Anchor anchor = config.hudAnchor != null ? config.hudAnchor : TribulationConfig.Anchor.TOP_LEFT;
+        int x = computeOriginX(anchor, screenW, config.hudOffsetX);
+        int y = computeOriginY(anchor, screenH, config.hudOffsetY);
 
         float r = ((color >> 16) & 0xFF) / 255f;
         float g = ((color >> 8) & 0xFF) / 255f;

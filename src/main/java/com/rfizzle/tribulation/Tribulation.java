@@ -189,7 +189,7 @@ public class Tribulation implements ModInitializer {
         if (!state.hasSeenTierDiscoveryHint(player.getUUID())) {
             player.sendSystemMessage(Component.translatable(
                     "message.tribulation.tier_discovery_hint",
-                    Component.keybind("key.tribulation.tier_detail")
+                    Component.keybind("key.tribulation.peek_detail")
                             .withStyle(ChatFormatting.GOLD))
                     .withStyle(ChatFormatting.YELLOW));
             state.markTierDiscoveryHintSeen(player.getUUID());

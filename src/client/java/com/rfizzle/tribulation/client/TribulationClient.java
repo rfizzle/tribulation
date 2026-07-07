@@ -14,22 +14,21 @@ import org.lwjgl.glfw.GLFW;
 
 public class TribulationClient implements ClientModInitializer {
     /**
-     * Hold-to-peek keybind for the tier detail panel. Bound to Tab by default —
-     * the panel behaves like vanilla's hold-Tab player list (it never captures
-     * the mouse or opens a {@link net.minecraft.client.gui.screens.Screen}), so
-     * a shared default makes the mod's richest explainer discoverable without a
-     * Controls-menu visit. A player who has already assigned their own key keeps
-     * it: Fabric only applies the registered default for a binding absent from
-     * {@code options.txt}.
+     * Hold-to-peek keybind for the tier detail panel. Defaults to Left Alt per
+     * the Concord HUD Standard §8 — unused by vanilla and ergonomic to hold. It
+     * is deliberately not Tab: Tab holds the vanilla player list, the exact
+     * interaction this panel imitates, so the two would conflict. A player who
+     * has already assigned their own key keeps it: Fabric only applies the
+     * registered default for a binding absent from {@code options.txt}.
      */
-    public static KeyMapping KEY_TIER_DETAIL;
+    public static KeyMapping KEY_PEEK_DETAIL;
 
     @Override
     public void onInitializeClient() {
-        KEY_TIER_DETAIL = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "key.tribulation.tier_detail",
+        KEY_PEEK_DETAIL = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.tribulation.peek_detail",
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_TAB,
+                GLFW.GLFW_KEY_LEFT_ALT,
                 "key.categories.tribulation"));
 
         ClientNetworkHandler.register();

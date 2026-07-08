@@ -1,10 +1,13 @@
 package com.rfizzle.tribulation.gametest;
 
 import com.rfizzle.tribulation.api.TribulationAPI;
+import com.rfizzle.tribulation.compat.meridian.MeridianEquipmentCompat;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.event.ArmorEquipmentHandler.ArmorMaterial;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -18,7 +21,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.HashSet;
 import java.util.OptionalInt;
@@ -226,6 +231,54 @@ public class ArmorEquipmentGameTest implements FabricGameTest {
             }
             if (Math.abs(sum - 2.0) > 0.5) {
                 helper.fail("Toughness Tribulation modifiers not scaled correctly: expected ~2.0, got " + sum + " (total value: " + val + ")");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void armor_meridianBonusInertWhenModAbsent(GameTestHelper helper) {
+        // Meridian is not on the gametest runtime, so the tier-4/5 bonus branch must stay inert:
+        // vanilla Protection still applies, no meridian:* enchant leaks in, and nothing throws.
+        if (MeridianEquipmentCompat.isActive()) {
+            helper.fail("Meridian must be absent from the gametest runtime for this fallback test");
+        }
+
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(com.rfizzle.tribulation.event.ArmorEquipmentHandler.PROCESSED_TAG);
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            mob.setItemSlot(slot, ItemStack.EMPTY);
+        }
+
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.meridianEquipmentEnchants = true;
+        cfg.armorEquipment.enabled = true;
+        TribulationConfig.ArmorTier tier5 = cfg.armorEquipment.tiers.get("tier5");
+        tier5.wearChancePercent = 100;
+        tier5.slotCoveragePercent = 100;
+        tier5.enchantChancePercent = 100;
+
+        com.rfizzle.tribulation.event.ArmorEquipmentHandler.processArmor(mob, 5, cfg);
+
+        helper.succeedWhen(() -> {
+            boolean anyEnchanted = false;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                ItemStack stack = mob.getItemBySlot(slot);
+                if (stack.isEmpty()) continue;
+                ItemEnchantments enchants = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+                if (!enchants.isEmpty()) {
+                    anyEnchanted = true;
+                }
+                for (Holder<Enchantment> holder : enchants.keySet()) {
+                    boolean isMeridian = holder.unwrapKey()
+                            .map(key -> key.location().getNamespace().equals("meridian"))
+                            .orElse(false);
+                    if (isMeridian) {
+                        helper.fail("No meridian:* enchant should appear when Meridian is absent");
+                    }
+                }
+            }
+            if (!anyEnchanted) {
+                helper.fail("Vanilla Protection path should still enchant armor at 100% enchant chance");
             }
         });
     }

@@ -32,6 +32,13 @@ final class ConfigMigrator {
      * Ordered array of migrations. Index 0 = v0→v1, index 1 = v1→v2, etc.
      * Each entry MUST correspond to the transition from version {@code i} to
      * version {@code i+1}.
+     *
+     * <p>Invariant: a step that can throw MUST NOT precede a later step that
+     * renames or removes a field. {@link #migrate} breaks on the first throw
+     * and stamps the version reached so far, and the load path persists the
+     * deserialized object (which has already dropped keys with no current
+     * field). A throwing step ahead of a rename would let that intermediate
+     * save drop the source key before the rename runs to carry it forward.
      */
     private static final Migration[] MIGRATIONS = {
             // v0 → v1: baseline version tag. Pre-versioned configs are
@@ -174,29 +181,54 @@ final class ConfigMigrator {
      * result to disk so the file reflects the latest schema).
      */
     static boolean migrate(JsonObject json) {
+        return migrate(json, MIGRATIONS, CURRENT_VERSION);
+    }
+
+    /**
+     * Migrate against an explicit table. Advances {@code configVersion} only to
+     * the last <em>contiguously</em> successful step: if a step throws, the
+     * remaining steps are skipped (they would run against the wrong-shape JSON)
+     * and the file is stamped at the version reached so far, so the failed step
+     * is retried on the next load once its cause is fixed — never silently lost.
+     * A step that fails at the very first pending version leaves
+     * {@code configVersion} unstamped and returns {@code false}, so the caller
+     * does not rewrite the file.
+     *
+     * <p>Package-private so tests can inject a throwing step.
+     */
+    static boolean migrate(JsonObject json, Migration[] migrations, int currentVersion) {
         if (json == null) return false;
 
         int version = readVersion(json);
-        if (version >= CURRENT_VERSION) return false;
+        if (version < 0) {
+            Tribulation.LOGGER.warn(
+                    "tribulation.json has a negative configVersion ({}); treating it as 0", version);
+            version = 0;
+        }
+        if (version >= currentVersion) return false;
 
-        boolean changed = false;
-        for (int i = version; i < CURRENT_VERSION && i < MIGRATIONS.length; i++) {
+        int applied = version;
+        for (int i = version; i < currentVersion && i < migrations.length; i++) {
             int from = i;
             int to = i + 1;
             try {
-                MIGRATIONS[i].apply(json);
+                migrations[i].apply(json);
                 Tribulation.LOGGER.info("Migrated tribulation.json from v{} to v{}", from, to);
-                changed = true;
+                applied = to;
             } catch (Exception e) {
-                Tribulation.LOGGER.warn("Migration v{} to v{} failed; skipping: {}", from, to, e.getMessage());
+                Tribulation.LOGGER.warn(
+                        "Migration v{} to v{} failed; will retry from v{} on next load: {}",
+                        from, to, applied, e.getMessage());
+                break;
             }
         }
 
-        if (changed) {
-            json.addProperty("configVersion", CURRENT_VERSION);
+        if (applied > version) {
+            json.addProperty("configVersion", applied);
+            return true;
         }
 
-        return changed;
+        return false;
     }
 
     /**

@@ -113,6 +113,10 @@ public final class TribulationHudOverlay implements HudRenderCallback {
         if (filledW > 0) {
             graphics.fill(barX, barY, barX + filledW, barY + BAR_HEIGHT, color);
         }
+
+        // Commit the batch before anything can re-batch or read the framebuffer,
+        // so ImmediatelyFast / Blur+ can't drop these sprites (Concord HUD Standard).
+        graphics.flush();
     }
 
     static int computeWidth() {

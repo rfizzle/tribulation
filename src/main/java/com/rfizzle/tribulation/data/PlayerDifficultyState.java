@@ -473,12 +473,25 @@ public class PlayerDifficultyState extends SavedData {
                 continue;
             }
             PlayerData pd = new PlayerData();
-            pd.level = clampStoredLevel(playerTag.getInt(NBT_LEVEL_KEY), maxLevel);
+            int rawLevel = playerTag.getInt(NBT_LEVEL_KEY);
+            int rawHeartsLost = playerTag.getInt(NBT_HEARTS_LOST_KEY);
+            pd.level = clampStoredLevel(rawLevel, maxLevel);
+            int clampedHeartsLost = clampStoredHeartsLost(rawHeartsLost, minimumHearts);
+            if (pd.level != rawLevel || clampedHeartsLost != rawHeartsLost) {
+                // A machine-corrupted or hand-edited save is untrusted input we
+                // coerce silently into range, but leave the operator a breadcrumb
+                // for diagnosing a wrecked save — matching the malformed-UUID warn
+                // above and the config-validate warn-and-clamp path.
+                Tribulation.LOGGER.warn(
+                        "Clamped out-of-range persisted values for player {} in {}: "
+                                + "level {}->{}, heartsLost {}->{}",
+                        uuid, STORAGE_KEY, rawLevel, pd.level, rawHeartsLost, clampedHeartsLost);
+            }
             pd.tickCounter = Math.max(0, playerTag.getInt(NBT_TICK_KEY));
             pd.lastDeathTick = playerTag.contains(NBT_LAST_DEATH_TICK_KEY)
                     ? playerTag.getLong(NBT_LAST_DEATH_TICK_KEY)
                     : NEVER_DIED;
-            pd.heartsLost = clampStoredHeartsLost(playerTag.getInt(NBT_HEARTS_LOST_KEY), minimumHearts);
+            pd.heartsLost = clampedHeartsLost;
             pd.lastSeenEpochMs = Math.max(NEVER_SEEN, playerTag.getLong(NBT_LAST_SEEN_KEY));
             pd.seenLevelUpIntro = playerTag.getBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY);
             pd.seenTierDiscoveryHint = playerTag.getBoolean(NBT_SEEN_TIER_DISCOVERY_HINT_KEY);

@@ -38,6 +38,12 @@ import java.util.UUID;
  * and while Fabric API's object-builder module currently null-guards that call, a
  * real {@code SAVED_DATA_*} constant is the self-sufficient form these tests
  * exercise end to end.
+ *
+ * <p>A separate concern also lives here: {@code scaledTier_clampsOutOfRangeTierOnNbtDecode}
+ * round-trips a mob's {@code SCALED_TIER} attachment through entity NBT — a path that
+ * never touches {@link DimensionDataStorage} — to prove the attachment codec's
+ * clamping {@code xmap} coerces a corrupt tier into range on decode. The pure clamp
+ * logic is unit-tested in {@code TierManagerTest}; this proves the codec is wired.
  */
 public class SavedDataPersistenceGameTest implements FabricGameTest {
 

@@ -1012,4 +1012,101 @@ class PlayerDifficultyStateTest {
         // the first login after the upgrade never mass-decays.
         assertEquals(PlayerDifficultyState.NEVER_SEEN, loaded.getLastSeen(uuid));
     }
+
+    // --- Decode clamping of untrusted NBT (issue #184) ---
+
+    @Test
+    void clampStoredLevel_capsOverflowAtSaneCeiling() {
+        assertEquals(PlayerDifficultyState.MAX_SANE_LEVEL,
+                PlayerDifficultyState.clampStoredLevel(Integer.MAX_VALUE, 250));
+    }
+
+    @Test
+    void clampStoredLevel_keepsLegitLevelAboveConfiguredCap() {
+        // A level earned under a since-lowered maxLevel must survive: the ceiling
+        // is max(maxLevel, MAX_SANE_LEVEL), never the configured cap alone.
+        assertEquals(300, PlayerDifficultyState.clampStoredLevel(300, 250));
+    }
+
+    @Test
+    void clampStoredLevel_ceilingRisesWithAnUnusuallyHighMaxLevel() {
+        // maxLevel above MAX_SANE_LEVEL raises the ceiling, so a legit level under
+        // that huge cap is still preserved, while garbage past it is clamped.
+        assertEquals(2_000_000, PlayerDifficultyState.clampStoredLevel(2_000_000, 5_000_000));
+        assertEquals(5_000_000, PlayerDifficultyState.clampStoredLevel(9_000_000, 5_000_000));
+    }
+
+    @Test
+    void clampStoredLevel_floorsNegative() {
+        assertEquals(0, PlayerDifficultyState.clampStoredLevel(-10, 250));
+        assertEquals(0, PlayerDifficultyState.clampStoredLevel(Integer.MIN_VALUE, 250));
+    }
+
+    @Test
+    void clampStoredHeartsLost_capsAtTwentyMinusMinimum() {
+        assertEquals(18, PlayerDifficultyState.clampStoredHeartsLost(999, 2));
+        assertEquals(15, PlayerDifficultyState.clampStoredHeartsLost(999, 5));
+    }
+
+    @Test
+    void clampStoredHeartsLost_raisedMinimumTightensAnOldValue() {
+        // An admin raising minimumHearts after a penalty was recorded must never
+        // leave the player below the new floor — the decode clamp gives HP back.
+        assertEquals(15, PlayerDifficultyState.clampStoredHeartsLost(18, 5));
+    }
+
+    @Test
+    void clampStoredHeartsLost_keepsValidValue() {
+        assertEquals(6, PlayerDifficultyState.clampStoredHeartsLost(6, 2));
+    }
+
+    @Test
+    void clampStoredHeartsLost_floorsNegative() {
+        assertEquals(0, PlayerDifficultyState.clampStoredHeartsLost(-4, 2));
+    }
+
+    @Test
+    void nbt_load_clampsOverflowLevelAndHeartsLost() {
+        // Config is null in unit tests, so load() falls back to the loosest safe
+        // bounds: level ceiling = MAX_SANE_LEVEL, heartsLost ceiling = 20 - 1.
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(
+                singlePlayerTag(uuid, Integer.MAX_VALUE, 999), null);
+
+        assertEquals(PlayerDifficultyState.MAX_SANE_LEVEL, loaded.getLevel(uuid));
+        assertEquals(19, loaded.getHeartsLost(uuid));
+    }
+
+    @Test
+    void nbt_load_preservesInRangeValues() {
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(
+                singlePlayerTag(uuid, 300, 6), null);
+
+        // 300 sits below MAX_SANE_LEVEL, so a legit above-cap level is untouched.
+        assertEquals(300, loaded.getLevel(uuid));
+        assertEquals(6, loaded.getHeartsLost(uuid));
+    }
+
+    @Test
+    void nbt_load_floorsNegativeValues() {
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(
+                singlePlayerTag(uuid, -5, -3), null);
+
+        assertEquals(0, loaded.getLevel(uuid));
+        assertEquals(0, loaded.getHeartsLost(uuid));
+    }
+
+    private static CompoundTag singlePlayerTag(UUID uuid, int level, int heartsLost) {
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
+        CompoundTag playerTag = new CompoundTag();
+        playerTag.putUUID("UUID", uuid);
+        playerTag.putInt("Level", level);
+        playerTag.putInt("HeartsLost", heartsLost);
+        list.add(playerTag);
+        tag.put("Players", list);
+        return tag;
+    }
 }

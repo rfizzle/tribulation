@@ -3,6 +3,7 @@ package com.rfizzle.tribulation.data;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /**
@@ -19,10 +20,16 @@ public class BloodMoonState extends SavedData {
     private static final String NBT_ACTIVE_KEY = "Active";
     private static final String NBT_LAST_ROLLED_DAY_KEY = "LastRolledDay";
 
+    // Pass a real, non-null DataFixTypes. Vanilla DimensionDataStorage calls
+    // dataFixTypes.update(...) unconditionally on read, so a null type would NPE
+    // inside the storage's swallowed load. Fabric API's object-builder module
+    // guards that null call today, but we don't lean on that safety net — a
+    // SAVED_DATA_* constant is the correct, self-sufficient form. It is inert for
+    // tags written by the current game version; re-verify on every MC version bump.
     public static final SavedData.Factory<BloodMoonState> FACTORY = new SavedData.Factory<>(
             BloodMoonState::new,
             BloodMoonState::load,
-            null
+            DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES
     );
 
     private boolean active;

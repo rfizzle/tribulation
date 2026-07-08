@@ -169,6 +169,36 @@
       ]
     },
     {
+      "id": "structure-boosts",
+      "title": "structureBoosts",
+      "intro": "A flat level offset per lootable structure, added to the effective level used for mob stat scaling and tier-gated abilities — the structure counterpart to <code class='text-accent2'>dimensionOffsets</code> and <code class='text-accent2'>biomeOffsets</code>, stacking additively with both. A mob spawning inside a configured structure's overall bounding box (inflated by <code class='text-accent2'>marginBlocks</code>) uses the boosted level, so its stats, tier-ability rolls, and bonus XP all rise together. Only the spawn position counts — a mob that wanders in later is unaffected. Like the dimension and biome offsets, it never touches the player's stored level, HUD readout, tier notifications, or death penalties.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>marginBlocks</code>", "int", "16", "Blocks the structure's bounding box is expanded by when testing membership. Clamped to 0–128 on load"],
+            ["<code class='text-accent2 whitespace-nowrap'>boosts</code>", "map", "see below", "Structure ID or <code class='text-accent2'>#</code>-tag → level offset. An empty map disables the feature entirely"]
+          ]
+        },
+        {
+          "type": "table",
+          "headers": ["boosts key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:fortress</code>", "integer", "20", "Levels added to mobs spawning in a Nether fortress"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:bastion_remnant</code>", "integer", "20", "Levels added to mobs spawning in a bastion remnant"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:monument</code>", "integer", "15", "Levels added to mobs spawning in an ocean monument"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:trial_chambers</code>", "integer", "15", "Levels added to mobs spawning in trial chambers"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:ancient_city</code>", "integer", "30", "Levels added to mobs spawning in an ancient city"],
+            ["<code class='text-accent2 whitespace-nowrap'>minecraft:end_city</code>", "integer", "25", "Levels added to mobs spawning in an end city"]
+          ]
+        },
+        { "type": "note", "html": "Keys in <code class='text-accent2'>boosts</code> are structure <code class='text-accent2'>ResourceLocation</code> strings (<code class='text-accent2'>minecraft:fortress</code>) or <code class='text-accent2'>#</code>-prefixed structure tags, so modded structures and whole categories can be tuned too. An exact structure-ID entry wins over tags, and where boosted structures overlap the largest boost applies. Values are non-negative integers (negatives are clamped to 0 on load); invalid keys warn and are skipped. The effective level after the offsets is still capped by <code class='text-accent2'>general.maxLevel</code>, and <code class='text-accent2'>/tribulation debug</code> (or <code class='text-accent2'>/tribulation inspect</code> on a mob) reports the active boost and the structure granting it." },
+        { "type": "code", "small": true, "code": "{\n  \"structureBoosts\": {\n    \"marginBlocks\": 16,\n    \"boosts\": {\n      \"minecraft:fortress\": 20,\n      \"minecraft:bastion_remnant\": 20,\n      \"minecraft:monument\": 15,\n      \"minecraft:trial_chambers\": 15,\n      \"minecraft:ancient_city\": 30,\n      \"minecraft:end_city\": 25\n    }\n  }\n}" }
+      ]
+    },
+    {
       "id": "stat-caps",
       "title": "statCaps",
       "intro": "Hard ceilings on the total scaling factor for each attribute (all axes combined).",

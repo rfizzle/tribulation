@@ -606,6 +606,21 @@
       ]
     },
     {
+      "id": "meridian-equipment-enchants",
+      "title": "meridianEquipmentEnchants",
+      "intro": "Top-level toggle for the Meridian integration. When Meridian is installed, tier-4/5 mob weapons and armor draw a small bonus of enchants from Meridian's curated <code class='text-accent2'>meridian:mob_equipment</code> tag on top of their vanilla ones, clamped by the per-tier enchant caps and Meridian's own limits. No effect when Meridian is absent.",
+      "blocks": [
+        {
+          "type": "table",
+          "bottomGap": true,
+          "headers": ["Key", "Type", "Default", "Description"],
+          "rows": [
+            ["<code class='text-accent2 whitespace-nowrap'>meridianEquipmentEnchants</code>", "boolean", "true", "Draw tier-4/5 mob enchants from Meridian's curated pool when Meridian is installed"]
+          ]
+        }
+      ]
+    },
+    {
       "id": "trial-spawner",
       "title": "trialSpawner",
       "intro": "Scales mobs spawned by trial spawners using the levels of the players the spawner has detected, rather than the proximity scan used for natural spawns. An optional, off-by-default ominous upgrade can turn high-tier spawners ominous without a Bad Omen effect.",

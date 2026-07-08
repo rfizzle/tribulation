@@ -628,4 +628,73 @@ class ConfigMigratorTest {
         JsonObject savedJson = JsonParser.parseString(saved).getAsJsonObject();
         assertEquals(ConfigMigrator.CURRENT_VERSION, savedJson.get("configVersion").getAsInt());
     }
+
+    // --- Contiguous-stamp behaviour (issue #181) ---
+    //
+    // The real migrations are all defensively guarded and cannot be forced to
+    // throw, so these cases drive the package-private table seam with a step
+    // that throws on purpose.
+
+    private static final ConfigMigrator.Migration NOOP = json -> {};
+    private static final ConfigMigrator.Migration THROWS = json -> {
+        throw new IllegalStateException("boom");
+    };
+
+    @Test
+    void migrate_stepThrows_stampsLastContiguousVersion() {
+        // v0->v1 ok, v1->v2 ok, v2->v3 throws, v3->v4 never reached.
+        ConfigMigrator.Migration[] table = {NOOP, NOOP, THROWS, NOOP};
+        JsonObject json = new JsonObject(); // no configVersion → v0
+
+        assertTrue(ConfigMigrator.migrate(json, table, table.length));
+        assertEquals(2, json.get("configVersion").getAsInt(),
+                "must stamp only up to the last contiguously successful step");
+    }
+
+    @Test
+    void migrate_stepThrows_laterStepsNotRun() {
+        ConfigMigrator.Migration marker = json -> json.addProperty("reachedStep3", true);
+        // index 2 throws; index 3 (marker) must never run.
+        ConfigMigrator.Migration[] table = {NOOP, NOOP, THROWS, marker};
+        JsonObject json = new JsonObject();
+
+        ConfigMigrator.migrate(json, table, table.length);
+
+        assertFalse(json.has("reachedStep3"),
+                "steps after a thrown migration must not run against wrong-shape JSON");
+    }
+
+    @Test
+    void migrate_firstStepThrows_returnsFalseAndDoesNotStamp() {
+        ConfigMigrator.Migration[] table = {THROWS, NOOP};
+        JsonObject json = new JsonObject(); // v0
+
+        assertFalse(ConfigMigrator.migrate(json, table, table.length),
+                "no contiguous progress → returns false so the caller won't rewrite the file");
+        assertFalse(json.has("configVersion"),
+                "an unstamped file retries the failed step on the next load");
+    }
+
+    @Test
+    void migrate_allStepsSucceed_stampsFullVersion() {
+        ConfigMigrator.Migration[] table = {NOOP, NOOP, NOOP, NOOP};
+        JsonObject json = new JsonObject();
+
+        assertTrue(ConfigMigrator.migrate(json, table, table.length));
+        assertEquals(table.length, json.get("configVersion").getAsInt());
+    }
+
+    @Test
+    void migrate_negativeVersion_migratesFromZero() {
+        JsonObject json = new JsonObject();
+        json.addProperty("configVersion", -3);
+        json.add("general", JsonParser.parseString("{\"maxLevel\": 55}").getAsJsonObject());
+
+        // No AIOOBE from MIGRATIONS[-3]; the negative version is clamped to 0
+        // and the file migrates fully.
+        assertTrue(ConfigMigrator.migrate(json));
+        assertEquals(ConfigMigrator.CURRENT_VERSION, json.get("configVersion").getAsInt());
+        assertEquals(55, json.getAsJsonObject("general").get("maxLevel").getAsInt(),
+                "existing fields must survive a clamped-negative migration");
+    }
 }

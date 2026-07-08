@@ -24,9 +24,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Per-player difficulty state (level, tick counter, death-relief anchor, hearts
  * lost), persisted as overworld {@link SavedData}. Entries are created lazily on
- * first access via {@link #getPlayerData(UUID)} and kept for every player that
- * has ever progressed — the map is intentionally never evicted on logout so a
- * returning player keeps their level across sessions.
+ * first access via {@link #getPlayerData(UUID)} — including on a routine read
+ * such as the join-time level sync, so a player who never progresses still
+ * materializes an entry. To keep the map and on-disk footprint bounded on a
+ * long-lived server, {@link #save} drops any entry that is
+ * {@linkplain PlayerData#isDefault() behaviorally equal to absence} (all fields
+ * at their fresh-construction defaults): {@code getPlayerData} recreates an
+ * identical default on next access, so dropping it changes nothing observable.
+ * Any entry carrying real state — a level, a heart penalty, a death or decay
+ * anchor, a shown one-time hint — is retained, so a returning player keeps their
+ * progress across sessions. The prune runs only in {@code save} (never on the
+ * hot read path used by the scaling handler).
  *
  * <p>Access is overwhelmingly from the server thread, but the backing map is a
  * {@link ConcurrentHashMap} so the lazy {@code computeIfAbsent} insertions and
@@ -417,7 +425,27 @@ public class PlayerDifficultyState extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag list = new ListTag();
-        List<Map.Entry<UUID, PlayerData>> entries = new ArrayList<>(data.entrySet());
+        // Reclaim phantom entries before the sort, not during the write loop: an
+        // entry behaviorally equal to absence (getPlayerData recreates an
+        // identical default on next access) is neither serialized nor kept, so
+        // dropping it is unobservable while bounding the map and on-disk footprint
+        // to players who actually carry state — without adding any cost to the hot
+        // read path. Filtering here keeps the (potentially large, on a first
+        // post-upgrade flush) sort down to the survivors. remove(key, value) is
+        // identity-based (PlayerData has no equals); it clears only the instance we
+        // inspected. All access is server-thread in practice, so no field can
+        // mutate between the isDefault() check and the remove; the ConcurrentHashMap
+        // and value-conditional remove are purely defensive against a future
+        // off-thread caller, where the worst case is a fresh default surviving to
+        // the next save rather than a real entry being dropped.
+        List<Map.Entry<UUID, PlayerData>> entries = new ArrayList<>(data.size());
+        for (Map.Entry<UUID, PlayerData> entry : data.entrySet()) {
+            if (entry.getValue().isDefault()) {
+                data.remove(entry.getKey(), entry.getValue());
+            } else {
+                entries.add(entry);
+            }
+        }
         entries.sort(Map.Entry.comparingByKey(Comparator.comparing(UUID::toString)));
         for (Map.Entry<UUID, PlayerData> entry : entries) {
             CompoundTag playerTag = new CompoundTag();
@@ -510,5 +538,27 @@ public class PlayerDifficultyState extends SavedData {
         public boolean seenTierDiscoveryHint;
 
         public PlayerData() {}
+
+        /**
+         * Whether this entry carries nothing distinguishable from a freshly
+         * constructed {@code PlayerData} — no level, tick progress, death or
+         * decay anchor, heart penalty, or shown one-time hint. Such an entry is
+         * behaviorally equal to absence ({@link #getPlayerData} recreates an
+         * identical default on next access), so {@link #save} drops it to keep
+         * the persisted footprint bounded.
+         *
+         * <p>Enumerates every persisted field — keep it in lockstep with the
+         * field list above and the {@code save}/{@code load} bodies: a new field
+         * that is not checked here would let a non-default entry be pruned.
+         */
+        boolean isDefault() {
+            return level == 0
+                    && tickCounter == 0
+                    && lastDeathTick == NEVER_DIED
+                    && heartsLost == 0
+                    && lastSeenEpochMs == NEVER_SEEN
+                    && !seenLevelUpIntro
+                    && !seenTierDiscoveryHint;
+        }
     }
 }

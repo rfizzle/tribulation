@@ -919,6 +919,113 @@ class PlayerDifficultyStateTest {
         assertFalse(loaded.hasSeenTierDiscoveryHint(uuid));
     }
 
+    // ---- default-entry pruning (bounded growth, issue #182) ----
+
+    @Test
+    void isDefault_trueForFreshEntry() {
+        assertTrue(new PlayerDifficultyState.PlayerData().isDefault());
+    }
+
+    @Test
+    void isDefault_falseWhenAnyFieldNonDefault() {
+        PlayerDifficultyState.PlayerData pd = new PlayerDifficultyState.PlayerData();
+        pd.level = 1;
+        assertFalse(pd.isDefault(), "level");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.tickCounter = 1;
+        assertFalse(pd.isDefault(), "tickCounter");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.lastDeathTick = 0L; // any value other than NEVER_DIED
+        assertFalse(pd.isDefault(), "lastDeathTick");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.heartsLost = 1;
+        assertFalse(pd.isDefault(), "heartsLost");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.lastSeenEpochMs = 1L; // any value other than NEVER_SEEN
+        assertFalse(pd.isDefault(), "lastSeenEpochMs");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.seenLevelUpIntro = true;
+        assertFalse(pd.isDefault(), "seenLevelUpIntro");
+
+        pd = new PlayerDifficultyState.PlayerData();
+        pd.seenTierDiscoveryHint = true;
+        assertFalse(pd.isDefault(), "seenTierDiscoveryHint");
+    }
+
+    @Test
+    void save_dropsDefaultPhantomFromDiskAndMap() {
+        // A phantom created by a pure read (e.g. the join-time level sync) carries
+        // no state and must not grow the save or the live map; a real entry stays.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID phantom = UUID.randomUUID();
+        UUID real = UUID.randomUUID();
+        state.getLevel(phantom);          // lazy default insert, no mutation
+        state.getPlayerData(real).level = 5;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        ListTag list = tag.getList("Players", 10);
+
+        assertEquals(1, list.size(), "only the real entry is serialized");
+        assertEquals(real, list.getCompound(0).getUUID("UUID"));
+        assertFalse(state.trackedPlayers().contains(phantom),
+                "phantom is evicted from the live map on save");
+        assertTrue(state.trackedPlayers().contains(real),
+                "the entry carrying real state is retained");
+    }
+
+    @Test
+    void save_keepsEntryWithOnlyLastSeenSet() {
+        // levelDecay stamps lastSeenEpochMs on logout even at level 0; that entry
+        // is the decay anchor and must survive the prune (dropping it would reset
+        // the anchor and change next-login decay behavior).
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.setLastSeen(uuid, 1_700_000_000_000L);
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+
+        assertEquals(1, tag.getList("Players", 10).size());
+        assertTrue(state.trackedPlayers().contains(uuid));
+    }
+
+    @Test
+    void save_keepsEntryWithSeenIntroFlagAtLevelZero() {
+        // A shown one-time hint must persist even after the level decays to 0, or
+        // the intro would re-fire on the next climb — so the entry is not pruned.
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        state.markLevelUpIntroSeen(uuid);
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertEquals(1, tag.getList("Players", 10).size());
+        assertTrue(loaded.hasSeenLevelUpIntro(uuid));
+    }
+
+    @Test
+    void save_thenLoad_dropsPhantomsPreservesReal() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID phantom = UUID.randomUUID();
+        UUID real = UUID.randomUUID();
+        state.getLevel(phantom);
+        state.getPlayerData(real).level = 7;
+        state.getPlayerData(real).heartsLost = 4;
+
+        CompoundTag tag = state.save(new CompoundTag(), null);
+        PlayerDifficultyState loaded = PlayerDifficultyState.load(tag, null);
+
+        assertFalse(loaded.trackedPlayers().contains(phantom));
+        assertTrue(loaded.trackedPlayers().contains(real));
+        assertEquals(7, loaded.getLevel(real));
+        assertEquals(4, loaded.getHeartsLost(real));
+    }
+
     // ---- NBT serialization round-trip ----
 
     @Test
@@ -972,7 +1079,9 @@ class PlayerDifficultyStateTest {
         for (int i = 0; i < 5; i++) {
             UUID uuid = UUID.randomUUID();
             uuids.add(uuid);
-            state.getPlayerData(uuid).level = i;
+            // level i+1 keeps every entry non-default so the sort assertion sees
+            // all five; a level-0 entry would be pruned as behaviorally absent.
+            state.getPlayerData(uuid).level = i + 1;
         }
         // Serialization sorts by UUID string for a deterministic, diff-friendly
         // on-disk order independent of the (unordered) backing map.

@@ -79,7 +79,10 @@ public final class ClientTribulationState {
     }
 
     public static void setOppressiveNightDarkness(float darkness) {
-        oppressiveNightDarkness = Math.max(0f, darkness);
+        // Reject a non-finite synced value (NaN, ±Inf) — it must read as "off",
+        // never propagate toward the lightmap. Math.max(0f, NaN) is NaN, so the
+        // finite check has to come first.
+        oppressiveNightDarkness = Float.isFinite(darkness) ? Math.max(0f, darkness) : 0f;
     }
 
     public static void reset() {

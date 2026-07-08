@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.event;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationAPI;
+import com.rfizzle.tribulation.compat.meridian.MeridianEquipmentCompat;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.ArmorTier;
 import net.minecraft.core.Holder;
@@ -166,6 +167,13 @@ public final class ArmorEquipmentHandler {
                     mob.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
                             .get(Enchantments.PROTECTION)
                             .ifPresent(holder -> stack.enchant(holder, level));
+                }
+                // With Meridian installed, endgame armor draws a bonus of its curated protective
+                // enchants on top of vanilla Protection. Guarded so the compat class — and
+                // Meridian's types — only load when Meridian is actually present.
+                if (tier >= 4 && cfg.meridianEquipmentEnchants
+                        && MeridianEquipmentCompat.isActive()) {
+                    MeridianEquipmentCompat.augment(mob, stack, tier, tierCfg.maxProtectionLevel, random);
                 }
             }
         }

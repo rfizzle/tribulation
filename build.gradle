@@ -116,6 +116,22 @@ repositories {
             includeGroup 'mcp.mobius.waila'
         }
     }
+    // GitHub Releases — resolves sibling Concord mods straight from their release jars while
+    // their Modrinth projects are not publicly resolvable. Artifact-only (no metadata), scoped
+    // to the rfizzle org so it never shadows a real Maven group.
+    ivy {
+        name = 'GitHubReleases'
+        url = 'https://github.com'
+        patternLayout {
+            artifact '/[organisation]/[module]/releases/download/v[revision]/[module]-[revision].jar'
+        }
+        metadataSources {
+            artifact()
+        }
+        content {
+            includeGroup 'rfizzle'
+        }
+    }
 }
 
 loom {
@@ -213,6 +229,13 @@ dependencies {
     modLocalRuntime("mezz.jei:jei-1.21.1-fabric:${project.jei_version}") {
         transitive = false
     }
+
+    // Meridian — sibling Concord mod. Compile-only against its stable `api` package and the
+    // `meridian:mob_equipment` enchantment tag; the whole integration lives behind an
+    // isModLoaded("meridian") guard and falls back to vanilla enchants when absent. No
+    // modLocalRuntime: keeping Meridian out of the dev/gametest runtime means every existing
+    // gametest keeps isModLoaded("meridian") == false and exercises the fallback path.
+    modCompileOnly "rfizzle:meridian:${project.meridian_version}"
 
     // Tests
     testImplementation platform("org.junit:junit-bom:5.10.2")

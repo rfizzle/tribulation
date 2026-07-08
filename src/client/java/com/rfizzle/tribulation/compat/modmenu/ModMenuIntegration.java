@@ -304,6 +304,12 @@ public final class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(v -> config.general.notifyLevelUpShowTier = v)
                 .build());
+        cat.addEntry(entry.startBooleanToggle(
+                        Component.translatable("config.tribulation.meridian_equipment_enchants"),
+                        config.meridianEquipmentEnchants)
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> config.meridianEquipmentEnchants = v)
+                .build());
         applyTooltips(cat);
     }
 

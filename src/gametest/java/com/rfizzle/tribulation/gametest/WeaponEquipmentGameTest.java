@@ -1,10 +1,13 @@
 package com.rfizzle.tribulation.gametest;
 
 import com.rfizzle.tribulation.api.TribulationAPI;
+import com.rfizzle.tribulation.compat.meridian.MeridianEquipmentCompat;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.event.WeaponEquipmentHandler;
 import com.rfizzle.tribulation.scaling.ScalingEngine;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
@@ -16,6 +19,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.HashSet;
 import java.util.List;
@@ -171,6 +176,47 @@ public class WeaponEquipmentGameTest implements FabricGameTest {
             if (Math.abs(mod.amount() - expectedMod) > 0.01) {
                 helper.fail("Damage modifier not scaled correctly: expected " + expectedMod + ", got " + mod.amount() +
                     " (base=" + baseValue + ", sword=" + swordDamage[0] + ", nonTribTotal=" + nonTribTotal + ")");
+            }
+        });
+    }
+
+    @GameTest(template = "tribulation:empty_3x3")
+    public void weapon_meridianBonusInertWhenModAbsent(GameTestHelper helper) {
+        // Meridian is not on the gametest runtime, so the tier-4/5 bonus branch must stay inert:
+        // the vanilla enchant still applies, no meridian:* enchant leaks in, and nothing throws.
+        if (MeridianEquipmentCompat.isActive()) {
+            helper.fail("Meridian must be absent from the gametest runtime for this fallback test");
+        }
+
+        Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 1));
+        mob.getTags().remove(WeaponEquipmentHandler.PROCESSED_TAG);
+        mob.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.meridianEquipmentEnchants = true;
+        cfg.weaponEquipment.enabled = true;
+        TribulationConfig.WeaponTier tier5 = cfg.weaponEquipment.tiers.get("tier5");
+        tier5.wearChancePercent = 100;
+        tier5.enchantChancePercent = 100;
+
+        WeaponEquipmentHandler.processWeapon(mob, 5, cfg);
+
+        helper.succeedWhen(() -> {
+            ItemStack mainHand = mob.getMainHandItem();
+            if (mainHand.isEmpty()) {
+                helper.fail("Tier-5 mob should have a weapon with 100% wear");
+            }
+            ItemEnchantments enchants = mainHand.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+            if (enchants.isEmpty()) {
+                helper.fail("Vanilla enchant path should still enchant the weapon at 100% enchant chance");
+            }
+            for (Holder<Enchantment> holder : enchants.keySet()) {
+                boolean isMeridian = holder.unwrapKey()
+                        .map(key -> key.location().getNamespace().equals("meridian"))
+                        .orElse(false);
+                if (isMeridian) {
+                    helper.fail("No meridian:* enchant should appear when Meridian is absent");
+                }
             }
         });
     }

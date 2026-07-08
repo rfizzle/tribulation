@@ -73,6 +73,8 @@
     "config.tribulation.general.notify_level_up.tooltip": "Show chat message on level up. Default: true.",
     "config.tribulation.general.notify_level_up_show_tier": "Show Tier in Level Up Message",
     "config.tribulation.general.notify_level_up_show_tier.tooltip": "Include tier info in level-up notification. Default: true.",
+    "config.tribulation.meridian_equipment_enchants": "Meridian Equipment Enchants",
+    "config.tribulation.meridian_equipment_enchants.tooltip": "With Meridian installed, tier-4/5 mob weapons and armor draw a bonus of Meridian's combat enchants on top of their vanilla ones. No effect without Meridian. Default: true.",
 
     "config.tribulation.category.scaling_sources": "Scaling Sources",
     "config.tribulation.time_scaling.enabled": "Time Scaling",

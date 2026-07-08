@@ -497,10 +497,11 @@
               "bullets": [
                 "<span class='text-bone'>Weighted Material Pool:</span> Equipment shifts from leather and gold to iron, diamond, and netherite as tiers increase.",
                 "<span class='text-bone'>Per-Tier Coverage:</span> Higher tiers increase both the chance to wear armor and the number of slots covered.",
-                "<span class='text-bone'>Protection Enchantments:</span> Armor at higher tiers automatically gains Protection enchantments, capped by configurable ceilings."
+                "<span class='text-bone'>Protection Enchantments:</span> Armor at higher tiers automatically gains Protection enchantments, capped by configurable ceilings.",
+                "<span class='text-bone'>Meridian Synergy:</span> With Meridian installed, tier-4/5 armor also draws protective enchants from Meridian's curated pool, on top of vanilla Protection. Never required."
               ],
               "bulletSpacing": 2,
-              "note": "Config: <code class='text-accent2'>armorEquipment.enabled</code>, <code class='text-accent2'>armorEquipment.materialRollMode</code>"
+              "note": "Config: <code class='text-accent2'>armorEquipment.enabled</code>, <code class='text-accent2'>armorEquipment.materialRollMode</code>, <code class='text-accent2'>meridianEquipmentEnchants</code>"
             },
             {
               "id": "tier-weapons",
@@ -509,10 +510,11 @@
               "bullets": [
                 "<span class='text-bone'>Material Upgrades:</span> Standard melee mobs (Zombies, Skeletons, etc.) receive swords or axes of increasing quality.",
                 "<span class='text-bone'>Lethal Enchantments:</span> Weapons gain Sharpness (melee) or Power (ranged) based on tier.",
-                "<span class='text-bone'>Failed-Roll Retention:</span> If an upgrade roll fails or the mob has specialized vanilla gear (like a Drowned's trident), the original weapon is kept and enchanted instead."
+                "<span class='text-bone'>Failed-Roll Retention:</span> If an upgrade roll fails or the mob has specialized vanilla gear (like a Drowned's trident), the original weapon is kept and enchanted instead.",
+                "<span class='text-bone'>Meridian Synergy:</span> With Meridian installed, tier-4/5 weapons also draw combat enchants from Meridian's curated pool, on top of their vanilla ones. Never required."
               ],
               "bulletSpacing": 2,
-              "note": "Config: <code class='text-accent2'>weaponEquipment.enabled</code>"
+              "note": "Config: <code class='text-accent2'>weaponEquipment.enabled</code>, <code class='text-accent2'>meridianEquipmentEnchants</code>"
             }
           ]
         }

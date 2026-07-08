@@ -1,6 +1,7 @@
 package com.rfizzle.tribulation.data;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.config.TribulationConfig;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -39,6 +40,18 @@ public class PlayerDifficultyState extends SavedData {
     public static final long NEVER_DIED = Long.MIN_VALUE;
     /** Sentinel for "no last-seen timestamp recorded" — decay never applies from it. */
     public static final long NEVER_SEEN = 0L;
+    /**
+     * Absolute upper bound applied to a decoded {@code level}. A corrupt or
+     * hand-edited save can store any int; this ceiling catches overflow-scale
+     * garbage without truncating a level legitimately earned above a
+     * since-lowered {@code maxLevel} (stored levels are deliberately not
+     * re-clamped on config change — see {@link #raisePlayerLevel}). Far beyond
+     * any realistic configured cap, so a legitimate above-cap player is never
+     * touched; the effective ceiling is {@code max(maxLevel, MAX_SANE_LEVEL)}.
+     */
+    public static final int MAX_SANE_LEVEL = 1_000_000;
+    /** Vanilla max health in half-hearts — the hard ceiling on any heart penalty. */
+    private static final int VANILLA_MAX_HEARTS = 20;
 
     private static final String NBT_PLAYERS_KEY = "Players";
     private static final String NBT_UUID_KEY = "UUID";
@@ -379,6 +392,28 @@ public class PlayerDifficultyState extends SavedData {
         return pd.level - oldLevel;
     }
 
+    /**
+     * Clamp a {@code level} decoded from untrusted NBT into a sane range. Floored
+     * at 0 and capped at {@code max(maxLevel, MAX_SANE_LEVEL)} — the ceiling stays
+     * above any level legitimately earned under a since-lowered cap while rejecting
+     * overflow-scale garbage from a corrupt or hand-edited save.
+     */
+    static int clampStoredLevel(int stored, int maxLevel) {
+        int ceiling = Math.max(Math.max(1, maxLevel), MAX_SANE_LEVEL);
+        return Math.max(0, Math.min(stored, ceiling));
+    }
+
+    /**
+     * Clamp a {@code heartsLost} decoded from untrusted NBT into a sane range,
+     * mirroring the write-side bound in {@link #addHeartsLost}: floored at 0 and
+     * capped at {@code 20 - minimumHearts} so a corrupt save can never strip max
+     * HP below the configured floor.
+     */
+    static int clampStoredHeartsLost(int stored, int minimumHearts) {
+        int maxPenalty = Math.max(0, VANILLA_MAX_HEARTS - Math.max(1, minimumHearts));
+        return Math.max(0, Math.min(stored, maxPenalty));
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag list = new ListTag();
@@ -418,6 +453,12 @@ public class PlayerDifficultyState extends SavedData {
         if (!tag.contains(NBT_PLAYERS_KEY, Tag.TAG_LIST)) {
             return state;
         }
+        // Untrusted NBT: derive the clamp bounds from live config, falling back to
+        // the loosest safe defaults when config is absent (unit tests / a pre-init
+        // window that never loads live player data in production).
+        TribulationConfig cfg = Tribulation.getConfig();
+        int maxLevel = cfg != null ? cfg.general.maxLevel : MAX_SANE_LEVEL;
+        int minimumHearts = cfg != null ? cfg.hardcoreHearts.minimumHearts : 1;
         ListTag list = tag.getList(NBT_PLAYERS_KEY, Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag playerTag = list.getCompound(i);
@@ -432,12 +473,25 @@ public class PlayerDifficultyState extends SavedData {
                 continue;
             }
             PlayerData pd = new PlayerData();
-            pd.level = Math.max(0, playerTag.getInt(NBT_LEVEL_KEY));
+            int rawLevel = playerTag.getInt(NBT_LEVEL_KEY);
+            int rawHeartsLost = playerTag.getInt(NBT_HEARTS_LOST_KEY);
+            pd.level = clampStoredLevel(rawLevel, maxLevel);
+            int clampedHeartsLost = clampStoredHeartsLost(rawHeartsLost, minimumHearts);
+            if (pd.level != rawLevel || clampedHeartsLost != rawHeartsLost) {
+                // A machine-corrupted or hand-edited save is untrusted input we
+                // coerce silently into range, but leave the operator a breadcrumb
+                // for diagnosing a wrecked save — matching the malformed-UUID warn
+                // above and the config-validate warn-and-clamp path.
+                Tribulation.LOGGER.warn(
+                        "Clamped out-of-range persisted values for player {} in {}: "
+                                + "level {}->{}, heartsLost {}->{}",
+                        uuid, STORAGE_KEY, rawLevel, pd.level, rawHeartsLost, clampedHeartsLost);
+            }
             pd.tickCounter = Math.max(0, playerTag.getInt(NBT_TICK_KEY));
             pd.lastDeathTick = playerTag.contains(NBT_LAST_DEATH_TICK_KEY)
                     ? playerTag.getLong(NBT_LAST_DEATH_TICK_KEY)
                     : NEVER_DIED;
-            pd.heartsLost = Math.max(0, playerTag.getInt(NBT_HEARTS_LOST_KEY));
+            pd.heartsLost = clampedHeartsLost;
             pd.lastSeenEpochMs = Math.max(NEVER_SEEN, playerTag.getLong(NBT_LAST_SEEN_KEY));
             pd.seenLevelUpIntro = playerTag.getBoolean(NBT_SEEN_LEVEL_UP_INTRO_KEY);
             pd.seenTierDiscoveryHint = playerTag.getBoolean(NBT_SEEN_TIER_DISCOVERY_HINT_KEY);

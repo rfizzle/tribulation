@@ -85,4 +85,22 @@ class TierManagerTest {
         Tiers t = new Tiers();
         assertEquals(TierManager.getTier(level, t), ScalingEngine.computeTier(level, t));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            // In-range values pass through untouched...
+            "0, 0", "1, 1", "3, 3", "5, 5",
+            // ...above MAX_TIER clamps down, below MIN_TIER clamps up.
+            "6, 5", "999, 5",
+            "-1, 0", "-999, 0"
+    })
+    void clampTier_coercesUntrustedTierIntoRange(int stored, int expected) {
+        assertEquals(expected, TierManager.clampTier(stored));
+    }
+
+    @Test
+    void clampTier_handlesOverflowSentinels() {
+        assertEquals(TierManager.MAX_TIER, TierManager.clampTier(Integer.MAX_VALUE));
+        assertEquals(TierManager.MIN_TIER, TierManager.clampTier(Integer.MIN_VALUE));
+    }
 }

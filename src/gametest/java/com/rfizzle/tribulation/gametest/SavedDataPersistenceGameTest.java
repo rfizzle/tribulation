@@ -4,10 +4,18 @@ package com.rfizzle.tribulation.gametest;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.data.BloodMoonState;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
+import com.rfizzle.tribulation.data.TribulationAttachments;
+import com.rfizzle.tribulation.scaling.TierManager;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -32,6 +40,8 @@ import java.util.UUID;
  * exercise end to end.
  */
 public class SavedDataPersistenceGameTest implements FabricGameTest {
+
+    private static final BlockPos SPAWN = new BlockPos(1, 2, 1);
 
     /** Fresh storage over the overworld's data folder — the real boot-time read path. */
     private static DimensionDataStorage freshOverworldStorage(MinecraftServer server) {
@@ -93,6 +103,54 @@ public class SavedDataPersistenceGameTest implements FabricGameTest {
             // Restore the shared singleton so other gametests see a clean slate.
             live.setActive(savedActive);
             live.markRolled(savedRolled);
+        }
+    }
+
+    /**
+     * The {@code SCALED_TIER} attachment codec must clamp an out-of-range tier from
+     * corrupt entity NBT on decode — a too-large tier would otherwise let
+     * {@code AbilityManager} apply every ability. {@code setAttached} writes memory
+     * directly (bypassing the codec, exactly the shape of a hand-edited save); the
+     * clamp lives on the persistent codec's <em>decode</em>, so the round-trip
+     * through NBT is what proves the xmap is wired and fires. Unit tests cover the
+     * pure {@link TierManager#clampTier} logic; this proves the wiring.
+     */
+    @GameTest(template = "tribulation:empty_3x3")
+    public void scaledTier_clampsOutOfRangeTierOnNbtDecode(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Mob source = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, SPAWN);
+
+        // Too-large tier clamps down to MAX_TIER on decode.
+        source.setAttached(TribulationAttachments.SCALED_TIER, 999);
+        int reloadedTier = decodeTierThroughNbt(level, source);
+        helper.assertValueEqual(reloadedTier, TierManager.MAX_TIER,
+                "out-of-range scaled tier clamps to MAX_TIER on NBT decode");
+
+        // Negative tier clamps up to MIN_TIER on decode.
+        source.setAttached(TribulationAttachments.SCALED_TIER, -7);
+        int reloadedNegTier = decodeTierThroughNbt(level, source);
+        helper.assertValueEqual(reloadedNegTier, TierManager.MIN_TIER,
+                "negative scaled tier clamps to MIN_TIER on NBT decode");
+
+        helper.succeed();
+    }
+
+    /**
+     * Encode {@code source}'s attachments to NBT (identity on write) and decode
+     * them into a fresh, unadded entity — the codec's decode path a chunk reload
+     * runs — returning the clamped {@code SCALED_TIER}.
+     */
+    private static int decodeTierThroughNbt(ServerLevel level, Mob source) {
+        CompoundTag tag = source.saveWithoutId(new CompoundTag());
+        Zombie reloaded = EntityType.ZOMBIE.create(level);
+        if (reloaded == null) {
+            throw new IllegalStateException("could not create a zombie to decode into");
+        }
+        try {
+            reloaded.load(tag);
+            return reloaded.getAttachedOrThrow(TribulationAttachments.SCALED_TIER);
+        } finally {
+            reloaded.discard();
         }
     }
 }

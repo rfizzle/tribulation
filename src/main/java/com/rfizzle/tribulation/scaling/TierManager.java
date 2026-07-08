@@ -26,4 +26,14 @@ public final class TierManager {
         if (playerLevel >= tiers.tier1) return 1;
         return MIN_TIER;
     }
+
+    /**
+     * Clamp a tier from an untrusted source — corrupt entity NBT decoded through
+     * the {@code SCALED_TIER} attachment codec — into the valid
+     * {@code [MIN_TIER, MAX_TIER]} range. An out-of-range tier would otherwise let
+     * {@link com.rfizzle.tribulation.ability.AbilityManager} apply every ability.
+     */
+    public static int clampTier(int tier) {
+        return Math.max(MIN_TIER, Math.min(tier, MAX_TIER));
+    }
 }

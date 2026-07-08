@@ -1,11 +1,14 @@
 package com.rfizzle.tribulation.data;
 
 import com.rfizzle.tribulation.Tribulation;
+import com.rfizzle.tribulation.scaling.TierManager;
 import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.codec.ByteBufCodecs;
+
+import java.util.function.Function;
 
 public final class TribulationAttachments {
     /**
@@ -20,7 +23,12 @@ public final class TribulationAttachments {
     public static final AttachmentType<Integer> SCALED_TIER = AttachmentRegistry.create(
             Tribulation.id("scaled_tier"),
             builder -> builder
-                    .persistent(Codec.INT)
+                    // Clamp on decode: corrupt or hand-edited entity NBT is untrusted
+                    // input, and an out-of-range tier would let AbilityManager apply
+                    // every ability. A clamping xmap always succeeds and coerces into
+                    // range — unlike Codec.intRange, whose decode error makes Fabric
+                    // drop the whole attachment (the mob would read as unscaled).
+                    .persistent(Codec.INT.xmap(TierManager::clampTier, Function.identity()))
                     .syncWith(ByteBufCodecs.VAR_INT, AttachmentSyncPredicate.all())
     );
 

@@ -34,7 +34,9 @@ public final class EnvironmentalPressureClientEffects {
      */
     public static float nightDarkness(ClientLevel level, float partialTick) {
         float synced = ClientTribulationState.getOppressiveNightDarkness();
-        if (synced <= 0f || level == null) return 0f;
+        // !(synced > 0f) is true for NaN as well as for non-positive values, so
+        // a non-finite intensity reads as "off" instead of slipping the gate.
+        if (!(synced > 0f) || level == null) return 0f;
         TribulationConfig cfg = Tribulation.getConfig();
         if (cfg == null || !cfg.environmentalPressure.oppressiveNights.clientEnabled) return 0f;
         DimensionType dimension = level.dimensionType();
@@ -46,6 +48,9 @@ public final class EnvironmentalPressureClientEffects {
 
     /** Bounded darkness scaled by how deep into the night we are. */
     static float computeDarkness(float maxDarkness, float timeOfDay) {
+        // A non-finite server value is rejected outright: Math.min(NaN, ceiling)
+        // is NaN, which the MAX_DARKNESS clamp cannot tame, so no darkness.
+        if (!Float.isFinite(maxDarkness)) return 0f;
         return Math.min(maxDarkness, MAX_DARKNESS) * nightFactor(timeOfDay);
     }
 

@@ -123,4 +123,31 @@ class ClientTribulationStateTest {
         ClientTribulationState.setProgress(50, 0);
         assertEquals(1, ClientTribulationState.getGoalTicks());
     }
+
+    @Test
+    void setOppressiveNightDarkness_keepsFinitePositive() {
+        ClientTribulationState.setOppressiveNightDarkness(0.3f);
+        assertEquals(0.3f, ClientTribulationState.getOppressiveNightDarkness(), 0.0001f);
+    }
+
+    @Test
+    void setOppressiveNightDarkness_clampsNegativeToZero() {
+        ClientTribulationState.setOppressiveNightDarkness(-1.0f);
+        assertEquals(0f, ClientTribulationState.getOppressiveNightDarkness(), 0.0001f);
+    }
+
+    @Test
+    void setOppressiveNightDarkness_rejectsNaN() {
+        // A non-finite synced value must never reach the lightmap; it reads as off.
+        ClientTribulationState.setOppressiveNightDarkness(Float.NaN);
+        assertEquals(0f, ClientTribulationState.getOppressiveNightDarkness(), 0.0001f);
+    }
+
+    @Test
+    void setOppressiveNightDarkness_rejectsInfinity() {
+        ClientTribulationState.setOppressiveNightDarkness(Float.POSITIVE_INFINITY);
+        assertEquals(0f, ClientTribulationState.getOppressiveNightDarkness(), 0.0001f);
+        ClientTribulationState.setOppressiveNightDarkness(Float.NEGATIVE_INFINITY);
+        assertEquals(0f, ClientTribulationState.getOppressiveNightDarkness(), 0.0001f);
+    }
 }

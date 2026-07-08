@@ -50,4 +50,18 @@ class EnvironmentalPressureClientEffectsTest {
         assertEquals(EnvironmentalPressureClientEffects.MAX_DARKNESS,
                 EnvironmentalPressureClientEffects.computeDarkness(50.0f, 0.5f), EPSILON);
     }
+
+    @Test
+    void computeDarkness_rejectsNaN() {
+        // NaN cannot be tamed by the MAX_DARKNESS clamp, so it reads as no darkness.
+        assertEquals(0.0f, EnvironmentalPressureClientEffects.computeDarkness(Float.NaN, 0.5f), EPSILON);
+    }
+
+    @Test
+    void computeDarkness_rejectsInfinity() {
+        assertEquals(0.0f,
+                EnvironmentalPressureClientEffects.computeDarkness(Float.POSITIVE_INFINITY, 0.5f), EPSILON);
+        assertEquals(0.0f,
+                EnvironmentalPressureClientEffects.computeDarkness(Float.NEGATIVE_INFINITY, 0.5f), EPSILON);
+    }
 }

@@ -2,6 +2,7 @@ package com.rfizzle.tribulation.event;
 
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationAPI;
+import com.rfizzle.tribulation.compat.meridian.MeridianEquipmentCompat;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.config.TribulationConfig.WeaponTier;
 import net.minecraft.core.registries.Registries;
@@ -142,6 +143,13 @@ public final class WeaponEquipmentHandler {
         if (tierCfg.enchantChancePercent > 0 && tierCfg.maxEnchantmentLevel > 0) {
             if (random.nextInt(100) < tierCfg.enchantChancePercent) {
                 applyEnchantments(mob, stack, tier, tierCfg, random);
+                // With Meridian installed, endgame gear draws a bonus of its curated combat
+                // enchants on top of the vanilla ones. Guarded so the compat class — and
+                // Meridian's types — only load when Meridian is actually present.
+                if (tier >= 4 && cfg.meridianEquipmentEnchants
+                        && MeridianEquipmentCompat.isActive()) {
+                    MeridianEquipmentCompat.augment(mob, stack, tier, tierCfg.maxEnchantmentLevel, random);
+                }
             }
         }
 

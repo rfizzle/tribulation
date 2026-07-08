@@ -75,6 +75,12 @@ public class TribulationConfig {
     public Abilities abilities = new Abilities();
     public ArmorEquipment armorEquipment = new ArmorEquipment();
     public WeaponEquipment weaponEquipment = new WeaponEquipment();
+    /**
+     * When Meridian is installed, tier-4/5 scaled-mob weapons and armor draw a small bonus of
+     * combat enchants from Meridian's {@code meridian:mob_equipment} tag on top of their vanilla
+     * enchants. Off, or with Meridian absent, endgame gear carries only its vanilla enchants.
+     */
+    public boolean meridianEquipmentEnchants = true;
     public Champions champions = new Champions();
     public TrialSpawnerConfig trialSpawner = new TrialSpawnerConfig();
     public RaidScaling raidScaling = new RaidScaling();

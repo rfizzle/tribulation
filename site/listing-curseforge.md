@@ -42,15 +42,24 @@ spawns:
 | **Height** | Deviation from sea level (Y=62) in either direction adds threat. Deep caves and tall mountains are deadlier. | +50% |
 | **Moon Phase** | On Overworld nights, a triangle curve peaks at the full moon and tapers to zero at the new moon — the same coordinates feel different week to week. | +10% |
 
-All four axes stack. On top of them, a flat per-dimension level offset keeps
-the Nether (+25) and End (+40) scarier than the late-game Overworld, lifting
-both mob stats and ability tiers. 21 vanilla mob types have individually tuned
-scaling rates and caps — zombies don't scale the same as skeletons or
-creepers. Modded hostile mobs are automatically supported with conservative
-fallback scaling (configurable per-namespace or per-entity).
+All four axes stack. On top of them, flat **level offsets** tied to *where* a
+mob spawns lift both its stats and its ability tier: a per-dimension offset
+keeps the Nether (+25) and End (+40) scarier than the late-game Overworld,
+per-biome offsets single out hostile ground (the Deep Dark is +30 by default),
+and per-structure **danger zones** turn landmark raids into a real gauntlet —
+ancient cities +30, end cities +25, nether fortresses and bastions +20, ocean
+monuments and trial chambers +15. Every offset is configurable and understands
+biome and structure tags, so modded content slots in. 21 vanilla mob types have
+individually tuned scaling rates and caps — zombies don't scale the same as
+skeletons or creepers. Modded hostile mobs are automatically supported with
+conservative fallback scaling (configurable per-namespace or per-entity).
 
 In multiplayer, choose which player level drives a nearby mob — the
-**nearest**, the **average**, or the **maximum** of the players in range.
+**nearest**, the **average**, or the **maximum** of the players in range. An
+optional **group health bonus** *(off by default)* adds +20% mob health for
+each extra player nearby, capped at +100%, so the crowd that ganks a mob
+doesn't also trivialize it. It touches health only — grouping up never inflates
+the XP those mobs drop.
 
 ### Tier-Gated Mob Abilities
 
@@ -69,6 +78,49 @@ change how you fight them:
   leap, zombified piglins aggro from far away
 
 Every individual ability can be toggled in the config.
+
+### Elite Champions
+
+Once you pass level 50, roughly **5% of hostile mobs** spawn as Elite
+Champions — nameplated minibosses that carry one or two random **affixes** on
+top of their normal scaling. A champion has 1.5× health and 1.25× damage, drops
+**3× the XP** and an extra loot roll, and never appears on a boss. The five
+affixes each change the fight:
+
+- **Vampiric** — heals for half the damage it deals
+- **Explosive** — detonates on death, without scarring the terrain
+- **Repulsing** — a knockback aura keeps you at arm's length
+- **Thorns** — reflects 30% of the damage you land
+- **Regenerating** — steadily heals itself unless you keep the pressure on
+
+Every affix, the spawn chance, and the level gate are configurable.
+
+### Blood Moon
+
+Every full-moon night in the Overworld has a **25% chance** to rise blood red.
+While a Blood Moon burns, the moon-phase scaling axis triples, hostile spawn
+caps double, and you **can't sleep through it** — the sky, fog, and moon tint
+crimson with a warning sting so you know what you are in for. It lifts at dawn
+and survives a server restart mid-night. Operators can force one on or off with
+`/tribulation bloodmoon`.
+
+### Pack Tactics
+
+At tier 3 and above, mobs stop fighting as individuals. Strike a zombie,
+skeleton, or spider and every mob of its kind within **16 blocks** that can see
+the fight turns on you — no more picking off a horde one at a time. Eligible
+mobs also spawn in **larger groups**. Which mobs coordinate, the alert radius,
+and the group-size bonus are all configurable.
+
+### Environmental Pressure *(opt-in)*
+
+For players who want the world itself to press back, an optional layer adds two
+escalating effects, off by default:
+
+- **Debilitating Strikes** *(tier 3+)* — a hit from a scaled hostile saps your
+  strength, applying Weakness, and optionally Slowness.
+- **Oppressive Nights** *(tier 4+)* — high-tier night hostiles track you from
+  farther away, and the dark itself closes in a little tighter around you.
 
 ### Tier-Driven Equipment
 
@@ -126,12 +178,28 @@ want:
 - **Hardcore Hearts** *(opt-in)* — permanently lose max health per death;
   restore with craftable Heart Fragments
 - **Soul Inventory** *(opt-in)* — items are destroyed on death unless they
-  carry the Soulbound enchantment
+  carry the Soulbound enchantment, or any enchantment tagged `#c:soulbound`, so
+  protections from other mods count too
 
 A popped **Totem of Undying** can optionally interact with these penalties via
 the `totems` config: have a totem pop still apply the Death Relief level loss
 (`countsAsDeathRelief`), or shield you from the Hardcore Hearts loss
 (`protectsHearts`).
+
+### Ascendant Shard
+
+The counterweight to the death penalties: a crafted item — four Shatter Shards
+around a Nether Star — that **raises your difficulty level by 25** on use, a way
+to court harder mobs and their richer rewards on your own terms instead of
+waiting out the clock. It stops at the level cap and, by default, costs you
+nothing to use.
+
+### Offline Level Decay *(opt-in)*
+
+An optional catch-up mechanic for long breaks, off by default. After a grace
+period away from the server (7 days by default), your level slowly slips — 2
+levels per day gone — so a returning player meets a difficulty that matches
+their rust, never dropping below a configurable floor.
 
 ### Rewards Scale Too
 
@@ -150,17 +218,18 @@ mods.
 
 ### Difficulty Statistics
 
-Six custom statistics track your difficulty milestones — highest level
-reached, levels lost to death relief, Shatter Shards used, half-hearts lost,
-half-hearts restored, and Tier-5 mobs killed. They live alongside vanilla's
-counters in the **Statistics → Custom** screen, so progress persists across
-sessions.
+Eight custom statistics track your difficulty milestones — highest level
+reached, levels lost to death relief, levels lost to offline decay, Shatter
+Shards used, Ascendant Shards used, half-hearts lost, half-hearts restored, and
+Tier-5 mobs killed. They live alongside vanilla's counters in the **Statistics
+→ Custom** screen, so progress persists across sessions.
 
 ## Commands
 
 Player commands: `/tribulation info`, `/tribulation hearts`. Operator
-commands cover level set/reset, hot-reload, and the `debug`/`inspect`
-scaling-breakdown tools. Full reference:
+commands cover level set/reset, hot-reload, forcing a Blood Moon on or off
+(`/tribulation bloodmoon`), and the `debug`/`inspect` scaling-breakdown tools.
+Full reference:
 [tribulation.rfizzle.com/commands.html](https://tribulation.rfizzle.com/commands.html)
 
 ## Optional integrations
@@ -173,8 +242,8 @@ bundled** — install whichever you already use.
 - [Jade](https://modrinth.com/mod/jade) / [WTHIT](https://modrinth.com/mod/wthit)
   — mob scaling tooltip overlays
 - [EMI](https://modrinth.com/mod/emi) / [REI](https://modrinth.com/mod/rei) /
-  [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) — Shatter Shard and
-  Heart Fragment recipes
+  [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) — Heart Fragment and
+  Ascendant Shard recipes
 
 For mod developers: a stable, read-only API
 (`com.rfizzle.tribulation.api`) exposes player level/tier, mob scaling
@@ -192,10 +261,11 @@ state, and a level-change event — see the
 ## Installation
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) for 1.21.1.
-2. Drop [Fabric API](https://modrinth.com/mod/fabric-api) into your `mods/`
-   folder.
-3. Download Tribulation and place it into `mods/` as well — on both server
-   and client.
+2. Drop [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+   into your `mods/` folder.
+3. Download Tribulation from this **CurseForge** page (or the CurseForge app /
+   your launcher) and place it into `mods/` as well — on both server and
+   client.
 4. *(Optional)* Add Mod Menu and Cloth Config for the in-game settings
    screen.
 

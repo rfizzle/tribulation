@@ -22,8 +22,9 @@ import net.minecraft.world.level.Level;
  * Drives the Blood Moon event: rolls once per full-moon nightfall in the
  * Overworld, and while the event is active amplifies the moon scaling axis
  * (read by {@link com.rfizzle.tribulation.scaling.ScalingEngine}), raises
- * hostile spawn caps (read by the spawn-cap mixins), blocks sleeping, and
- * keeps clients in sync for the red-sky visuals and warning sting.
+ * hostile spawn caps (read by the spawn-cap mixins), blocks sleeping — denying
+ * new bed attempts and waking anyone already asleep — and keeps clients in
+ * sync for the red-sky visuals and warning sting.
  *
  * <p>The live flag is mirrored into a static {@code volatile} so the two hot
  * paths — per-spawn scaling and the natural-spawner cap checks — never touch
@@ -44,22 +45,61 @@ public final class BloodMoonHandler {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> active = false);
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % CHECK_INTERVAL != 0) return;
+            boolean scheduled = server.getTickCount() % CHECK_INTERVAL == 0;
+            if (!scheduled && !active) return;
             TribulationConfig cfg = Tribulation.getConfig();
             if (cfg == null) return;
-            tick(server, cfg);
+            try {
+                guardSleep(server, cfg);
+                if (scheduled) tick(server, cfg);
+            } catch (Exception e) {
+                Tribulation.LOGGER.error("Blood moon pass failed", e);
+            }
         });
 
         EntitySleepEvents.ALLOW_SLEEPING.register((player, sleepingPos) -> {
             TribulationConfig cfg = Tribulation.getConfig();
             if (cfg == null || !cfg.bloodMoon.blockSleep) return null;
             if (!(player.level() instanceof ServerLevel level) || !isActive(level)) return null;
-            player.displayClientMessage(
-                    Component.translatable("message.tribulation.blood_moon_no_sleep")
-                            .withStyle(ChatFormatting.DARK_RED),
-                    true);
+            player.displayClientMessage(noSleepMessage(), true);
             return Player.BedSleepingProblem.OTHER_PROBLEM;
         });
+    }
+
+    private static Component noSleepMessage() {
+        return Component.translatable("message.tribulation.blood_moon_no_sleep")
+                .withStyle(ChatFormatting.DARK_RED);
+    }
+
+    /**
+     * The per-tick eviction pass: while the event is active, eject any sleeper
+     * (see {@link #wakeSleepers}). Public so gametests can drive it directly.
+     */
+    public static void guardSleep(MinecraftServer server, TribulationConfig cfg) {
+        if (!active) return;
+        wakeSleepers(server, cfg);
+    }
+
+    /**
+     * Eject every sleeping Overworld player with the same no-sleep feedback the
+     * bed-attempt denial sends, so the ejection reads as the event's doing.
+     * Runs at event start and every server tick while the event is active: the
+     * {@code ALLOW_SLEEPING} listener only gates <em>new</em> bed attempts, so
+     * a player asleep before the event began — or admitted while
+     * {@code blockSleep} was off and the config then reloaded — is invisible
+     * to it. Vanilla's night skip reads the deep-sleep counter at the top of
+     * each server tick and this eviction runs at the end of every tick, so no
+     * sleeper survives a tick boundary and the skip can never fire during the
+     * event — even a sleeper already at 99 of the 100 required ticks when
+     * {@code blockSleep} flips on is woken before the next read.
+     */
+    private static void wakeSleepers(MinecraftServer server, TribulationConfig cfg) {
+        if (!cfg.bloodMoon.blockSleep) return;
+        for (ServerPlayer player : server.overworld().players()) {
+            if (!player.isSleeping()) continue;
+            player.stopSleepInBed(true, true);
+            player.displayClientMessage(noSleepMessage(), true);
+        }
     }
 
     /**
@@ -156,6 +196,7 @@ public final class BloodMoonHandler {
         state.markRolled(server.overworld().getDayTime() / 24000L);
         active = true;
         broadcast(server, cfg);
+        wakeSleepers(server, cfg);
         for (ServerPlayer player : server.overworld().players()) {
             player.sendSystemMessage(Component.translatable("message.tribulation.blood_moon_rises")
                     .withStyle(ChatFormatting.DARK_RED));

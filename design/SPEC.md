@@ -641,7 +641,7 @@ On rare full-moon nights the moon axis stops being a quiet stat curve and become
 
 - the moon scaling axis (§1) is multiplied by `moonBonusMultiplier` (default 3.0) via `BloodMoonHandler.moonMultiplier`;
 - hostile spawn caps are multiplied by `spawnCapMultiplier` (default 2.0), rounded and never below the vanilla base, through `LocalMobCapCalculatorMixin` and `NaturalSpawnerSpawnStateMixin`;
-- sleeping is blocked when `blockSleep` (default true): a bed attempt is denied with `message.tribulation.blood_moon_no_sleep`, anyone already asleep when the event begins is woken with the same message, and each scheduler pass re-ejects any sleeper while the event runs (covering a `blockSleep` flipped on mid-event), so vanilla's night skip — which needs 100 ticks of continuous sleep against the 20-tick pass — can never fire during a Blood Moon;
+- sleeping is blocked when `blockSleep` (default true): a bed attempt is denied with `message.tribulation.blood_moon_no_sleep`, anyone already asleep when the event begins is woken with the same message, and an end-of-tick eviction pass re-ejects any sleeper on every server tick while the event runs (covering a `blockSleep` flipped on mid-event) — vanilla's night skip reads its 100-tick deep-sleep counter at the top of each tick, so no sleeper survives to be counted and the skip can never fire during a Blood Moon;
 - when `clientEffects` (default true), every player gets the nightfall warning (`message.tribulation.blood_moon_rises` plus the `tribulation:blood_moon_warning` sting) and clients render the red sky, fog, and moon tint.
 
 Everything reverts at dawn — `shouldEnd` fires the moment it is no longer night.

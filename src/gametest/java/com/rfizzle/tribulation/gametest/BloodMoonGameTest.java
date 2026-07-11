@@ -136,6 +136,9 @@ public class BloodMoonGameTest implements FabricGameTest {
         helper.succeed();
     }
 
+    /** Bed head position shared by {@link #putPlayerToSleep} and re-entry checks. */
+    private static final BlockPos BED_HEAD_REL = new BlockPos(1, 2, 1);
+
     /**
      * Places a bed in the test structure and puts a fully registered mock
      * player to sleep in it through the real {@link ServerPlayer#startSleepInBed}
@@ -145,17 +148,16 @@ public class BloodMoonGameTest implements FabricGameTest {
      * refuses daytime sleep) and are responsible for discarding the player.
      */
     private ServerPlayer putPlayerToSleep(GameTestHelper helper) {
-        BlockPos footRel = new BlockPos(1, 2, 0);
-        BlockPos headRel = new BlockPos(1, 2, 1);
+        BlockPos footRel = BED_HEAD_REL.north();
         helper.setBlock(footRel, Blocks.RED_BED.defaultBlockState()
                 .setValue(BedBlock.FACING, Direction.SOUTH)
                 .setValue(BedBlock.PART, BedPart.FOOT));
-        helper.setBlock(headRel, Blocks.RED_BED.defaultBlockState()
+        helper.setBlock(BED_HEAD_REL, Blocks.RED_BED.defaultBlockState()
                 .setValue(BedBlock.FACING, Direction.SOUTH)
                 .setValue(BedBlock.PART, BedPart.HEAD));
 
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        BlockPos headAbs = helper.absolutePos(headRel);
+        BlockPos headAbs = helper.absolutePos(BED_HEAD_REL);
         player.teleportTo(headAbs.getX() + 0.5, headAbs.getY(), headAbs.getZ() + 0.5);
         player.startSleepInBed(headAbs).ifLeft(problem ->
                 helper.fail("mock player could not enter the bed: " + problem));
@@ -209,7 +211,7 @@ public class BloodMoonGameTest implements FabricGameTest {
             helper.assertFalse(player.isSleeping(), "a sleeping player must be woken when the blood moon begins");
 
             Player.BedSleepingProblem reentry = EntitySleepEvents.ALLOW_SLEEPING.invoker()
-                    .allowSleep(player, helper.absolutePos(new BlockPos(1, 2, 1)));
+                    .allowSleep(player, helper.absolutePos(BED_HEAD_REL));
             helper.assertTrue(reentry == Player.BedSleepingProblem.OTHER_PROBLEM,
                     "the bed must refuse re-entry during the event, got " + reentry);
         } finally {
@@ -263,9 +265,11 @@ public class BloodMoonGameTest implements FabricGameTest {
 
     /**
      * A sleeper legally in bed during an active event (admitted while
-     * {@code blockSleep} was off) is ejected by the next scheduler pass once
-     * the config is flipped on — the reload-mid-event edge that keeps
-     * vanilla's night skip unreachable for the whole night.
+     * {@code blockSleep} was off) is ejected by the per-tick eviction pass
+     * once the config is flipped on — the reload-mid-event edge. The pass
+     * runs every server tick, not on the 20-tick scheduler cadence, so even
+     * a sleeper already deep into vanilla's 100-tick skip countdown is woken
+     * before the skip's next top-of-tick read.
      */
     @GameTest(template = "tribulation:empty_3x3")
     public void bloodMoon_wakesMidEventSleeper(GameTestHelper helper) {
@@ -290,9 +294,9 @@ public class BloodMoonGameTest implements FabricGameTest {
             player = putPlayerToSleep(helper);
 
             cfg.bloodMoon.blockSleep = true;
-            BloodMoonHandler.tick(server, cfg);
+            BloodMoonHandler.guardSleep(server, cfg);
             helper.assertTrue(state.isActive(), "the event must still be running after the pass");
-            helper.assertFalse(player.isSleeping(), "the scheduler must eject a sleeper once blockSleep turns on");
+            helper.assertFalse(player.isSleeping(), "the eviction pass must eject a sleeper once blockSleep turns on");
         } finally {
             BloodMoonHandler.end(server, state, cfg);
             state.markRolled(savedRolledDay);

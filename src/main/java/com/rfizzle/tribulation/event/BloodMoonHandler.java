@@ -45,10 +45,16 @@ public final class BloodMoonHandler {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> active = false);
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % CHECK_INTERVAL != 0) return;
+            boolean scheduled = server.getTickCount() % CHECK_INTERVAL == 0;
+            if (!scheduled && !active) return;
             TribulationConfig cfg = Tribulation.getConfig();
             if (cfg == null) return;
-            tick(server, cfg);
+            try {
+                guardSleep(server, cfg);
+                if (scheduled) tick(server, cfg);
+            } catch (Exception e) {
+                Tribulation.LOGGER.error("Blood moon pass failed", e);
+            }
         });
 
         EntitySleepEvents.ALLOW_SLEEPING.register((player, sleepingPos) -> {
@@ -66,15 +72,26 @@ public final class BloodMoonHandler {
     }
 
     /**
+     * The per-tick eviction pass: while the event is active, eject any sleeper
+     * (see {@link #wakeSleepers}). Public so gametests can drive it directly.
+     */
+    public static void guardSleep(MinecraftServer server, TribulationConfig cfg) {
+        if (!active) return;
+        wakeSleepers(server, cfg);
+    }
+
+    /**
      * Eject every sleeping Overworld player with the same no-sleep feedback the
      * bed-attempt denial sends, so the ejection reads as the event's doing.
-     * Runs at event start and on every scheduler pass while the event is
-     * active: the {@code ALLOW_SLEEPING} listener only gates <em>new</em> bed
-     * attempts, so a player asleep before the event began — or admitted while
+     * Runs at event start and every server tick while the event is active: the
+     * {@code ALLOW_SLEEPING} listener only gates <em>new</em> bed attempts, so
+     * a player asleep before the event began — or admitted while
      * {@code blockSleep} was off and the config then reloaded — is invisible
-     * to it. Vanilla's night skip needs 100 ticks of continuous sleep and the
-     * scheduler passes every {@value #CHECK_INTERVAL}, so no sleeper can reach
-     * the skip while the event runs.
+     * to it. Vanilla's night skip reads the deep-sleep counter at the top of
+     * each server tick and this eviction runs at the end of every tick, so no
+     * sleeper survives a tick boundary and the skip can never fire during the
+     * event — even a sleeper already at 99 of the 100 required ticks when
+     * {@code blockSleep} flips on is woken before the next read.
      */
     private static void wakeSleepers(MinecraftServer server, TribulationConfig cfg) {
         if (!cfg.bloodMoon.blockSleep) return;
@@ -159,11 +176,6 @@ public final class BloodMoonHandler {
 
         if (shouldEnd(state.isActive(), isNight)) {
             end(server, state, cfg);
-            return;
-        }
-
-        if (state.isActive()) {
-            wakeSleepers(server, cfg);
             return;
         }
 

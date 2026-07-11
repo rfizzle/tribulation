@@ -22,8 +22,9 @@ import net.minecraft.world.level.Level;
  * Drives the Blood Moon event: rolls once per full-moon nightfall in the
  * Overworld, and while the event is active amplifies the moon scaling axis
  * (read by {@link com.rfizzle.tribulation.scaling.ScalingEngine}), raises
- * hostile spawn caps (read by the spawn-cap mixins), blocks sleeping, and
- * keeps clients in sync for the red-sky visuals and warning sting.
+ * hostile spawn caps (read by the spawn-cap mixins), blocks sleeping — denying
+ * new bed attempts and waking anyone already asleep — and keeps clients in
+ * sync for the red-sky visuals and warning sting.
  *
  * <p>The live flag is mirrored into a static {@code volatile} so the two hot
  * paths — per-spawn scaling and the natural-spawner cap checks — never touch
@@ -54,12 +55,34 @@ public final class BloodMoonHandler {
             TribulationConfig cfg = Tribulation.getConfig();
             if (cfg == null || !cfg.bloodMoon.blockSleep) return null;
             if (!(player.level() instanceof ServerLevel level) || !isActive(level)) return null;
-            player.displayClientMessage(
-                    Component.translatable("message.tribulation.blood_moon_no_sleep")
-                            .withStyle(ChatFormatting.DARK_RED),
-                    true);
+            player.displayClientMessage(noSleepMessage(), true);
             return Player.BedSleepingProblem.OTHER_PROBLEM;
         });
+    }
+
+    private static Component noSleepMessage() {
+        return Component.translatable("message.tribulation.blood_moon_no_sleep")
+                .withStyle(ChatFormatting.DARK_RED);
+    }
+
+    /**
+     * Eject every sleeping Overworld player with the same no-sleep feedback the
+     * bed-attempt denial sends, so the ejection reads as the event's doing.
+     * Runs at event start and on every scheduler pass while the event is
+     * active: the {@code ALLOW_SLEEPING} listener only gates <em>new</em> bed
+     * attempts, so a player asleep before the event began — or admitted while
+     * {@code blockSleep} was off and the config then reloaded — is invisible
+     * to it. Vanilla's night skip needs 100 ticks of continuous sleep and the
+     * scheduler passes every {@value #CHECK_INTERVAL}, so no sleeper can reach
+     * the skip while the event runs.
+     */
+    private static void wakeSleepers(MinecraftServer server, TribulationConfig cfg) {
+        if (!cfg.bloodMoon.blockSleep) return;
+        for (ServerPlayer player : server.overworld().players()) {
+            if (!player.isSleeping()) continue;
+            player.stopSleepInBed(true, true);
+            player.displayClientMessage(noSleepMessage(), true);
+        }
     }
 
     /**
@@ -139,6 +162,11 @@ public final class BloodMoonHandler {
             return;
         }
 
+        if (state.isActive()) {
+            wakeSleepers(server, cfg);
+            return;
+        }
+
         if (rollDue(state.isActive(), isNight, overworld.getMoonPhase(), day, state.getLastRolledDay())) {
             state.markRolled(day);
             if (overworld.getRandom().nextDouble() < cfg.bloodMoon.chance) {
@@ -156,6 +184,7 @@ public final class BloodMoonHandler {
         state.markRolled(server.overworld().getDayTime() / 24000L);
         active = true;
         broadcast(server, cfg);
+        wakeSleepers(server, cfg);
         for (ServerPlayer player : server.overworld().players()) {
             player.sendSystemMessage(Component.translatable("message.tribulation.blood_moon_rises")
                     .withStyle(ChatFormatting.DARK_RED));

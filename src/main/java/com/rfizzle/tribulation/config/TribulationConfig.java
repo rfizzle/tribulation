@@ -1111,8 +1111,9 @@ public class TribulationConfig {
      * happens once per full-moon night at nightfall in the Overworld with
      * probability {@code chance}. While active, the moon scaling axis is
      * multiplied by {@code moonBonusMultiplier}, hostile spawn caps by
-     * {@code spawnCapMultiplier}, sleeping is blocked when {@code blockSleep},
-     * and clients receive the red-sky tint and nightfall warning sting when
+     * {@code spawnCapMultiplier}, sleeping is blocked when {@code blockSleep}
+     * (bed attempts denied and anyone asleep at event start woken), and
+     * clients receive the red-sky tint and nightfall warning sting when
      * {@code clientEffects}. Everything reverts at dawn.
      */
     public static class BloodMoon {

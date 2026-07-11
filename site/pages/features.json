@@ -192,7 +192,7 @@
                 },
                 {
                   "title": "No Sleeping Through It",
-                  "html": ["With <code class='text-accent2'>blockSleep</code> on, beds refuse until dawn with an on-screen message. The event always ends at daybreak and everything reverts."]
+                  "html": ["With <code class='text-accent2'>blockSleep</code> on, beds refuse until dawn with an on-screen message, and anyone already asleep when the event begins is woken — the night can never be slept away. The event always ends at daybreak and everything reverts."]
                 },
                 {
                   "title": "You'll Know It's Coming",

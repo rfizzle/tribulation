@@ -81,7 +81,7 @@ The moon axis stops being a quiet stat curve and becomes something you plan arou
 
 - **Amplified moon bonus** — every mob spawned during the event has its moon-axis factor multiplied by `moonBonusMultiplier` (3× by default). Global stat caps still apply, so the surge never pushes a mob past the configured ceilings.
 - **Raised spawn caps** — hostile (`MONSTER`) spawn caps, both the global per-category cap and the per-player local cap, are multiplied by `spawnCapMultiplier` (2× by default) for a measurably denser night. Nether and End caps stay vanilla.
-- **No sleeping through it** — with `blockSleep` on, beds refuse until dawn with an on-screen message. The event always ends at daybreak and everything reverts.
+- **No sleeping through it** — with `blockSleep` on, beds refuse until dawn with an on-screen message, and anyone already asleep when the event begins is woken. The event always ends at daybreak and everything reverts.
 - **You'll know it's coming** — with `clientEffects` on, the sky, fog, and moon tint blood red for the duration and an ominous warning sting plays at nightfall.
 - **Restart resilient** — event state is synced to clients (so it works on dedicated servers) and survives a server restart mid-night.
 

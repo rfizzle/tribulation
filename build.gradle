@@ -269,6 +269,39 @@ jacocoTestReport {
     }
 }
 
+// Attach the JaCoCo agent to the gametest server so code only exercised in-game
+// (event handlers, scaling, commands, registration) counts toward coverage. The
+// includes filter keeps the agent from instrumenting Minecraft/Fabric classes.
+tasks.named('runGametest') {
+    jacoco.applyTo(it)
+    it.jacoco.destinationFile = layout.buildDirectory.file('jacoco/runGametest.exec').get().asFile
+    it.jacoco.includes = ['com.rfizzle.tribulation.*']
+}
+
+// Single source of coverage truth: unit tests + gametests merged over src/main.
+// fileTree only picks up exec files that exist, so the report still runs when
+// one of the two sweeps hasn't.
+tasks.register('jacocoMergedReport', JacocoReport) {
+    // Ordering only — not dependsOn, so the report can run from existing exec
+    // data without forcing a gametest server spin-up.
+    mustRunAfter test, tasks.named('runGametest')
+    executionData fileTree(layout.buildDirectory.dir('jacoco')) {
+        include 'test.exec', 'runGametest.exec'
+    }
+    sourceSets sourceSets.main
+    // Mixin bodies execute inside the transformed vanilla classes, so the agent
+    // can never attribute coverage to the mixin class files — excluding them keeps
+    // the denominator honest. Mixins stay thin (delegate to handlers) so nothing
+    // measurable hides here.
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: ['com/rfizzle/tribulation/mixin/**'])
+    }))
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
 processResources {
     inputs.property "version", project.version
 

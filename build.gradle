@@ -254,6 +254,12 @@ configurations.testRuntimeClasspath {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    // GametestEntrypointTest reads the gametest sources and manifest off disk to assert every
+    // suite is registered. Neither is on the test classpath, so declare them as inputs or the
+    // task stays UP-TO-DATE and the check silently skips when registration drifts.
+    inputs.files(fileTree('src/gametest/java'), file('src/gametest/resources/fabric.mod.json'))
+            .withPropertyName('gametestRegistration')
 }
 
 jacocoTestReport {

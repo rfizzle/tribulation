@@ -1,0 +1,48 @@
+{
+    "schemaVersion": 1,
+    "id": "tribulation-gametest",
+    "version": "1.0.0",
+    "name": "Tribulation Gametests",
+    "description": "Fabric gametests for Tribulation. Lives only on the gametest run classpath and is never bundled in the shipped jar.",
+    "authors": [
+        "rfizzle"
+    ],
+    "contact": {
+        "homepage": "https://tribulation.rfizzle.com",
+        "sources": "https://github.com/rfizzle/tribulation",
+        "issues": "https://github.com/rfizzle/tribulation/issues"
+    },
+    "license": "MIT",
+    "environment": "*",
+    "entrypoints": {
+        "fabric-gametest": [
+            "com.rfizzle.tribulation.gametest.MobScalingGameTest",
+            "com.rfizzle.tribulation.gametest.DeathPenaltiesGameTest",
+            "com.rfizzle.tribulation.gametest.DeathReliefGameTest",
+            "com.rfizzle.tribulation.gametest.LevelDecayGameTest",
+            "com.rfizzle.tribulation.gametest.TotemGameTest",
+            "com.rfizzle.tribulation.gametest.APIGameTest",
+            "com.rfizzle.tribulation.gametest.ArmorEquipmentGameTest",
+            "com.rfizzle.tribulation.gametest.StatisticsGameTest",
+            "com.rfizzle.tribulation.gametest.WeaponEquipmentGameTest",
+            "com.rfizzle.tribulation.gametest.TrialSpawnerGameTest",
+            "com.rfizzle.tribulation.gametest.SkeletonVariantGameTest",
+            "com.rfizzle.tribulation.gametest.RaidScalingGameTest",
+            "com.rfizzle.tribulation.gametest.AdvancementsGameTest",
+            "com.rfizzle.tribulation.gametest.AbilitiesGameTest",
+            "com.rfizzle.tribulation.gametest.ParticleRegistrationGameTest",
+            "com.rfizzle.tribulation.gametest.BloodMoonGameTest",
+            "com.rfizzle.tribulation.gametest.ChampionGameTest",
+            "com.rfizzle.tribulation.gametest.PackTacticsGameTest",
+            "com.rfizzle.tribulation.gametest.EnvironmentalPressureGameTest",
+            "com.rfizzle.tribulation.gametest.SavedDataPersistenceGameTest"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.16.10",
+        "minecraft": "~1.21.1",
+        "java": ">=21",
+        "fabric-api": "*",
+        "tribulation": "*"
+    }
+}

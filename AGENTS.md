@@ -49,7 +49,16 @@ Loom's `splitEnvironmentSourceSets()` is enabled — three source sets:
 |---|---|---|
 | `main` | `src/main/java` | Server + common logic. Entrypoint: `Tribulation.java` |
 | `client` | `src/client/java` | Client-only code. Entrypoint: `TribulationClient.java` |
-| `gametest` | `src/gametest/java` | Fabric gametests (run with `runGametest`). Has `main` on its classpath but is NOT included in the jar. Each `*GameTest` class is registered as a `fabric-gametest` entrypoint in `fabric.mod.json`. |
+| `gametest` | `src/gametest/java`, `src/gametest/resources` | Fabric gametests (run with `runGametest`). Has `main` on its classpath but is NOT included in the jar. |
+
+Gametest suites are registered in `src/gametest/resources/fabric.mod.json`, a
+second manifest declaring the dev-only `tribulation-gametest` mod — never in the
+shipped `src/main/resources/fabric.mod.json`. `fabric-gametest-api-v1` is a
+dev-only Fabric module whose initializer is ungated: it instantiates every
+declared `fabric-gametest` entrypoint on any dev launch, so an entry in the
+shipped manifest crashes `runServer`, whose run set does not carry the gametest
+source set. `GametestEntrypointTest` guards both halves of this — that the
+shipped manifest stays clean, and that every suite on disk is registered.
 
 JUnit tests go in the standard `src/test/java` directory. The test classpath
 includes `fabric-loader-junit` but excludes `fabric-api` — tests that need

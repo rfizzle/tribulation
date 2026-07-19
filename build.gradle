@@ -168,11 +168,6 @@ loom {
         datagen {
             server()
             name "Data Generation"
-            // The gametest source set carries main on its classpath. Running datagen
-            // from it lets fabric-gametest-api resolve the `fabric-gametest`
-            // entrypoints (which it loads eagerly on every dev launch) while still
-            // seeing the `fabric-datagen` entrypoint and resources from main.
-            source sourceSets.gametest
             vmArg "-Dfabric-api.datagen"
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/main/generated")}"
             vmArg "-Dfabric-api.datagen.modid=tribulation"

@@ -62,6 +62,21 @@ class GametestEntrypointTest {
         throw new AssertionError("no fabric.mod.json with id '" + Tribulation.MOD_ID + "' on the test classpath");
     }
 
+    /**
+     * The companion manifest lives in the gametest source set, which is on no classpath the
+     * test task reads, so it is read from disk. {@code build.gradle} declares it as a test
+     * input to keep this class from staying {@code UP-TO-DATE} when the manifest changes.
+     */
+    private static JsonObject readGametestManifest() {
+        Path manifestPath = Path.of("src/gametest/resources/fabric.mod.json");
+        assertTrue(Files.isRegularFile(manifestPath), "missing gametest manifest: " + manifestPath.toAbsolutePath());
+        try (Reader reader = Files.newBufferedReader(manifestPath, StandardCharsets.UTF_8)) {
+            return GSON.fromJson(reader, JsonObject.class);
+        } catch (IOException e) {
+            throw new AssertionError("failed to read " + manifestPath.toAbsolutePath(), e);
+        }
+    }
+
     @Test
     void shippedManifestDeclaresNoGametestEntrypoints() {
         JsonObject manifest = readTribulationManifest();
@@ -90,13 +105,7 @@ class GametestEntrypointTest {
                     .collect(Collectors.toCollection(TreeSet::new));
         }
 
-        Path manifestPath = Path.of("src/gametest/resources/fabric.mod.json");
-        assertTrue(Files.isRegularFile(manifestPath), "missing gametest manifest: " + manifestPath.toAbsolutePath());
-
-        JsonObject manifest;
-        try (Reader reader = Files.newBufferedReader(manifestPath, StandardCharsets.UTF_8)) {
-            manifest = GSON.fromJson(reader, JsonObject.class);
-        }
+        JsonObject manifest = readGametestManifest();
 
         Set<String> declared = new TreeSet<>();
         manifest.getAsJsonObject("entrypoints").getAsJsonArray("fabric-gametest")
@@ -111,6 +120,23 @@ class GametestEntrypointTest {
         dangling.removeAll(onDisk);
         assertTrue(dangling.isEmpty(),
                 "the gametest manifest names classes that no longer exist: " + dangling);
+    }
+
+    /**
+     * The dependency on the main mod is the only thing pinning the companion to the loader,
+     * Minecraft, Java, and Fabric API floors, which it inherits transitively rather than
+     * restating. A typo'd id fails loudly — the depend is unsatisfiable and the mod does not
+     * load — but dropping the block entirely is silent, since a manifest with no {@code depends}
+     * always resolves and the suites would then run unpinned from the mod under test.
+     */
+    @Test
+    void gametestManifestDependsOnTheMainMod() {
+        JsonObject depends = readGametestManifest().getAsJsonObject("depends");
+        assertNotNull(depends, "the gametest manifest must declare depends");
+        assertTrue(depends.has(Tribulation.MOD_ID),
+                "the gametest manifest must depend on '" + Tribulation.MOD_ID
+                        + "' — it is the only constraint inheriting the main mod's loader, "
+                        + "Minecraft, Java, and Fabric API floors");
     }
 
     @Test

@@ -260,6 +260,11 @@ test {
     // task stays UP-TO-DATE and the check silently skips when registration drifts.
     inputs.files(fileTree('src/gametest/java'), file('src/gametest/resources/fabric.mod.json'))
             .withPropertyName('gametestRegistration')
+
+    // SpriteMarginTest reads the glyph specs off disk to learn which shipped textures are
+    // sprites and owe a transparent margin. art/ is not on the test classpath, so declare it
+    // as an input too — otherwise a spec edit leaves the task UP-TO-DATE and the check skips.
+    inputs.files(fileTree('art/glyphs')).withPropertyName('glyphSpecs')
 }
 
 jacocoTestReport {

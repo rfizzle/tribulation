@@ -60,3 +60,11 @@ art/audio/**/*.ogg
 art/audio/**/*.wav
 art/audio/**/*.report.png
 # concord:gitignore:end
+
+# Repo-specific ignores (outside the concord-managed block above).
+
+# Datagen provenance cache. src/main/generated/ is committed so
+# verifyDatagenIdempotent has something to diff against, but .cache/ holds a
+# per-run manifest stamped with a wall-clock timestamp that changes on every
+# runDatagen — tracking it would make the idempotency check fail every run.
+/src/main/generated/.cache/

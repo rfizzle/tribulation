@@ -6,6 +6,8 @@
 # where the deepest red meets the mend. The torn edge carries a golden kintsugi
 # seam with its own ramp (V/G highlight -> 6/g midtone -> y/5 shadow -> u occlusion).
 size: 32
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/item/heart_fragment.png
 
 legend:
   . transparent

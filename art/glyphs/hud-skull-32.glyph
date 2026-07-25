@@ -1,6 +1,8 @@
 # HUD difficulty badge — pixel-exact trace of the shipped hud_icon.png
 # Neutral/colorless skull; TribulationHudOverlay multiplies by the per-tier color at draw time.
 size: 32
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/gui/hud_icon.png
 
 legend:
   @ #000000

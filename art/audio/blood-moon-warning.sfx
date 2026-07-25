@@ -4,6 +4,7 @@
   "peak_dbfs": -1.0,
   "subtitle": "tribulation.subtitle.blood_moon_warning",
   "seed": 13,
+  "ships": "src/main/resources/assets/tribulation/sounds/blood_moon_warning.ogg",
   "layers": [
     {
       "waveform": "saw",

@@ -4,6 +4,7 @@
   "peak_dbfs": -1.0,
   "subtitle": "tribulation.subtitle.tier_up",
   "seed": 52,
+  "ships": "src/main/resources/assets/tribulation/sounds/tier_up.ogg",
   "layers": [
     {
       "waveform": "triangle",

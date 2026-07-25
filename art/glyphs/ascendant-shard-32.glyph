@@ -6,6 +6,8 @@
 # the interior (h lavender hot point -> A arcane -> u dark -> I deep shadow),
 # where the Shatter Shard was a purple body with a crimson vein.
 size: 32
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/item/ascendant_shard.png
 
 legend:
   . transparent

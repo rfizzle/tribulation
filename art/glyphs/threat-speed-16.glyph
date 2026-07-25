@@ -3,6 +3,8 @@
 # down a thin streak to a faint smoke tail (s). Cool/pale so it reads as speed,
 # distinct from the arcane tier mote and the earthen big puff.
 size: 16
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/particle/threat_speed.png
 
 legend:
   . transparent

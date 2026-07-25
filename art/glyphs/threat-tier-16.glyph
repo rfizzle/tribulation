@@ -5,6 +5,8 @@
 # Arcane ramp: m shadow-mid -> n mid -> p arcane base -> q lit-mid -> h highlight,
 # crimson core (v) with an ember-hot center (e).
 size: 16
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/particle/threat_tier.png
 
 legend:
   . transparent

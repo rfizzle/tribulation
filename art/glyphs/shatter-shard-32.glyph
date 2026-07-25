@@ -6,6 +6,8 @@
 # Crimson energy vein forks down the interior with its own light->dark glow ramp
 # (e/f ember hot point -> V crimson -> v dark -> i deep shadow).
 size: 32
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/item/shatter_shard.png
 
 legend:
   . transparent

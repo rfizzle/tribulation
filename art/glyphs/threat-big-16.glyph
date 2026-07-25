@@ -3,6 +3,8 @@
 # and the pale speed streak. Dark sooty rim (m) -> smoke body (s) -> ash lights (a)
 # with a few ink clods (i) for depth.
 size: 16
+kind: sprite
+ships: src/main/resources/assets/tribulation/textures/particle/threat_big.png
 
 legend:
   . transparent

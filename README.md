@@ -10,6 +10,7 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/rfizzle/tribulation"></a>
   <a href="https://github.com/rfizzle/tribulation/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/rfizzle/tribulation?include_prereleases"></a>
   <a href="https://github.com/rfizzle/tribulation/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rfizzle/tribulation/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://modrinth.com/mod/tribulation-difficulty-overhaul"><img alt="Modrinth downloads" src="https://img.shields.io/modrinth/dt/8KuQhMGI?logo=modrinth&label=Modrinth&color=00AF5C"></a>
   <a href="https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul"><img alt="CurseForge downloads" src="https://img.shields.io/curseforge/dt/1546072?logo=curseforge&label=CurseForge"></a>
 </p>
 
@@ -17,8 +18,8 @@ A comprehensive difficulty overhaul for Minecraft 1.21.1 (Fabric). Tribulation t
 
 ## Download
 
-| [CurseForge](https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul) | [GitHub Releases](https://github.com/rfizzle/tribulation/releases) | [Website](https://tribulation.rfizzle.com) | [Report an issue](https://github.com/rfizzle/tribulation/issues) |
-| --- | --- | --- | --- |
+| [Modrinth](https://modrinth.com/mod/tribulation-difficulty-overhaul) | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/tribulation-difficulty-overhaul) | [GitHub Releases](https://github.com/rfizzle/tribulation/releases) | [Website](https://tribulation.rfizzle.com) | [Report an issue](https://github.com/rfizzle/tribulation/issues) |
+| --- | --- | --- | --- | --- |
 
 ---
 

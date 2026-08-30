@@ -481,9 +481,9 @@ public class PlayerDifficultyState extends SavedData {
         if (!tag.contains(NBT_PLAYERS_KEY, Tag.TAG_LIST)) {
             return state;
         }
-        // Untrusted NBT: derive the clamp bounds from live config, falling back to
-        // the loosest safe defaults when config is absent (unit tests / a pre-init
-        // window that never loads live player data in production).
+        // Untrusted NBT: derive the clamp bounds from live config. get() loads
+        // lazily so this is never null in practice; the fallback to the loosest
+        // safe defaults is kept as a belt-and-braces guard only.
         TribulationConfig cfg = Tribulation.getConfig();
         int maxLevel = cfg != null ? cfg.general.maxLevel : MAX_SANE_LEVEL;
         int minimumHearts = cfg != null ? cfg.hardcoreHearts.minimumHearts : 1;

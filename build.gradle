@@ -1,3 +1,5 @@
+import java.util.concurrent.TimeUnit
+
 plugins {
     id 'fabric-loom' version "${loom_version}"
     id 'jacoco'
@@ -60,7 +62,20 @@ def runGitDescribe(String tagPrefix) {
                 .directory(rootDir)
                 .redirectErrorStream(true)
                 .start()
-        proc.waitFor()
+        // Bounded, never a bare waitFor(): this runs in the configuration phase, so a hung
+        // git wedges every task in the build, not just the version computation. Git does
+        // hang — a stale index.lock from a killed process, an unresponsive network
+        // filesystem, a credential helper waiting on a prompt with no terminal.
+        def finished = proc.waitFor(10, TimeUnit.SECONDS)
+        if (!finished) {
+            // destroyForcibly so the orphaned git process cannot outlive the daemon.
+            proc.destroyForcibly()
+            // Degrading to the mod_version base is right; doing it silently is not. On a
+            // machine where git is merely slow, every invocation pays the full ten seconds
+            // and then produces a jar versioned from the base with nothing in the log.
+            logger.warn('git describe timed out after 10s — version falls back to the mod_version base')
+            return null
+        }
         def out = proc.inputStream.text.trim()
         if (proc.exitValue() != 0) return null
         return out
@@ -147,6 +162,15 @@ sourceSets {
     gametest {
         compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
         runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+    // Put the client source set's compiled output (not its dependency configurations) on the
+    // test classpath so unit tests can reach client-only classes and the client resource root
+    // (ShippedResourceHygieneTest walks it). Only .output is added — never
+    // client.compileClasspath/runtimeClasspath — so the unmapped fabric-api sibling access
+    // widener that the testRuntimeClasspath exclusion below guards against is never pulled in.
+    test {
+        compileClasspath += sourceSets.client.output
+        runtimeClasspath += sourceSets.client.output
     }
 }
 
@@ -255,7 +279,7 @@ test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
 
-    // GametestEntrypointTest reads the gametest sources and manifest off disk to assert every
+    // GametestRegistrationTest reads the gametest sources and manifest off disk to assert every
     // suite is registered. Neither is on the test classpath, so declare them as inputs or the
     // task stays UP-TO-DATE and the check silently skips when registration drifts.
     inputs.files(fileTree('src/gametest/java'), file('src/gametest/resources/fabric.mod.json'))
@@ -281,7 +305,9 @@ jacocoTestReport {
 // Attach the JaCoCo agent to the gametest server so code only exercised in-game
 // (event handlers, scaling, commands, registration) counts toward coverage. The
 // includes filter keeps the agent from instrumenting Minecraft/Fabric classes.
-tasks.named('runGametest') {
+// Lazy: Loom registers runGametest from the run config above, and a named() lookup
+// that runs before that registration fails the configuration phase outright.
+tasks.matching { it.name == 'runGametest' }.configureEach {
     jacoco.applyTo(it)
     it.jacoco.destinationFile = layout.buildDirectory.file('jacoco/runGametest.exec').get().asFile
     it.jacoco.includes = ['com.rfizzle.tribulation.*']
@@ -340,10 +366,26 @@ tasks.register('jacocoMergedReport', JacocoReport) {
 // Runs datagen and fails if the committed output under src/main/generated/ no
 // longer matches what the providers produce, so drift can't reach master
 // unnoticed. Shared CI (concord's mod-ci.yml) invokes this when it exists.
+// Fabric datagen keeps a hash index under src/main/generated/.cache/ (gitignored) and only
+// rewrites a file whose provider output hash changed. With the cache present, a hand-edited
+// generated file is never regenerated, so the verify task below compared the edit to itself
+// and passed — a false green on every machine that had run datagen before. CI never saw it
+// because a fresh checkout has no cache. Clearing the cache first makes the run rewrite every
+// file, which is the only state in which "git reports no changes" means anything.
+tasks.register('cleanDatagenCache', Delete) {
+    description = 'Removes the Fabric datagen hash cache so the next runDatagen rewrites every file'
+    group = 'verification'
+    delete 'src/main/generated/.cache'
+}
+
+tasks.matching { it.name == 'runDatagen' }.configureEach {
+    mustRunAfter 'cleanDatagenCache'
+}
+
 tasks.register('verifyDatagenIdempotent') {
     description = 'Runs datagen and asserts git reports no changes in src/main/generated/'
     group = 'verification'
-    dependsOn 'runDatagen'
+    dependsOn 'cleanDatagenCache', 'runDatagen'
     notCompatibleWithConfigurationCache('shells out to git against live working-tree state')
     doLast {
         def genDir = file('src/main/generated').absolutePath

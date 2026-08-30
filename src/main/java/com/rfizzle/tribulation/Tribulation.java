@@ -46,12 +46,12 @@ public class Tribulation implements ModInitializer {
 
     private static final int TICK_INTERVAL = 20;
 
-    private static volatile TribulationConfig config;
-
     @Override
     public void onInitialize() {
         LOGGER.info("Tribulation initializing");
-        config = TribulationConfig.load();
+        // Eager first load: primes the config-owned singleton ahead of every
+        // registration below, and writes config/tribulation.json on a fresh install.
+        TribulationConfig.get();
         com.rfizzle.tribulation.data.TribulationAttachments.register();
         TribulationNetworking.register();
         TribulationItems.register();
@@ -78,8 +78,9 @@ public class Tribulation implements ModInitializer {
         registerJoinSync();
     }
 
+    /** The active config — see {@link TribulationConfig#get()}. Snapshot it once per method. */
     public static TribulationConfig getConfig() {
-        return config;
+        return TribulationConfig.get();
     }
 
     public static ResourceLocation id(String path) {
@@ -87,7 +88,7 @@ public class Tribulation implements ModInitializer {
     }
 
     public static void reloadConfig() {
-        config = TribulationConfig.load();
+        TribulationConfig.reload();
     }
 
     private static void registerJoinSync() {
@@ -95,14 +96,14 @@ public class Tribulation implements ModInitializer {
             ServerPlayer player = handler.getPlayer();
             TribulationNetworking.syncConfig(player);
             TribulationNetworking.syncLevel(player);
-            TribulationNetworking.syncBloodMoon(player, BloodMoonHandler.syncedStateFor(config));
+            TribulationNetworking.syncBloodMoon(player, BloodMoonHandler.syncedStateFor(TribulationConfig.get()));
         });
     }
 
     private static void registerTickHandler() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            TribulationConfig cfg = config;
-            if (cfg == null || !cfg.timeScaling.enabled) {
+            TribulationConfig cfg = TribulationConfig.get();
+            if (!cfg.timeScaling.enabled) {
                 return;
             }
             if (server.getTickCount() % TICK_INTERVAL != 0) {

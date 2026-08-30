@@ -84,7 +84,7 @@ class PackTacticsTest {
         config.packTactics.tierThreshold = -1;
         config.packTactics.alertRadius = 1000.0;
         config.packTactics.groupSizeBonus = 99;
-        config.validate();
+        config.clamp();
         assertEquals(0, config.packTactics.tierThreshold);
         assertEquals(PackTactics.MAX_ALERT_RADIUS, config.packTactics.alertRadius, 1e-9);
         assertEquals(PackTactics.MAX_GROUP_SIZE_BONUS, config.packTactics.groupSizeBonus);
@@ -95,7 +95,7 @@ class PackTacticsTest {
         TribulationConfig config = new TribulationConfig();
         config.packTactics.alertRadius = -5.0;
         config.packTactics.groupSizeBonus = -3;
-        config.validate();
+        config.clamp();
         assertEquals(0.0, config.packTactics.alertRadius, 1e-9);
         assertEquals(0, config.packTactics.groupSizeBonus);
     }

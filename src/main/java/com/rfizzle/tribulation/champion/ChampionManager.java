@@ -117,12 +117,12 @@ public final class ChampionManager {
      */
     public static Component championName(List<ChampionAffix> affixes, Component mobName) {
         if (affixes.size() >= 2) {
-            return Component.translatable("champion.tribulation.name.two",
+            return Component.translatable("fragment.tribulation.champion.name.two",
                     Component.translatable(affixes.get(0).translationKey()),
                     Component.translatable(affixes.get(1).translationKey()),
                     mobName);
         }
-        return Component.translatable("champion.tribulation.name.one",
+        return Component.translatable("fragment.tribulation.champion.name.one",
                 Component.translatable(affixes.get(0).translationKey()),
                 mobName);
     }

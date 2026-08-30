@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * Plain {@code minecraft:deep_dark}-style keys become exact biome-ID entries;
  * {@code #}-prefixed keys become {@link TagKey} entries so whole biome
  * categories (including modded biomes) can carry one offset. Unparseable keys
- * are skipped here silently — {@link TribulationConfig#validate()} already
+ * are skipped here silently — {@link TribulationConfig#clamp()} already
  * warned about them at load time.
  *
  * <p>Match semantics: an exact biome-ID entry wins outright; otherwise the

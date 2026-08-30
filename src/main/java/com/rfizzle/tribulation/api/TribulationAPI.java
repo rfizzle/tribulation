@@ -169,7 +169,7 @@ public final class TribulationAPI {
     private static final ClientAccessor HUD_VISIBLE = new ClientAccessor(
             "com.rfizzle.tribulation.client.TribulationHudOverlay", "isHudVisible", boolean.class);
     private static final ClientAccessor HUD_HEIGHT = new ClientAccessor(
-            "com.rfizzle.tribulation.client.TribulationHudOverlay", "getHudHeightContribution", int.class);
+            "com.rfizzle.tribulation.client.TribulationHudOverlay", "getHudHeight", int.class);
 
     private static final class ClientAccessor {
         private final String className;
@@ -326,17 +326,32 @@ public final class TribulationAPI {
         }
     }
 
+    /** One-shot gate so a provider that throws on every spawn logs its stack trace once. */
+    private static final AtomicBoolean ARMOR_PROVIDER_FAILURE_LOGGED = new AtomicBoolean(false);
+
     /**
      * Internal use only. Resolves the drop chance for a piece of armor.
-     * A misbehaving provider (throwing or returning a non-finite value) never
-     * breaks mob spawning: it falls back to {@code defaultChance}.
+     * A misbehaving provider (throwing, or returning a non-finite value) falls
+     * back to {@code defaultChance} and cannot break mob spawning. The one
+     * exception is a {@link VirtualMachineError} (out of memory, stack
+     * overflow), which is rethrown unchanged: the JVM is unrecoverable, not the
+     * provider misbehaving.
      */
     public static float resolveArmorDropChance(Entity mob, int tier, EquipmentSlot slot, ItemStack stack, float defaultChance) {
+        ArmorDropChanceProvider provider = armorDropChanceProvider;
         try {
-            float resolved = armorDropChanceProvider.resolve(mob, tier, slot, stack, defaultChance);
+            float resolved = provider.resolve(mob, tier, slot, stack, defaultChance);
             return Float.isFinite(resolved) ? resolved : defaultChance;
-        } catch (Exception e) {
-            Tribulation.LOGGER.warn("Armor drop-chance provider threw; using default", e);
+        } catch (VirtualMachineError e) {
+            throw e; // OOME/SOE: the JVM is unrecoverable, not the provider misbehaving
+        } catch (Throwable t) {
+            // Throwable, not Exception: this is the boundary where untrusted consumer code runs, and a
+            // provider compiled against an older signature throws Error (AbstractMethodError,
+            // NoClassDefFoundError), which an Exception catch would let escape and kill the server tick.
+            if (ARMOR_PROVIDER_FAILURE_LOGGED.compareAndSet(false, true)) {
+                Tribulation.LOGGER.warn("Armor drop-chance provider {} threw; using default",
+                        provider.getClass().getName(), t);
+            }
             return defaultChance;
         }
     }
@@ -370,17 +385,30 @@ public final class TribulationAPI {
         }
     }
 
+    /** One-shot gate so a provider that throws on every spawn logs its stack trace once. */
+    private static final AtomicBoolean WEAPON_PROVIDER_FAILURE_LOGGED = new AtomicBoolean(false);
+
     /**
      * Internal use only. Resolves the drop chance for a weapon.
-     * A misbehaving provider (throwing or returning a non-finite value) never
-     * breaks mob spawning: it falls back to {@code defaultChance}.
+     * A misbehaving provider (throwing, or returning a non-finite value) falls
+     * back to {@code defaultChance} and cannot break mob spawning. The one
+     * exception is a {@link VirtualMachineError} (out of memory, stack
+     * overflow), which is rethrown unchanged: the JVM is unrecoverable, not the
+     * provider misbehaving.
      */
     public static float resolveWeaponDropChance(Entity mob, int tier, ItemStack stack, float defaultChance) {
+        WeaponDropChanceProvider provider = weaponDropChanceProvider;
         try {
-            float resolved = weaponDropChanceProvider.resolve(mob, tier, stack, defaultChance);
+            float resolved = provider.resolve(mob, tier, stack, defaultChance);
             return Float.isFinite(resolved) ? resolved : defaultChance;
-        } catch (Exception e) {
-            Tribulation.LOGGER.warn("Weapon drop-chance provider threw; using default", e);
+        } catch (VirtualMachineError e) {
+            throw e; // OOME/SOE: the JVM is unrecoverable, not the provider misbehaving
+        } catch (Throwable t) {
+            // Throwable, not Exception: see resolveArmorDropChance.
+            if (WEAPON_PROVIDER_FAILURE_LOGGED.compareAndSet(false, true)) {
+                Tribulation.LOGGER.warn("Weapon drop-chance provider {} threw; using default",
+                        provider.getClass().getName(), t);
+            }
             return defaultChance;
         }
     }

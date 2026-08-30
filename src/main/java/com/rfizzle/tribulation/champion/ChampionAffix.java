@@ -26,7 +26,7 @@ public enum ChampionAffix {
     }
 
     public String translationKey() {
-        return "affix.tribulation." + id;
+        return "fragment.tribulation.affix." + id;
     }
 
     /** Resolve an affix from its persisted id; returns {@code null} for unknown ids. */

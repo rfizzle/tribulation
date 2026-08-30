@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -107,11 +108,57 @@ class TribulationConfigTest {
         cfg.levelDecay.levelsPerDay = -1.0;
         cfg.levelDecay.floor = -5;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(0.0, cfg.levelDecay.graceDays);
         assertEquals(0.0, cfg.levelDecay.levelsPerDay);
         assertEquals(0, cfg.levelDecay.floor);
+    }
+
+    @Test
+    void clamp_foldsNaNInOpenToppedAndUnitFields() {
+        // Gson's lenient reader yields NaN from a bare NaN token; NaN is false against
+        // every ordering comparison, so a `value < 0` test lets it through untouched.
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.distanceScaling.startingDistance = Double.NaN;   // clampNonNegative
+        cfg.heightScaling.heightDistance = Double.NaN;       // clampPositive
+        cfg.bloodMoon.chance = Double.NaN;                   // clampUnit
+
+        cfg.clamp();
+
+        assertEquals(0.0, cfg.distanceScaling.startingDistance);
+        assertEquals(1.0, cfg.heightScaling.heightDistance);
+        assertEquals(0.0, cfg.bloodMoon.chance);
+    }
+
+    @Test
+    void clamp_rejectsInfinityInOpenToppedFields() {
+        // +Infinity satisfies every lower bound, so the open-topped helpers need an
+        // explicit finite gate; clampUnit's ceiling already catches it.
+        TribulationConfig cfg = new TribulationConfig();
+        cfg.xp.xpMultiplier = Double.POSITIVE_INFINITY;      // clampNonNegative
+        cfg.specialZombies.bigZombieSize = Double.POSITIVE_INFINITY; // clampPositive
+        cfg.shards.dropChance = Double.POSITIVE_INFINITY;    // clampUnit
+
+        cfg.clamp();
+
+        assertEquals(0.0, cfg.xp.xpMultiplier);
+        assertEquals(1.0, cfg.specialZombies.bigZombieSize);
+        assertEquals(1.0, cfg.shards.dropChance);
+    }
+
+    @Test
+    void copy_isDeepAndIndependentOfTheOriginal() {
+        TribulationConfig original = new TribulationConfig();
+        original.general.maxLevel = 77;
+
+        TribulationConfig copy = original.copy();
+        copy.general.maxLevel = 5;
+        copy.scaling.get("zombie").healthRate = 9.5;
+
+        assertEquals(77, original.general.maxLevel);
+        assertNotEquals(9.5, original.scaling.get("zombie").healthRate);
+        assertEquals(5, copy.general.maxLevel);
     }
 
     @Test
@@ -120,7 +167,7 @@ class TribulationConfigTest {
         cfg.general.maxLevel = 100;
         cfg.levelDecay.floor = 500;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(100, cfg.levelDecay.floor);
     }
@@ -139,7 +186,7 @@ class TribulationConfigTest {
         cfg.groupHealthBonus.perPlayerBonus = -0.5;
         cfg.groupHealthBonus.maxBonus = -2.0;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(0.0, cfg.groupHealthBonus.perPlayerBonus);
         assertEquals(0.0, cfg.groupHealthBonus.maxBonus);
@@ -186,7 +233,7 @@ class TribulationConfigTest {
         nights.maxDarkness = 5.0;
         nights.followRangeMultiplier = 99.0;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(0, strikes.tierThreshold);
         assertEquals(1, strikes.weaknessDurationTicks);
@@ -207,7 +254,7 @@ class TribulationConfigTest {
         TribulationConfig cfg = new TribulationConfig();
         cfg.environmentalPressure.oppressiveNights.followRangeMultiplier = 0.3;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(1.0, cfg.environmentalPressure.oppressiveNights.followRangeMultiplier);
     }
@@ -217,7 +264,7 @@ class TribulationConfigTest {
         TribulationConfig cfg = new TribulationConfig();
         cfg.environmentalPressure.oppressiveNights.maxDarkness = -0.4;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(0.0, cfg.environmentalPressure.oppressiveNights.maxDarkness);
     }
@@ -238,7 +285,7 @@ class TribulationConfigTest {
         cfg.bloodMoon.moonBonusMultiplier = 0.5;
         cfg.bloodMoon.spawnCapMultiplier = -2.0;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(1.0, cfg.bloodMoon.chance);
         assertEquals(1.0, cfg.bloodMoon.moonBonusMultiplier);
@@ -249,7 +296,7 @@ class TribulationConfigTest {
     void validate_clampsNegativeBloodMoonChance() {
         TribulationConfig cfg = new TribulationConfig();
         cfg.bloodMoon.chance = -0.1;
-        cfg.validate();
+        cfg.clamp();
         assertEquals(0.0, cfg.bloodMoon.chance);
     }
 
@@ -371,7 +418,7 @@ class TribulationConfigTest {
         }
         // Untouched zombie fields fall back to MobScaling defaults (Gson leaves unset primitives as 0,
         // since Gson doesn't run the field initializer when only some fields are present in JSON).
-        // So we don't assert damageRate here — it'll be 0, which validate() accepts.
+        // So we don't assert damageRate here — it'll be 0, which clamp() accepts.
         // The contract is "missing mobs filled", not "missing fields within a mob filled".
     }
 
@@ -781,7 +828,7 @@ class TribulationConfigTest {
         cfg.hudOffsetX = 12;
         cfg.hudOffsetY = 20;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(12, cfg.hudOffsetX);
         assertEquals(20, cfg.hudOffsetY);
@@ -1018,7 +1065,7 @@ class TribulationConfigTest {
         cfg.champions.affixes.explosivePower = -3.0;
         cfg.champions.affixes.knockbackAuraIntervalTicks = 0;
 
-        cfg.validate();
+        cfg.clamp();
 
         assertEquals(1.0, cfg.champions.championChance);
         assertEquals(0, cfg.champions.levelThreshold);

@@ -2,7 +2,7 @@
   "name": "tier-up",
   "sample_rate": 44100,
   "peak_dbfs": -1.0,
-  "subtitle": "tribulation.subtitle.tier_up",
+  "subtitle": "subtitles.tribulation.tier_up",
   "seed": 52,
   "ships": "src/main/resources/assets/tribulation/sounds/tier_up.ogg",
   "layers": [

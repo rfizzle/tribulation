@@ -29,7 +29,8 @@
         "wthit": "*",
         "emi": "*",
         "roughlyenoughitems": "*",
-        "jei": "*"
+        "jei": "*",
+        "meridian": "*"
     },
     "mixins": [
         "tribulation.mixins.json",

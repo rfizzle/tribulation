@@ -60,9 +60,10 @@ public final class ModMenuIntegration implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         return parent -> {
-            TribulationConfig config = Tribulation.getConfig();
-            if (config == null) config = new TribulationConfig();
-            TribulationConfig current = config;
+            // Deep working copy — never the live instance. Every save consumer
+            // writes into `current`, and publish() swaps it in as one store, so a
+            // reader mid-tick cannot see one edited field beside an unedited one.
+            TribulationConfig current = Tribulation.getConfig().copy();
 
             ConfigBuilder builder = ConfigBuilder.create()
                     .setParentScreen(parent)
@@ -100,9 +101,8 @@ public final class ModMenuIntegration implements ModMenuApi {
             addThreatParticles(builder, entry, current);
 
             builder.setSavingRunnable(() -> {
-                current.validate();
-                current.save();
-                Tribulation.reloadConfig();
+                // Clamps, persists, and swaps the copy in as the live config in one store.
+                TribulationConfig.publish(current);
                 // Per-player night pressure is server-synced (unlike the
                 // blood-moon tint, which reads local config), so a GUI edit
                 // on an integrated server must re-broadcast it — the periodic

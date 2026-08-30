@@ -408,13 +408,13 @@
     "config.tribulation.champions.regen_health_per_second": "Regen Health per Second",
     "config.tribulation.champions.regen_health_per_second.tooltip": "Health regenerated per second by the Regenerating affix. Default: 1.0.",
 
-    "champion.tribulation.name.one": "%s %s Champion",
-    "champion.tribulation.name.two": "%s %s %s Champion",
-    "affix.tribulation.vampiric": "Vampiric",
-    "affix.tribulation.explosive": "Explosive",
-    "affix.tribulation.knockback_aura": "Repulsing",
-    "affix.tribulation.thorns": "Thorned",
-    "affix.tribulation.regenerating": "Regenerating",
+    "fragment.tribulation.champion.name.one": "%s %s Champion",
+    "fragment.tribulation.champion.name.two": "%s %s %s Champion",
+    "fragment.tribulation.affix.vampiric": "Vampiric",
+    "fragment.tribulation.affix.explosive": "Explosive",
+    "fragment.tribulation.affix.knockback_aura": "Repulsing",
+    "fragment.tribulation.affix.thorns": "Thorned",
+    "fragment.tribulation.affix.regenerating": "Regenerating",
 
     "config.tribulation.category.hardcore_hearts": "Hardcore Hearts",
     "config.tribulation.hardcore_hearts.enabled": "Enabled",
@@ -586,6 +586,6 @@
     "advancements.tribulation.tier_five_mob_killed.title": "Giant Slayer",
     "advancements.tribulation.tier_five_mob_killed.description": "Kill a Tier-5 scaled mob.",
 
-    "tribulation.subtitle.tier_up": "Difficulty tier rises",
-    "tribulation.subtitle.blood_moon_warning": "Blood Moon rises"
+    "subtitles.tribulation.tier_up": "Difficulty tier rises",
+    "subtitles.tribulation.blood_moon_warning": "Blood Moon rises"
 }

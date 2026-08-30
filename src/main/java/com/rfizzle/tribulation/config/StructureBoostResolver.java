@@ -19,7 +19,7 @@ import java.util.function.Predicate;
  * become exact structure-ID entries; {@code #}-prefixed keys become
  * {@link TagKey} entries so whole structure categories (including modded
  * structures) can carry one boost. Unparseable keys are skipped here
- * silently — {@link TribulationConfig#validate()} already warned about them
+ * silently — {@link TribulationConfig#clamp()} already warned about them
  * at load time.
  *
  * <p>Match semantics mirror {@link BiomeOffsetResolver}: an exact

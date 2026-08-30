@@ -130,7 +130,7 @@ class ChampionManagerTest {
         Component name = ChampionManager.championName(
                 List.of(ChampionAffix.VAMPIRIC), Component.literal("Zombie"));
         TranslatableContents contents = (TranslatableContents) name.getContents();
-        assertEquals("champion.tribulation.name.one", contents.getKey());
+        assertEquals("fragment.tribulation.champion.name.one", contents.getKey());
         assertEquals(2, contents.getArgs().length);
     }
 
@@ -139,7 +139,7 @@ class ChampionManagerTest {
         Component name = ChampionManager.championName(
                 List.of(ChampionAffix.VAMPIRIC, ChampionAffix.THORNS), Component.literal("Zombie"));
         TranslatableContents contents = (TranslatableContents) name.getContents();
-        assertEquals("champion.tribulation.name.two", contents.getKey());
+        assertEquals("fragment.tribulation.champion.name.two", contents.getKey());
         assertEquals(3, contents.getArgs().length);
     }
 

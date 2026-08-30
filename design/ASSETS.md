@@ -7,8 +7,7 @@
 > [`design/DESIGN-SYSTEM.md`](../../concord/design/DESIGN-SYSTEM.md) §8).
 > [`DESIGN.md`](DESIGN.md) covers *why* each asset exists; this file covers *where* it lives.
 >
-> Final paths are under `src/main/resources/` unless noted. A separate report sweeps
-> the resource tree for any final asset lacking a `.glyph` source.
+> Final paths are under `src/main/resources/` unless noted.
 
 ## Branding masters
 

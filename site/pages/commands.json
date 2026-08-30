@@ -123,7 +123,7 @@
             },
             {
               "title": "Permissions Mods",
-              "html": ["With a permissions mod (e.g. LuckPerms), nodes follow the pattern <code class='text-accent2'>tribulation.command.&lt;subcommand&gt;</code>."]
+              "html": ["Tribulation checks vanilla op levels only (no permissions-API nodes). Permission mods that remap vanilla op levels (e.g. LuckPerms' op-level overrides) apply as usual."]
             }
           ]
         }

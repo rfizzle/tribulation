@@ -7,6 +7,7 @@ Single, vendor-neutral home for everything AI agents (Claude Code, Jules, future
 | `skills/` | Domain skills (`mc-*/SKILL.md`), **vendored from [rfizzle/concord](https://github.com/rfizzle/concord)** — refresh with `make sync`, never edit here. Claude Code auto-loads via `.claude/skills` symlink; Jules reads them when `AGENTS.md` points to them. |
 | `skills/.concord-rev` | Provenance — the concord commit the skills were last synced from. |
 | `commands/` | Slash commands (`/glyph`, `/sfx`), **vendored from concord** — refreshed by the same `make sync`, never edit here. |
+| `agents/` | Subagent definitions the pipeline skills fan out to (`recon`, the step-6 reviewers), **vendored from concord** — refreshed by the same `make sync`, never edit here. Claude Code reads them via the `.claude/agents` symlink. |
 
 The CI prompts (`code-reviewer.md`, `spec-writer.md`) and the review criteria
 (`review-criteria.yml`) are **not** kept here — the generic suite defaults in
@@ -21,8 +22,8 @@ repo, copy the concord default into `.ai/` and edit it.
 
 ## Changing or adding a skill
 
-`skills/` is wholly owned by the sync — `make sync` mirrors concord's
-`.ai/skills/` (including deletions), so local edits here are overwritten.
+`skills/`, `commands/`, and `agents/` are wholly owned by the sync — `make sync`
+mirrors concord's copies (including deletions), so local edits here are overwritten.
 
 1. Edit or create the skill in `concord/.ai/skills/<name>/SKILL.md` (standard
    frontmatter: `name`, `description`), commit it there.

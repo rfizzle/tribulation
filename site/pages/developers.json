@@ -13,7 +13,7 @@
       "title": "Soft Dependency Setup",
       "blocks": [
         { "type": "prose", "html": ["Compile against Tribulation with <code class='text-accent2'>modCompileOnly</code> so it stays optional at runtime, then guard every call with a mod-loaded check."] },
-        { "type": "code", "label": "Gradle:", "bottomGap": true, "code": "dependencies {\n    modCompileOnly \"maven.modrinth:tribulation:<version>\"\n}" },
+        { "type": "code", "label": "Gradle:", "bottomGap": true, "code": "repositories {\n    // Sibling jars resolve from GitHub Releases through an artifact-only `rfizzle:` ivy repo.\n    ivy {\n        name = 'GitHubReleases'\n        url = 'https://github.com'\n        patternLayout {\n            artifact '/[organisation]/[module]/releases/download/v[revision]/[module]-[revision].jar'\n        }\n        metadataSources { artifact() }\n        content { includeGroup 'rfizzle' }\n    }\n}\n\ndependencies {\n    modCompileOnly \"rfizzle:tribulation:<version>\"\n}" },
         { "type": "prose", "html": ["Guard calls so your mod loads cleanly whether or not Tribulation is present:"] },
         { "type": "code", "code": "if (FabricLoader.getInstance().isModLoaded(\"tribulation\")) {\n    // safe to touch the Tribulation API here\n}" }
       ]
@@ -32,7 +32,13 @@
             ["<code class='text-accent2 whitespace-nowrap'>getEffectiveLevel(Entity)</code>", "int", "Server", "The level that would drive scaling for this entity's position (nearest-player based). Returns 0 off-server."],
             ["<code class='text-accent2 whitespace-nowrap'>getClientLevel()</code>", "int", "Client", "The local player's last-synced level. Returns −1 if unknown or the mod isn't present."],
             ["<code class='text-accent2 whitespace-nowrap'>getScaledTier(Entity)</code>", "OptionalInt", "Server", "The tier the entity was scaled to at spawn. Empty if never scaled."],
-            ["<code class='text-accent2 whitespace-nowrap'>wasScaledByTribulation(Entity)</code>", "boolean", "Server", "Check if an entity was scaled by Tribulation."]
+            ["<code class='text-accent2 whitespace-nowrap'>wasScaledByTribulation(Entity)</code>", "boolean", "Server", "Check if an entity was scaled by Tribulation."],
+            ["<code class='text-accent2 whitespace-nowrap'>isBossScaled(Entity)</code>", "boolean", "Server", "Whether the entity received the boss formula (time + distance axes, health and damage only) rather than per-mob scaling."],
+            ["<code class='text-accent2 whitespace-nowrap'>getMobScalingSummary(Entity)</code>", "Optional&lt;MobScalingSummary&gt;", "Server", "Frozen tier, boss-formula flag, and the attached health/damage modifier sums. Empty if never scaled."],
+            ["<code class='text-accent2 whitespace-nowrap'>getTierThresholds()</code>", "int[]", "Both", "The five configured tier thresholds in ascending order (defaults 50/100/150/200/250); read these instead of hardcoding."],
+            ["<code class='text-accent2 whitespace-nowrap'>isSoulInventoryActive()</code>", "boolean", "Both", "Whether Soul Inventory is enabled and owns keep-on-death for <code class='text-accent2'>#c:soulbound</code> enchants — sibling keep-on-death mechanics stand down when true."],
+            ["<code class='text-accent2 whitespace-nowrap'>isHudVisible()</code>", "boolean", "Client", "Whether the level badge is being drawn right now. False server-side or when hidden by config, F1, an open screen, spectator, or the death screen."],
+            ["<code class='text-accent2 whitespace-nowrap'>getHudHeight()</code>", "int", "Client", "The badge's stacking contribution in px (22 when visible, 0 when hidden) — sum with other Concord HUD slots to place your own element."]
           ]
         }
       ]
@@ -82,7 +88,7 @@
               "title": "Listen for level changes (server)",
               "body": [
                 { "type": "code", "tone": "bone", "code": "import com.rfizzle.tribulation.api.TribulationLevelCallback;\n\nif (FabricLoader.getInstance().isModLoaded(\"tribulation\")) {\n    TribulationLevelCallback.EVENT.register((player, oldLevel, newLevel) -> {\n        player.sendSystemMessage(\n            Component.literal(\"Level: \" + oldLevel + \" → \" + newLevel));\n    });\n}" },
-                { "type": "prose", "html": "The callback fires server-side whenever a player's level changes — from playtime, death relief, Shatter Shards, or an operator command." }
+                { "type": "prose", "html": "The callback fires server-side whenever a player's level changes — from playtime, death relief, offline decay, Shatter or Ascendant Shards, or an operator command." }
               ]
             },
             {

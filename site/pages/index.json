@@ -54,7 +54,7 @@
       "title": "Four Scaling Axes",
       "lede": "Difficulty compounds from four independent sources. Each axis contributes a factor that multiplies mob attributes.",
       "ledeNarrow": true,
-      "footnote": "The four factors combine multiplicatively per attribute, then clamp to a global stat cap. <a href='/features.html#scaling-axes' class='text-accent hover:text-accent2 underline'>See the formula →</a>",
+      "footnote": "The four factors add together per attribute, then clamp to a global stat cap. <a href='/features.html#scaling-axes' class='text-accent hover:text-accent2 underline'>See the formula →</a>",
       "blocks": [
         {
           "type": "cards",

@@ -101,9 +101,10 @@ A **Tribulation** advancement tab tracks progression milestones: the Tier 1–5 
 - Champion mobs — above a level threshold, a small share of hostile spawns become named elites with 1–2 affixes (vampiric, explosive, knockback aura, thorns, regenerating), boosted stats, a particle aura, and improved XP/loot
 - Special zombie variants (Big Zombie, Speed Zombie) with distinct stat profiles
 - Special skeleton variants (Deadeye, Brute) with distinct bow cadence and stat profiles
-- Boss scaling with separate, gentler formula (Ender Dragon, Wither, tagged bosses)
+- Boss scaling with separate, gentler formula (Ender Dragon, Wither, Elder Guardian, Warden, and anything tagged `#c:bosses`)
 - Multiplayer level blend modes (`nearest`/`max`/`average`) plus an optional capped group health bonus per extra nearby player — health only, so damage and XP stay fair
 - Trial spawner scaling from detected-player levels, with an optional ominous upgrade
+- Meridian synergy (optional, never required) — with Meridian installed, tier-4/5 mob weapons and armor also draw enchants from Meridian's curated `meridian:mob_equipment` pool (`meridianEquipmentEnchants`, on by default)
 - Bonus XP proportional to mob difficulty, tunable via `xpMultiplier` (~5x on a fully-scaled mob by default)
 - Per-mob toggle switches for granular control
 - Full compatibility with modded mobs via namespace exclusion and per-entity overrides
@@ -149,13 +150,13 @@ Drop the jar into `mods/` on both server and client. Config generates at `config
 |---------|---------|-------------|
 | **Peek Tier Detail** | **Left Alt** | Hold to overlay a detail panel showing your level, tier, progress to the next level, and the abilities that nearby scaled mobs have at your tier. Release to dismiss. |
 
-Rebind it under **Options → Controls → Key Binds**, in the **Tribulation** category. It is bound to **Left Alt** by default — unused by vanilla and ergonomic to hold. The panel behaves like vanilla's hold-Tab player list (never capturing the mouse or pausing the game), so it is deliberately not bound to Tab, which that list already holds. It hides automatically during F1, open screens, and spectator mode.
+Rebind it under **Options → Controls → Key Binds**, in the **Tribulation** category. It is bound to **Left Alt** by default — unused by vanilla and ergonomic to hold. The panel behaves like vanilla's hold-Tab player list (never capturing the mouse or pausing the game), so it is deliberately not bound to Tab, which that list already holds. It hides automatically during F1, open screens, spectator mode, and the death screen — the same four rules that hide the tier badge itself.
 
 ---
 
 ## Configuration
 
-Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `levelDecay`, `shards`, `ascension`, `hardcoreHearts`, `soulInventory`, `bloodMoon`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `environmentalPressure`, `threatParticles`, and the client HUD fields `enableTierHud`/`hudAnchor`/`hudOffsetX`/`hudOffsetY`.
+Every value is tunable without restart. Key sections: `general`, `timeScaling`, `distanceScaling`, `heightScaling`, `moonPhaseScaling`, `dimensionOffsets`, `biomeOffsets`, `structureBoosts`, `groupHealthBonus`, `statCaps`, `totems`, `deathRelief`, `levelDecay`, `shards`, `ascension`, `hardcoreHearts`, `soulInventory`, `bloodMoon`, `scaling` (per-mob), `unlistedHostileMobs`, `specialZombies`, `specialSkeletons`, `bosses`, `xp`, `champions`, `tiers`, `mobToggles`, `abilities`, `armorEquipment`, `weaponEquipment`, `trialSpawner`, `raidScaling`, `packTactics`, `environmentalPressure`, `threatParticles`, the top-level `meridianEquipmentEnchants` toggle, and the client HUD fields `enableTierHud`/`hudAnchor`/`hudOffsetX`/`hudOffsetY`.
 
 [Full config reference →](https://tribulation.rfizzle.com/config.html)
 
@@ -266,6 +267,10 @@ Install any, combine all.
 - [Meridian](https://meridian.rfizzle.com) — Chart your enchantments.
 - [Mercantile](https://mercantile.rfizzle.com) — Every villager remembers.
 - [Prosperity](https://prosperity.rfizzle.com) — Every chest, yours to discover.
+- [Respite](https://respite.rfizzle.com) — Make the night count.
+- [Distillation](https://distillation.rfizzle.com) — Every drop counts.
+- [Instinct](https://instinct.rfizzle.com) — Worth raising.
+- [Cultivation](https://cultivation.rfizzle.com) — Worth growing.
 
 ---
 

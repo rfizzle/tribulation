@@ -311,7 +311,7 @@
             {
               "id": "bosses",
               "title": "Bosses",
-              "html": ["The Ender Dragon, Wither, and anything tagged <code class='text-accent2'>c:bosses</code> use a separate, gentler formula: health and damage only, time and distance axes only (no height), capped at +300% total. No tier abilities — a boss fight stays a boss fight, just one that grows with you."]
+              "html": ["The Ender Dragon, Wither, Elder Guardian, Warden, and anything tagged <code class='text-accent2'>c:bosses</code> use a separate, gentler formula: health and damage only, time and distance axes only (no height), capped at +300% total. No tier abilities — a boss fight stays a boss fight, just one that grows with you."]
             }
           ]
         },

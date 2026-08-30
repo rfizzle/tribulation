@@ -150,7 +150,7 @@ top of normal scaling:
 
 ### Boss Scaling
 
-The Ender Dragon, Wither, Elder Guardian, and anything tagged `c:bosses` scale
+The Ender Dragon, Wither, Elder Guardian, Warden, and anything tagged `c:bosses` scale
 with a separate, gentler formula — health and damage only, capped at +300%. No
 sudden one-shots; endgame bosses just stay relevant.
 
@@ -203,10 +203,10 @@ their rust, never dropping below a configurable floor.
 
 ### Rewards Scale Too
 
-- **Bonus XP** — scaled mobs drop up to 2× base XP, proportional to their
-  scaling factor
-- **Extra loot** *(opt-in)* — a chance to duplicate a drop, scaling with mob
-  difficulty
+- **Bonus XP** — scaled mobs drop more XP in proportion to their scaling
+  factor (`xpMultiplier`, ~5× on a fully-scaled mob by default)
+- **Extra loot** — Elite Champions roll their loot table an extra time and
+  drop 3× XP
 
 ### Level Badge HUD
 
@@ -244,6 +244,8 @@ bundled** — install whichever you already use.
 - [EMI](https://modrinth.com/mod/emi) / [REI](https://modrinth.com/mod/rei) /
   [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) — Heart Fragment and
   Ascendant Shard recipes
+- [Meridian](https://meridian.rfizzle.com) — tier-4/5 mob gear also draws
+  from Meridian's curated enchant pool; Tether counts as Soulbound
 
 For mod developers: a stable, read-only API
 (`com.rfizzle.tribulation.api`) exposes player level/tier, mob scaling
@@ -288,6 +290,10 @@ modular collection of system overhauls. Install any, combine all:
 - [Meridian](https://meridian.rfizzle.com) — Chart your enchantments.
 - [Mercantile](https://mercantile.rfizzle.com) — Every villager remembers.
 - [Prosperity](https://prosperity.rfizzle.com) — Every chest, yours to discover.
+- [Respite](https://respite.rfizzle.com) — Make the night count.
+- [Distillation](https://distillation.rfizzle.com) — Every drop counts.
+- [Instinct](https://instinct.rfizzle.com) — Worth raising.
+- [Cultivation](https://cultivation.rfizzle.com) — Worth growing.
 
 ## License & credits
 

@@ -39,8 +39,11 @@ not.
 - **How you use it** — you just play. Survive longer, wander farther, delve deeper, and the
   world answers in kind. Nothing to craft or toggle.
 - **What changes for you** — distance and depth stop being free. A far-flung base or a
-  bedrock mine is a standing danger, and the harder the fight, the richer the reward. A rare
-  few scaled mobs spawn as named **champions** with special powers and triple experience.
+  bedrock mine is a standing danger, and the harder the fight, the richer the reward: a
+  tougher mob drops more experience, and bosses scale too (more gently, capped at triple).
+  Once you pass level 50, one scaled mob in twenty spawns as a named **champion** — half
+  again as tough, with up to two powers such as draining your health, exploding on death,
+  or shoving you back — worth triple experience and an extra roll of loot.
 
 ### Mob tiers and the powers they unlock
 
@@ -54,7 +57,8 @@ not.
   in-game heads-up names exactly what changed, so you are never blindsided.
 - **What changes for you** — the same monsters demand new tactics at every tier. Optional
   **Environmental Pressure** (off unless you switch it on) sharpens this at higher tiers:
-  night mobs gain keener senses and their hits can sap your strength or slow you.
+  from tier 3 a landed hit briefly saps your strength (a server can add slowness too), and
+  from tier 4 night mobs spawn with keener senses and the dark grows a shade darker.
 
 ### Blood Moon nights
 
@@ -74,22 +78,25 @@ not.
   rough patch bends the curve back toward you. The punishing layers are all opt-in — a slow
   **level decay** while you are away for days, **hardcore hearts** that strip permanent max
   health each death, and a **soul inventory** that destroys everything you carried unless it
-  is protected.
+  is protected. A popped Totem of Undying shields you from both hearts loss and the level
+  rebate by default.
 - **How you use it** — you choose your stakes before the world begins, or a server sets them
-  for everyone. **Heart Fragments** restore health lost to hardcore hearts; the **Soulbound**
-  enchantment marks the items a soul inventory lets you keep.
+  for everyone. A **Heart Fragment** (a golden apple ringed by four Shatter Shards) restores
+  two hearts lost to hardcore hearts; the **Soulbound** enchantment marks the items a soul
+  inventory lets you keep.
 - **What changes for you** — death means whatever you decide it means, from a gentle
   rubber-band all the way to losing your gear and your hearts for good.
 
 ### Turning the dial: Shatter and Ascendant Shards
 
 - **What it is** — two items that put the difficulty curve in your hands. A **Shatter Shard**
-  is a rare drop (about a 0.5% chance from higher-level mobs) that lowers your difficulty
-  when used; an **Ascendant Shard**, crafted from a Nether Star ringed by four Shatter
+  is a rare drop (a 0.5% chance from scaled mobs once you pass level 25) that lowers your
+  difficulty when used; an **Ascendant Shard**, crafted from a Nether Star ringed by four Shatter
   Shards, does the opposite, jumping your difficulty up.
 - **How you use it** — right-click a Shatter Shard to step down five levels when the world
-  has outrun you; right-click an Ascendant Shard to leap twenty-five levels when you want the
-  fight — and the rewards — to escalate faster than an hour-per-level.
+  has outrun you, at the price of a few seconds of slowness, mining fatigue, and weakness;
+  right-click an Ascendant Shard to leap twenty-five levels when you want the fight — and
+  the rewards — to escalate faster than an hour-per-level.
 - **What changes for you** — mercy and ambition both become things you can hold. Ascending
   trades survivability for deadlier mobs and richer experience and loot.
 
@@ -113,7 +120,8 @@ ask for. `/tribulation info` tells you your level, tier, and progress to the nex
 `/tribulation hearts` shows any health you have lost. Operators can read, set, or reset any
 player's level, restore hearts, force a Blood Moon, inspect the mob they are looking at, and
 reload the settings live. In multiplayer you choose how a crowd of players near one mob is
-read — by the nearest, the average, or the highest. Tribulation needs no other mod to run, on
+read — by the nearest, the average, or the highest — and can let a mob's health grow with
+the size of the party around it (off unless you switch it on). Tribulation needs no other mod to run, on
 singleplayer or a dedicated server.
 
 ## Better together
@@ -124,7 +132,8 @@ them installed nothing is missing.
 - **Prosperity** — a harder-fought world pays out better: your difficulty tier can enrich the
   loot you find, so remoteness and danger both sweeten the chest. Never required.
 - **Meridian** — its keep-on-death Tether and Tribulation's Soulbound are the same promise, so
-  with both installed they settle into one thing to earn instead of two. Never required.
+  with both installed they settle into one thing to earn instead of two — and the weapons and
+  armor tier 4–5 mobs carry draw from Meridian's combat enchantments as well. Never required.
 - **Mercantile** — clerics can trade relief from the curve, selling Shatter Shards and Heart
   Fragments to players who have earned the standing. Never required.
 

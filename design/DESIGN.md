@@ -14,6 +14,14 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 
 *"Survive what comes next."*
 
+### Motif
+
+The **hourglass** — heart in the upper chamber, skulls and fallen hearts in the
+lower (concord [`DESIGN-SYSTEM.md`](../../concord/design/DESIGN-SYSTEM.md) §4).
+It carries the full logo and may recur in headers and flavor art; the icon and
+HUD badge lift its skull as the compact form. It appears in no other member's
+assets.
+
 ### Logo Description
 
 **Full Logo (`art/logo.png`):** A stone-framed hourglass sits within a cracked circular stone border wrapped with dark, thorny vines. The upper chamber holds a glowing red pixel heart; the lower chamber is filled with fallen hearts, skulls, and bones — life draining away. A crimson-red glow emanates from behind the hourglass. The background is dark red-brown brickwork splattered with blood, scattered with bones and skeletal remains. Below, "TRIBULATION" in a blocky pixel font on a stone tablet, with "MINECRAFT DIFFICULTY OVERHAUL" subtitle.
@@ -39,29 +47,66 @@ Tribulation transforms Minecraft's flat difficulty curve into an escalating gaun
 | Surface Card | Dark Stone | `#1a1a1a` | Cards, panels |
 | Surface Elevated | Stone | `#222222` | Elevated surfaces, hover cards |
 
+The first four rows are the signature palette (`DESIGN-SYSTEM.md` §2); Bone, Ash,
+Smoke, Obsidian, Dark Stone, and Stone are the shared neutral tokens (§1,
+`--color-bone` … `--color-elevated`), listed here for reference and never redefined.
+
 ### Typography
 
-- **Headings:** Pixel/blocky display font in gradient (`#DC143C` → `#FF6B35`)
-- **Body:** Monospace stack: SF Mono, Cascadia Code, Fira Code, Consolas
-- **Website gradient animation:** `ember-pulse` keyframes (4s ease-in-out, brightness 1→1.15)
+- **Heading gradient:** `#DC143C` → `#FF6B35`. Everything else — the body
+  stack, the heading pulse, the vanilla-only in-game font — is the standard
+  (`DESIGN-SYSTEM.md` §3).
 
 ---
 
-## 2. Assets
+## 2. HUD Decision
+
+Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `enableTierHud` client config option and positioned by `hudAnchor` / `hudOffsetX` / `hudOffsetY`.
+
+<!-- align 2026-08-31: judgment call — the "why" below is inferred from the code and HUD-STANDARD's test, not from a recorded brand decision. -->
+**Why a slot:** the player's difficulty level and tier are persistent ambient state — they change while walking around and decide what nearby mobs can do — which is exactly the case the standard reserves a slot for. The tint ramp (white → yellow → orange → light red → red → dark crimson across tiers 0–5) keeps the badge readable without text. Everything deeper — level, tier, progress, and the abilities in play — lives in the hold-to-peek tier detail panel (`TierDetailPanelRenderer`, framed by `tier_detail_panel.png`), never on the ambient badge; *when* the badge and panel show is `SPEC.md`'s.
+
+---
+
+## 3. Assets
 
 The full asset manifest — every `.glyph` source under `art/`, the final
 resource/site path it ships as, and what is still `MISSING` a glyph source —
 lives in [`ASSETS.md`](ASSETS.md).
 
+<!-- align 2026-08-31: scaffold — the families below are read off ASSETS.md; the custom-vs-vanilla judgment for each is not yet recorded (guide §3) and is left for the author. -->
+Asset families and the look each carries:
+
+- **HUD skull badge and tier detail frame** — the motif's skull in a bone ramp with crimson accents; the frame's nine-slice corners hold the crimson.
+- **Shard items** (Heart Fragment, Shatter Shard, Ascendant Shard) — *judgment to record.*
+- **Threat particles** (cursed mote, big-zombie dust, speed-zombie streak) — *judgment to record.*
+- **Audio** (tier-up sting, Blood Moon warning) — synthesized `.sfx`; *judgment to record.*
+
 ---
 
-## 3. HUD
+## 4. Generation Prompts
 
-Tribulation holds **slot 1** in the Concord HUD stack and is its reference implementation: an icon-only 16×16 skull glyph tinted by tier, with a 2px level-progress bar beneath it — no inline text. The full visual spec, slot registry, and stacking/coordination contract live in concord [`HUD-STANDARD.md`](../../concord/HUD-STANDARD.md); the element is toggled by the `enableTierHud` client config option.
+<!-- align 2026-08-31: scaffold — no prompt is committed anywhere in the repo; the logo's Gemini origin comes from the prior DESIGN.md §5. -->
+Non-glyph masters and their prompts. Pixel-art sources are the `.glyph` files
+under `art/glyphs/` (see `ASSETS.md`) and are never duplicated here.
+
+- **Full logo** (`art/logo.png`, 2760×1504; Gemini) — prompt **not committed**;
+  regenerate from the §1 logo description with the palette embedded: surfaces
+  `#1a0a0a` / `#2e1010`, Crimson `#DC143C` glow, Ember `#FF6B35`, Bone `#e8e0d4`.
+- **Website hero background, Open Graph image, Discord banner** (Gemini) — planned
+  per `ASSETS.md`; prompts to be committed here when produced, carrying the same hexes.
 
 ---
 
-## 4. Website & Listing Brand Notes
+## 5. Image References
+
+<!-- align 2026-08-31: scaffold — `art/exploration/` does not exist. -->
+No exploration or reference shots are held; `art/exploration/` has not been
+created. The shipped logo (`art/logo.png`) is the brand's only visual reference.
+
+---
+
+## 6. Website & Listing Brand Notes
 
 How the brand lands on the mod's outward surfaces. The *content* lives in its own
 home — page copy in [`site/`](../site/) (rendered by concord's shared template and
@@ -81,7 +126,8 @@ section carries only what is *brand*.
   `#1a0a0a`→`#2e1010` brickwork, blood splatter, drifting embers, the
   hourglass–heart–skull motif centred. The Open Graph / social card is a
   1200×630 framing of that world; the hero background is its tileable,
-  text-safe variant.
+  text-safe variant. Neither is produced yet (`ASSETS.md`): `site/site.json` sets no
+  `ogImage`, so the shared template serves `logo.png` as the card today.
 - **Promotional screenshots** — 1920×1080, vanilla or a clarity-friendly shader,
   each framed on a legible danger read: a scaled mob with a visible stat boost (the
   level badge or a Jade tooltip in shot), a tier-5 ability mid-action, the special
@@ -90,23 +136,39 @@ section carries only what is *brand*.
 
 ---
 
-## 5. Companion Mod Context
+## 7. Concord Context
 
-Tribulation is part of a four-mod suite. Each mod overhauls a different Minecraft system:
+Tribulation is the **difficulty & scaling** member of [Concord](https://github.com/rfizzle/concord),
+a modular collection of system overhauls — install any, combine all. Its silo is
+*how dangerous the world is*: formula-driven mob scaling across time, distance, height,
+and moon-phase axes, tier-gated mob abilities, and opt-in death penalties. It never
+touches enchanting (Meridian), villagers (Mercantile), containers and loot (Prosperity),
+sleep and time (Respite), brewing (Distillation), animals and pets (Instinct), or
+farming (Cultivation).
 
-| Mod | Domain | Color Signature | Icon Motif |
-|-----|--------|----------------|------------|
-| **Meridian** | Enchanting | Violet / Gold | Compass rose |
-| **Mercantile** | Villagers & Trade | Green / Emerald | Market stall / scales |
-| **Tribulation** | Difficulty & Scaling | Crimson / Red | Hourglass with hearts |
-| **Prosperity** | Loot & Containers | Gold / Diamond Cyan | Treasure chest / key |
+**Signature pair against the siblings** (concord `design/DESIGN-SYSTEM.md` §2): Crimson
+`#DC143C` + Ember `#FF6B35` on the `#1a0a0a` / `#2e1010` blood-tinted surface pair. It
+is the suite's only red-family identity — Instinct's Heart Rose `#E5709B` sits in the
+pink range and Distillation's Copper `#E77C56` is an *accent 2* against magenta, so a
+crimson glow reads as Tribulation at a glance and never as either neighbour. The
+hourglass-with-hearts motif appears in no other member's assets.
 
-All four share:
-- Minecraft 1.21.1, Java 21, Fabric
-- Dark base website theme (`#0a0a0a` / `#1a1a1a` / `#222222`)
-- Bone/Ash/Smoke text palette
-- Monospace font stack
-- Pixel art logo style (Gemini-generated)
-- Same website structural pattern (hero → features → config → commands)
-- MIT license
-- Optional Jade/WTHIT, EMI/REI/JEI, ModMenu integrations
+**Shared with every member** — the standards Tribulation follows rather than restates:
+
+- Minecraft 1.21.1, Java 21, Fabric; MIT license.
+- Shared neutrals, typography, dark base theme, and website structure (`DESIGN-SYSTEM.md`
+  §1, §3, §6; the shared site template in concord).
+- Logo per the stone-frame formula (`DESIGN-SYSTEM.md` §4); pixel art through the
+  `/glyph` pipeline (§8), audio through `/sfx` (§9), localization keys per §10.
+- The HUD slot contract (`HUD-STANDARD.md`), the public-API shape (`API-STANDARD.md`),
+  the repository layout (`REPO-LAYOUT.md`), and optional Jade/WTHIT, EMI/REI/JEI, and
+  ModMenu integrations.
+
+The suite's purpose and membership rules live in concord's `VISION.md`.
+
+---
+
+## Open Decisions
+
+- The logo's generation prompt was never committed (§4); recover or re-derive it.
+- Custom-vs-vanilla judgment for the shard, particle, and audio families (§3).

@@ -32,6 +32,8 @@ in the local workspace. Normative for this repo:
 ./gradlew runClient      # launch dev client
 ./gradlew runServer      # launch dev server
 ./gradlew genSources     # decompile MC sources for IDE nav
+./gradlew runDatagen     # regenerate src/main/generated/ (also: make run-datagen)
+./gradlew verifyDatagenIdempotent  # datagen + assert src/main/generated/ is git-clean
 ```
 
 Run a single JUnit test:
@@ -57,8 +59,13 @@ shipped `src/main/resources/fabric.mod.json`. `fabric-gametest-api-v1` is a
 dev-only Fabric module whose initializer is ungated: it instantiates every
 declared `fabric-gametest` entrypoint on any dev launch, so an entry in the
 shipped manifest crashes `runServer`, whose run set does not carry the gametest
-source set. `GametestEntrypointTest` guards both halves of this — that the
+source set. `GametestRegistrationTest` guards both halves of this — that the
 shipped manifest stays clean, and that every suite on disk is registered.
+
+Datagen is wired end to end: `data/TribulationDataGenerator.java` is the
+`fabric-datagen` entrypoint, the Loom `datagen` run config writes to
+`src/main/generated/` (committed), and `verifyDatagenIdempotent` fails the build
+if that tree drifts from what the providers emit.
 
 JUnit tests go in the standard `src/test/java` directory. The test classpath
 includes `fabric-loader-junit` but excludes `fabric-api` — tests that need
@@ -96,8 +103,15 @@ The mod has optional integrations (all `modCompileOnly` — not bundled):
 - **Cloth Config** — settings GUI builder
 - **Jade / WTHIT** — tooltip overlays
 - **EMI / REI / JEI** — recipe viewer support
+- **Meridian** (sibling Concord mod) — `compat/meridian/` draws scaled-mob gear
+  enchantments from the `meridian:mob_equipment` tag through Meridian's stable
+  `api` package; guarded by `isModLoaded("meridian")`, `suggests` in
+  `fabric.mod.json`, and falls back to vanilla enchants when absent
 
-Compat classes live under `com.rfizzle.tribulation.compat.<modid>`.
+Compat classes live under `com.rfizzle.tribulation.compat.<modid>` — server-safe
+integrations (`jade`, `wthit`, `meridian`) in `main`, client-only ones (`modmenu`,
+`emi`, `rei`, `jei`) in the `client` source set; `compat/common` holds the shared
+helpers in each.
 
 ## Where things live
 

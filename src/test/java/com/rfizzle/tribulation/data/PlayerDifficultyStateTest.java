@@ -1,6 +1,7 @@
 // Tier: 1 (pure JUnit)
 package com.rfizzle.tribulation.data;
 
+import com.rfizzle.tribulation.config.TribulationConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import org.junit.jupiter.api.Test;
@@ -1176,14 +1177,16 @@ class PlayerDifficultyStateTest {
 
     @Test
     void nbt_load_clampsOverflowLevelAndHeartsLost() {
-        // Config is null in unit tests, so load() falls back to the loosest safe
-        // bounds: level ceiling = MAX_SANE_LEVEL, heartsLost ceiling = 20 - 1.
+        // Config loads lazily on first use, so even here load() derives its bounds
+        // from the live config: level ceiling = MAX_SANE_LEVEL, heartsLost ceiling
+        // = 20 - hardcoreHearts.minimumHearts (2 by default, so 18).
         UUID uuid = UUID.randomUUID();
         PlayerDifficultyState loaded = PlayerDifficultyState.load(
                 singlePlayerTag(uuid, Integer.MAX_VALUE, 999), null);
 
+        int minimumHearts = TribulationConfig.get().hardcoreHearts.minimumHearts;
         assertEquals(PlayerDifficultyState.MAX_SANE_LEVEL, loaded.getLevel(uuid));
-        assertEquals(19, loaded.getHeartsLost(uuid));
+        assertEquals(20 - minimumHearts, loaded.getHeartsLost(uuid));
     }
 
     @Test

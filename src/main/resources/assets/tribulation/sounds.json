@@ -1,12 +1,12 @@
 {
     "tier_up": {
-        "subtitle": "tribulation.subtitle.tier_up",
+        "subtitle": "subtitles.tribulation.tier_up",
         "sounds": [
             "tribulation:tier_up"
         ]
     },
     "blood_moon_warning": {
-        "subtitle": "tribulation.subtitle.blood_moon_warning",
+        "subtitle": "subtitles.tribulation.blood_moon_warning",
         "sounds": [
             "tribulation:blood_moon_warning"
         ]

@@ -97,6 +97,67 @@ public class TribulationConfig {
     public int hudOffsetX = 4;
     public int hudOffsetY = 4;
 
+    /**
+     * The active config. Volatile so a reload on the server thread is visible to
+     * the render thread and netty; assigned only through {@link #get()},
+     * {@link #reload()} and {@link #publish(TribulationConfig)}, always as a whole
+     * reference, so one {@code get()} returns one consistent snapshot.
+     */
+    private static volatile TribulationConfig INSTANCE;
+
+    /**
+     * The active config, loading it on first use. Lazy and double-checked so a
+     * caller that runs ahead of {@code Tribulation.onInitialize()} (a mixin in a
+     * static initializer, an entrypoint ordered before ours) gets a config
+     * rather than {@code null}. Snapshot it once per method — every call is a
+     * volatile read, and two of them can straddle a {@code /tribulation reload}.
+     */
+    public static TribulationConfig get() {
+        TribulationConfig local = INSTANCE;
+        if (local == null) {
+            synchronized (TribulationConfig.class) {
+                local = INSTANCE;
+                if (local == null) {
+                    INSTANCE = local = load();
+                }
+            }
+        }
+        return local;
+    }
+
+    /** Re-reads the file and swaps the whole reference in one store. */
+    public static void reload() {
+        synchronized (TribulationConfig.class) {
+            INSTANCE = load();
+        }
+    }
+
+    /**
+     * The commit point for an edited working copy (see {@link #copy()}): clamps,
+     * persists, then swaps it in as the live instance in one store, so readers
+     * mid-tick never observe a half-applied edit.
+     */
+    public static void publish(TribulationConfig next) {
+        next.fillDefaults();
+        next.clamp();
+        next.save();
+        synchronized (TribulationConfig.class) {
+            INSTANCE = next;
+        }
+    }
+
+    /**
+     * A deep copy for editing off the live instance. Round-trips through the
+     * on-disk serializer, which carries every field (there is no client-only
+     * section the sync serializer drops here — {@link #toJson()} differs only in
+     * formatting); the transient resolver caches are rebuilt lazily.
+     */
+    public TribulationConfig copy() {
+        TribulationConfig copy = GSON.fromJson(GSON.toJson(this), TribulationConfig.class);
+        copy.fillDefaults();
+        return copy;
+    }
+
     public static TribulationConfig load() {
         return load(configPath());
     }
@@ -136,7 +197,7 @@ public class TribulationConfig {
                 return fresh;
             }
             config.fillDefaults();
-            config.validate();
+            config.clamp();
 
             if (migrated) {
                 config.save(path);
@@ -147,13 +208,13 @@ public class TribulationConfig {
             Tribulation.LOGGER.error("Failed to parse config at {}; using defaults (existing file left untouched)", path, e);
             TribulationConfig fallback = new TribulationConfig();
             fallback.fillDefaults();
-            fallback.validate();
+            fallback.clamp();
             return fallback;
         } catch (IOException e) {
             Tribulation.LOGGER.error("Failed to read config at {}; using defaults", path, e);
             TribulationConfig fallback = new TribulationConfig();
             fallback.fillDefaults();
-            fallback.validate();
+            fallback.clamp();
             return fallback;
         }
     }
@@ -183,7 +244,7 @@ public class TribulationConfig {
                 config = new TribulationConfig();
             }
             config.fillDefaults();
-            config.validate();
+            config.clamp();
             return config;
         } catch (Exception e) {
             // Untrusted network input: a hostile or buggy server can send JSON
@@ -194,7 +255,7 @@ public class TribulationConfig {
             Tribulation.LOGGER.error("Failed to parse synced config; using defaults", e);
             TribulationConfig fallback = new TribulationConfig();
             fallback.fillDefaults();
-            fallback.validate();
+            fallback.clamp();
             return fallback;
         }
     }
@@ -512,11 +573,12 @@ public class TribulationConfig {
 
     /**
      * Bounds every numeric field to its valid range, logging each correction.
-     * Called after load (post-deserialize) and again on ModMenu save, so the
-     * on-disk file can never hold out-of-range values no matter how it was
-     * populated.
+     * Runs after every path that populates the object — file load, ModMenu
+     * publish, and sync-payload decode — so a config that reached memory by any
+     * route has been clamped and the on-disk file can never hold out-of-range
+     * values no matter how it was populated.
      */
-    public void validate() {
+    public void clamp() {
         if (general.maxLevel < 1) {
             Tribulation.LOGGER.warn("general.maxLevel must be >= 1, got {}; clamped to 1", general.maxLevel);
             general.maxLevel = 1;
@@ -864,24 +926,31 @@ public class TribulationConfig {
         m.toughnessCap = clampNonNegative(prefix + ".toughnessCap", m.toughnessCap);
     }
 
+    // Gson's lenient reader yields a non-finite double from a bare NaN/Infinity
+    // token, their quoted forms, or an overflow like 1e400. NaN is false against
+    // every ordering comparison, so `value < 0` passes it through, and +Infinity
+    // satisfies every lower bound — the open-topped helpers need both guards
+    // (negated lower bound, plus an explicit isFinite gate).
     private static double clampNonNegative(String name, double value) {
-        if (value < 0) {
-            Tribulation.LOGGER.warn("{} must be >= 0, got {}; clamped to 0", name, value);
+        if (!(value >= 0) || !Double.isFinite(value)) {
+            Tribulation.LOGGER.warn("{} must be a finite value >= 0, got {}; clamped to 0", name, value);
             return 0;
         }
         return value;
     }
 
     private static double clampPositive(String name, double value) {
-        if (value <= 0) {
-            Tribulation.LOGGER.warn("{} must be > 0, got {}; clamped to 1", name, value);
+        if (!(value > 0) || !Double.isFinite(value)) {
+            Tribulation.LOGGER.warn("{} must be a finite value > 0, got {}; clamped to 1", name, value);
             return 1;
         }
         return value;
     }
 
     private static double clampUnit(String name, double value) {
-        if (value < 0) {
+        // Finite ceiling: +Infinity falls to the upper branch, so only the
+        // negated lower bound is needed to fold NaN.
+        if (!(value >= 0)) {
             Tribulation.LOGGER.warn("{} must be in [0,1], got {}; clamped to 0", name, value);
             return 0;
         }

@@ -70,7 +70,7 @@ public final class TribulationHudOverlay implements HudRenderCallback {
      * <p>Reflection target for {@code TribulationAPI.getHudHeight()} — keep
      * the signature stable.
      */
-    public static int getHudHeightContribution() {
+    public static int getHudHeight() {
         return isHudVisible() ? STANDARD_ELEMENT_HEIGHT + STACK_GAP : 0;
     }
 

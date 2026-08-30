@@ -23,8 +23,11 @@ public final class ClientNetworkHandler {
                     ClientTribulationState.setBloodMoonActive(payload.active()));
         });
         ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.TYPE, (payload, context) -> {
-            TribulationConfig synced = TribulationConfig.fromJson(payload.json());
             context.client().execute(() -> {
+                // Parse and clamp here, on the client thread — never in decode() or
+                // on the netty callback: clamp() logs one line per correction, and a
+                // remote server controls how many corrections it sends and how often.
+                TribulationConfig synced = TribulationConfig.fromJson(payload.json());
                 ClientConfigState.setServerConfig(synced);
                 // Re-drive any viewer that can refresh live so an already-open
                 // Shatter Shard info panel reflects the new tuning after a

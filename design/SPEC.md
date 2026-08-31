@@ -133,6 +133,8 @@ Reference values (`rate / cap`, full default set in `TribulationConfig.defaultSc
 
 After scaling and any equipped armor, `MobScalingHandler` clamps the combined `ARMOR`/`ARMOR_TOUGHNESS` (when `armorEquipment.enabled`) and `ATTACK_DAMAGE` (when `weaponEquipment.enabled`) so the **total** value stays under a hard ceiling. Only the Tribulation buff portion is trimmed proportionally; base value, equipment, and foreign modifiers keep their full value. Ceilings: `armorCeiling=24.0`, `toughnessCeiling=15.0`, `damageCeiling=20.0`.
 
+The ceilings bound the **scaling + equipment pipeline**, not everything that can ever touch the mob: the champion roll (§21) runs after the clamp and its `ADD_MULTIPLIED_TOTAL` multipliers stack on the clamped total **by design** — a named, aura'd elite is allowed to break the ceiling (effective elite damage ceiling = `damageCeiling × damageMultiplier`, 25.0 at defaults). Clamping after the roll would make a champion of an at-ceiling mob hit exactly like a non-champion, which guts the feature where it should bite. The multiplayer group-health bonus (§18) is likewise documented as outside the health axis cap.
+
 ### Scope
 
 - Only server-side `Mob` entities. Players, non-mob entities, and entities in `general.excludedEntities` (default contains `the_bumblezone:cosmic_crystal_entity`) are skipped.
@@ -185,7 +187,8 @@ When the sum exceeds the cap, the two axes scale down proportionally. Distance i
 
 ### Scope
 
-- Bosses receive no tier abilities, variants, or equipment — only the boss health/damage buff.
+- Bosses receive no tier abilities, variants, equipment, or champion rolls — the stat change is only the boss health/damage buff.
+- Bosses **do** carry the frozen `SCALED_TIER` attachment (set from the player level like any scaled mob). That is deliberate: `getScaledTier`/`getMobScalingSummary` answer for bosses, a tier-5 boss kill earns the tier-5 stat and advancement, and the tier-gated *cues and reactions* apply to them like any scaled hostile — the `threat_tier` mote at tier ≥ 4 (§19) and debilitating strikes on melee (§20). A tier-5 world's Wither telegraphs and hits like the world it lives in.
 - Boss-formula scaling is detectable via `TribulationAPI.isBossScaled` (reads the boss-axis modifiers).
 
 ---

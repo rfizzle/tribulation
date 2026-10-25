@@ -11,6 +11,11 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.ServerLevelData;
+
+import java.io.File;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -160,5 +165,111 @@ public class DeathReliefGameTest implements FabricGameTest {
         } finally {
             cfg.deathRelief.enabled = savedEnabled;
         }
+    }
+
+    private static final long GAME_TIME = 1_000_000L;
+
+    /**
+     * Runs {@code body} with the overworld game time pinned to {@link #GAME_TIME}
+     * (far above the session tick count), restoring the original afterwards.
+     * The persisted cooldown must be keyed to this clock, not the per-session
+     * {@code getTickCount}.
+     */
+    private static void withGameTime(MinecraftServer server, Runnable body) {
+        ServerLevelData data = (ServerLevelData) server.overworld().getLevelData();
+        long original = data.getGameTime();
+        data.setGameTime(GAME_TIME);
+        TribulationConfig cfg = Tribulation.getConfig();
+        boolean savedEnabled = cfg.deathRelief.enabled;
+        int savedAmount = cfg.deathRelief.amount;
+        int savedCooldown = cfg.deathRelief.cooldownTicks;
+        int savedMin = cfg.deathRelief.minimumLevel;
+        cfg.deathRelief.enabled = true;
+        cfg.deathRelief.amount = 2;
+        cfg.deathRelief.cooldownTicks = 6000;
+        cfg.deathRelief.minimumLevel = 0;
+        try {
+            body.run();
+        } finally {
+            data.setGameTime(original);
+            cfg.deathRelief.enabled = savedEnabled;
+            cfg.deathRelief.amount = savedAmount;
+            cfg.deathRelief.cooldownTicks = savedCooldown;
+            cfg.deathRelief.minimumLevel = savedMin;
+        }
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void deathRelief_appliesAfterRestartWhenCooldownElapsedInGameTime(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        MinecraftServer server = helper.getLevel().getServer();
+        withGameTime(server, () -> {
+            int max = Tribulation.getConfig().general.maxLevel;
+            PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+            state.setLevel(player.getUUID(), 20, max);
+            // Previous death 7000 game ticks ago (cooldown 6000 has elapsed).
+            state.reduceLevel(player.getUUID(), 0, 6000, 0, GAME_TIME - 7000);
+
+            // Cold read of the saved stamp, as a restarted server would see it.
+            server.overworld().getDataStorage().save();
+            File dataDir = server.getWorldPath(LevelResource.ROOT).resolve("data").toFile();
+            PlayerDifficultyState reloaded = new DimensionDataStorage(
+                    dataDir, server.getFixerUpper(), server.registryAccess())
+                    .computeIfAbsent(PlayerDifficultyState.FACTORY, PlayerDifficultyState.STORAGE_KEY);
+            helper.assertValueEqual(reloaded.getLastDeathTick(player.getUUID()), GAME_TIME - 7000,
+                    "death stamp survives a storage reload");
+
+            // The session tick count (restarted at 0) must not be the clock.
+            DeathReliefHandler.maybeApplyPenalty(player);
+
+            helper.assertValueEqual(state.getLevel(player.getUUID()), 18,
+                    "relief applies once the cooldown elapsed in persistent game time");
+            helper.assertValueEqual(state.getLastDeathTick(player.getUUID()), GAME_TIME,
+                    "death is stamped in overworld game time");
+        });
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void deathRelief_secondDeathInsideWindowBlockedAtGameTime(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        MinecraftServer server = helper.getLevel().getServer();
+        withGameTime(server, () -> {
+            PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+            state.setLevel(player.getUUID(), 20, Tribulation.getConfig().general.maxLevel);
+            // Previous death 100 game ticks ago: still inside the window.
+            state.reduceLevel(player.getUUID(), 0, 6000, 0, GAME_TIME - 100);
+
+            DeathReliefHandler.maybeApplyPenalty(player);
+
+            helper.assertValueEqual(state.getLevel(player.getUUID()), 20,
+                    "death inside the cooldown window is not relieved");
+            helper.assertValueEqual(state.getLastDeathTick(player.getUUID()), GAME_TIME - 100,
+                    "blocked death does not move the anchor");
+        });
+        helper.succeed();
+    }
+
+    @SuppressWarnings("removal")
+    @GameTest(template = "tribulation:empty_3x3")
+    public void deathRelief_legacyStampAboveGameTimeDoesNotBlock(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        MinecraftServer server = helper.getLevel().getServer();
+        withGameTime(server, () -> {
+            PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
+            state.setLevel(player.getUUID(), 20, Tribulation.getConfig().general.maxLevel);
+            // A 1.1.0 stamp in session-tick units that exceeds the current game time.
+            state.reduceLevel(player.getUUID(), 0, 6000, 0, GAME_TIME + 500_000);
+
+            DeathReliefHandler.maybeApplyPenalty(player);
+
+            helper.assertValueEqual(state.getLevel(player.getUUID()), 18,
+                    "legacy future-dated stamp does not block relief");
+            helper.assertValueEqual(state.getLastDeathTick(player.getUUID()), GAME_TIME,
+                    "stamp is rewritten in game time");
+        });
+        helper.succeed();
     }
 }

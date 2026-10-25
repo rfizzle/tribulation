@@ -338,6 +338,18 @@ class PlayerDifficultyStateTest {
     }
 
     @Test
+    void reduceLevel_legacyStampAboveCurrentClockDoesNotBlock() {
+        PlayerDifficultyState state = new PlayerDifficultyState();
+        UUID uuid = UUID.randomUUID();
+        PlayerDifficultyState.PlayerData pd = state.getPlayerData(uuid);
+        pd.level = 10;
+        pd.lastDeathTick = 900_000L; // 1.1.0 session-tick stamp, ahead of the game-time clock
+        assertTrue(state.reduceLevel(uuid, 2, 6000, 0, 1_000L));
+        assertEquals(8, state.getLevel(uuid));
+        assertEquals(1_000L, pd.lastDeathTick);
+    }
+
+    @Test
     void reducePlayerLevel_dropsByAmountAndMarksDirty() {
         PlayerDifficultyState state = new PlayerDifficultyState();
         UUID uuid = UUID.randomUUID();

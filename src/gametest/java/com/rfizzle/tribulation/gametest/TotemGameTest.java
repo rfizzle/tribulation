@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -23,10 +24,9 @@ import net.minecraft.world.item.Items;
 
 public class TotemGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void defaultBehavior_noDeathReliefOnTotemPop(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
 
@@ -38,14 +38,13 @@ public class TotemGameTest implements FabricGameTest {
 
         int levelAfter = state.getLevel(player.getUUID());
         helper.assertValueEqual(levelAfter, levelBefore, "Level should not change on totem pop by default");
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void countsAsDeathRelief_true_reducesLevel(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -66,15 +65,14 @@ public class TotemGameTest implements FabricGameTest {
         } finally {
             cfg.totems.countsAsDeathRelief = savedTotemRelief;
             cfg.deathRelief.enabled = savedReliefEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void countsAsDeathRelief_cooldown_honored(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -100,15 +98,14 @@ public class TotemGameTest implements FabricGameTest {
         } finally {
             cfg.totems.countsAsDeathRelief = savedTotemRelief;
             cfg.deathRelief.enabled = savedReliefEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void countsAsDeathRelief_parentDisabled_noLevelChange(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -130,15 +127,14 @@ public class TotemGameTest implements FabricGameTest {
         } finally {
             cfg.totems.countsAsDeathRelief = savedTotemRelief;
             cfg.deathRelief.enabled = savedReliefEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void protectsHearts_parentDisabled_noHeartsLost(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -162,15 +158,14 @@ public class TotemGameTest implements FabricGameTest {
         } finally {
             cfg.hardcoreHearts.enabled = savedHeartsEnabled;
             cfg.totems.protectsHearts = savedProtect;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void defaultBehavior_protectsHearts_true_noHeartsLost(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -190,14 +185,13 @@ public class TotemGameTest implements FabricGameTest {
             });
         } finally {
             cfg.hardcoreHearts.enabled = savedHeartsEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void protectsHearts_false_deductsHearts(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -221,7 +215,7 @@ public class TotemGameTest implements FabricGameTest {
         } finally {
             cfg.hardcoreHearts.enabled = savedHeartsEnabled;
             cfg.totems.protectsHearts = savedProtect;
-            player.discard();
+            MockPlayers.retire(player);
         }
     }
 
@@ -249,10 +243,9 @@ public class TotemGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_neverTriggeredByTotemPop(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         TribulationConfig cfg = Tribulation.getConfig();
 
         boolean savedSoulEnabled = cfg.soulInventory.enabled;
@@ -269,7 +262,7 @@ public class TotemGameTest implements FabricGameTest {
             });
         } finally {
             cfg.soulInventory.enabled = savedSoulEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
     }
 }

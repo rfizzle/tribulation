@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -98,7 +99,7 @@ public class MobScalingGameTest implements FabricGameTest {
     // These also guard the player-mode filter. getEffectiveLevel uses
     // EntitySelector.NO_SPECTATORS — the same predicate the NEAREST path applies via
     // world.getNearestPlayer(entity, range) — so creative players still count and
-    // only spectators are dropped. makeMockServerPlayerInLevel hardcodes
+    // only spectators are dropped. MockPlayers.serverPlayerInLevel (replicating the vanilla mock) hardcodes
     // isCreative()=true, so both mock players here are creative: if the filter ever
     // regressed to NO_CREATIVE_OR_SPECTATOR, both would be excluded, the zombie would
     // fall back to base 20 HP, and these assertions would fail. (Spectator exclusion
@@ -137,7 +138,6 @@ public class MobScalingGameTest implements FabricGameTest {
         assertGroupBonusHp(helper, 1, 0.2, 1.0, 20.0f);
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void zombieSpawn_fullMoon_reachesExtraHp(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -171,7 +171,7 @@ public class MobScalingGameTest implements FabricGameTest {
         // stack on top of the moon bonus.
         cfg.general.mobDetectionRange = 2.0;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
@@ -191,7 +191,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.general.mobDetectionRange = savedRange;
             helper.getLevel().setDayTime(savedTime);
             helper.getLevel().updateSkyBrightness();
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
@@ -204,7 +204,6 @@ public class MobScalingGameTest implements FabricGameTest {
      * min(50 * 0.01, 2.5) = 0.5 → 20 * (1 + 0.5) = 30 HP. The other axes (and
      * special variants) are disabled so the assertion reflects the offset alone.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void zombieSpawn_dimensionOffset_scalesAsHigherLevel(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
@@ -229,7 +228,7 @@ public class MobScalingGameTest implements FabricGameTest {
         cfg.general.mobDetectionRange = 2.0;
         cfg.dimensionOffsets.put("minecraft:overworld", 50);
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
@@ -249,7 +248,7 @@ public class MobScalingGameTest implements FabricGameTest {
             } else {
                 cfg.dimensionOffsets.put("minecraft:overworld", savedOffset);
             }
-            player.discard();
+            MockPlayers.retire(player);
         }
 
         Zombie z = zombie;
@@ -297,7 +296,6 @@ public class MobScalingGameTest implements FabricGameTest {
      * the {@link #zombieSpawn_dimensionOffset_scalesAsHigherLevel} setup with
      * the biome map in place of the dimension map.
      */
-    @SuppressWarnings("removal")
     private void assertBiomeOffsetHp(GameTestHelper helper, String offsetKey) {
         MinecraftServer server = helper.getLevel().getServer();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -322,7 +320,7 @@ public class MobScalingGameTest implements FabricGameTest {
         cfg.dimensionOffsets.put("minecraft:overworld", 0);
         cfg.biomeOffsets.put(offsetKey, 50);
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
@@ -347,7 +345,7 @@ public class MobScalingGameTest implements FabricGameTest {
             } else {
                 cfg.biomeOffsets.put(offsetKey, savedBiomeOffset);
             }
-            player.discard();
+            MockPlayers.retire(player);
         }
 
         Zombie z = zombie;
@@ -398,7 +396,6 @@ public class MobScalingGameTest implements FabricGameTest {
      * cache invalidates by config identity, and gametests mutate the shared
      * config in place.
      */
-    @SuppressWarnings("removal")
     private void assertStructureBoostHp(GameTestHelper helper, boolean useTag) {
         ServerLevel world = helper.getLevel();
         MinecraftServer server = world.getServer();
@@ -448,7 +445,7 @@ public class MobScalingGameTest implements FabricGameTest {
         chunk.addReferenceForStructure(mineshaft, chunk.getPos().toLong());
         StructureBoostManager.invalidate(world);
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         player.teleportTo(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5);
         state.setLevel(player.getUUID(), 0, cfg.general.maxLevel);
 
@@ -482,7 +479,7 @@ public class MobScalingGameTest implements FabricGameTest {
             // Purge zones cached while the boost entry existed; the lingering
             // stamped start is inert with no boost configured for it.
             StructureBoostManager.invalidate(world);
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
@@ -502,10 +499,9 @@ public class MobScalingGameTest implements FabricGameTest {
      * on the main server thread, so the enable/spawn/restore sequence is atomic
      * with respect to any other test's spawn call.
      */
-    @SuppressWarnings("removal")
     private void assertTimeAxisHp(GameTestHelper helper, int playerLevel, float expectedMaxHp) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        // makeMockServerPlayerInLevel places the player near (0,0,0) of the level.
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
+        // MockPlayers.serverPlayerInLevel places the player near (0,0,0) of the level.
         // Each gametest runs at a randomized far-out position, so we must teleport
         // the player into the test region for world.getNearestPlayer(mob, range)
         // to reach them. One block away from the zombie spawn is well inside the
@@ -560,11 +556,10 @@ public class MobScalingGameTest implements FabricGameTest {
      *
      * <p>The players exercise the real {@link ScalingEngine#getEffectiveLevel}
      * {@code world.players()} loop and its NO_SPECTATORS filter end-to-end. Game mode
-     * is not configurable: {@code makeMockServerPlayerInLevel} hardcodes
+     * is not configurable: {@code MockPlayers.serverPlayerInLevel} hardcodes
      * isCreative()=true / isSpectator()=false, so every mock is a counted (creative)
      * player. That is enough to guard the filter — see the call-site comment.
      */
-    @SuppressWarnings("removal")
     private void assertMultiplayerHp(GameTestHelper helper,
             TribulationConfig.ScalingMode mode, float expectedMaxHp, int... levels) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -592,7 +587,7 @@ public class MobScalingGameTest implements FabricGameTest {
 
         try {
             for (int level : levels) {
-                ServerPlayer p = helper.makeMockServerPlayerInLevel();
+                ServerPlayer p = MockPlayers.serverPlayerInLevel(helper);
                 p.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
                 state.setLevel(p.getUUID(), level, cfg.general.maxLevel);
                 players.add(p);
@@ -607,7 +602,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.champions.enabled = savedChampions;
             cfg.general.mobDetectionRange = savedRange;
             for (ServerPlayer p : players) {
-                p.discard();
+                MockPlayers.retire(p);
             }
         }
         helper.succeed();
@@ -623,7 +618,6 @@ public class MobScalingGameTest implements FabricGameTest {
      * that factor) don't inflate with group size. Isolation and restore
      * follow {@link #assertMultiplayerHp}.
      */
-    @SuppressWarnings("removal")
     private void assertGroupBonusHp(GameTestHelper helper, int playerCount,
             double perPlayerBonus, double maxBonus, float expectedMaxHp) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -656,7 +650,7 @@ public class MobScalingGameTest implements FabricGameTest {
 
         try {
             for (int i = 0; i < playerCount; i++) {
-                ServerPlayer p = helper.makeMockServerPlayerInLevel();
+                ServerPlayer p = MockPlayers.serverPlayerInLevel(helper);
                 p.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
                 state.setLevel(p.getUUID(), 0, cfg.general.maxLevel);
                 players.add(p);
@@ -677,7 +671,7 @@ public class MobScalingGameTest implements FabricGameTest {
             cfg.moonPhaseScaling.enabled = savedMoon;
             cfg.general.mobDetectionRange = savedRange;
             for (ServerPlayer p : players) {
-                p.discard();
+                MockPlayers.retire(p);
             }
         }
         helper.succeed();

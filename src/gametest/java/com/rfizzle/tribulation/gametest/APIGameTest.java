@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.MobScalingSummary;
 import com.rfizzle.tribulation.api.TribulationAPI;
@@ -26,7 +27,7 @@ public class APIGameTest implements FabricGameTest {
 
     @GameTest(template = "tribulation:empty_3x3")
     public void api_levelChangeEventFiresOnSet(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         TribulationConfig cfg = Tribulation.getConfig();
@@ -63,7 +64,7 @@ public class APIGameTest implements FabricGameTest {
 
     @GameTest(template = "tribulation:empty_3x3")
     public void api_levelChangeEventFiresOnIncrementTick(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         TribulationConfig cfg = Tribulation.getConfig();
@@ -121,10 +122,9 @@ public class APIGameTest implements FabricGameTest {
      * spawn so the assertion reflects the time axis alone, same recipe as
      * {@link MobScalingGameTest}.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void api_mobScalingSummary_describesScaledZombie(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(0, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
 
@@ -164,7 +164,6 @@ public class APIGameTest implements FabricGameTest {
     }
 
     /** An entity that never went through scaling reports no summary. */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void api_mobScalingSummary_emptyForUnscaledMob(GameTestHelper helper) {
         Pig pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
@@ -184,7 +183,6 @@ public class APIGameTest implements FabricGameTest {
      * scaling is applied directly at level 100 (bossTimeFactor 0.3 -> capped
      * at bossMaxFactor, comfortably non-zero).
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void api_isBossScaled_distinguishesBossFormulaScaling(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();

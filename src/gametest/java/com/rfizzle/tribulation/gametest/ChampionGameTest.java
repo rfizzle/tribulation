@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.champion.ChampionManager;
 import com.rfizzle.tribulation.config.TribulationConfig;
@@ -32,7 +33,6 @@ public class ChampionGameTest implements FabricGameTest {
      * name visible. Zombie at player level 50 scales to 30 HP; the champion
      * default ×1.5 lifts it to 45 HP.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void aboveThreshold_chanceOne_rollsChampion(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -56,7 +56,7 @@ public class ChampionGameTest implements FabricGameTest {
         cfg.specialZombies.enabled = false;
         cfg.general.mobDetectionRange = 2.0;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
@@ -75,7 +75,7 @@ public class ChampionGameTest implements FabricGameTest {
             cfg.moonPhaseScaling.enabled = savedMoon;
             cfg.specialZombies.enabled = savedSpecial;
             cfg.general.mobDetectionRange = savedRange;
-            player.discard();
+            MockPlayers.retire(player);
         }
 
         Zombie z = zombie;
@@ -101,7 +101,6 @@ public class ChampionGameTest implements FabricGameTest {
      * Below the threshold no spawn ever rolls champion, even at chance 1.0 —
      * the acceptance-criteria "below it, never" guarantee.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void belowThreshold_neverRollsChampion(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -115,7 +114,7 @@ public class ChampionGameTest implements FabricGameTest {
         cfg.champions.championChance = 1.0;
         cfg.general.mobDetectionRange = 2.0;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
@@ -129,7 +128,7 @@ public class ChampionGameTest implements FabricGameTest {
             cfg.champions.levelThreshold = savedThreshold;
             cfg.champions.championChance = savedChance;
             cfg.general.mobDetectionRange = savedRange;
-            player.discard();
+            MockPlayers.retire(player);
         }
 
         Zombie z = zombie;
@@ -144,7 +143,6 @@ public class ChampionGameTest implements FabricGameTest {
     /**
      * Feature disabled: no champion, whatever the threshold/chance.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void featureDisabled_neverRollsChampion(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -158,7 +156,7 @@ public class ChampionGameTest implements FabricGameTest {
         cfg.champions.championChance = 1.0;
         cfg.general.mobDetectionRange = 2.0;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
@@ -172,7 +170,7 @@ public class ChampionGameTest implements FabricGameTest {
             cfg.champions.levelThreshold = savedThreshold;
             cfg.champions.championChance = savedChance;
             cfg.general.mobDetectionRange = savedRange;
-            player.discard();
+            MockPlayers.retire(player);
         }
 
         Zombie z = zombie;

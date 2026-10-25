@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -33,10 +34,9 @@ import net.minecraft.world.item.enchantment.Enchantment;
  */
 public class AdvancementsGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void tierReached_firesCriterion(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
 
@@ -48,11 +48,10 @@ public class AdvancementsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void tierUp_grantsLevelingPlayerOnly(GameTestHelper helper) {
-        ServerPlayer leveler = helper.makeMockServerPlayerInLevel();
-        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        ServerPlayer leveler = MockPlayers.serverPlayerInLevel(helper);
+        ServerPlayer bystander = MockPlayers.serverPlayerInLevel(helper);
         TribulationConfig cfg = Tribulation.getConfig();
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
 
@@ -64,7 +63,6 @@ public class AdvancementsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulboundSurvived_firesCriterion(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
@@ -73,8 +71,8 @@ public class AdvancementsGameTest implements FabricGameTest {
         cfg.soulInventory.enabled = true;
         cfg.soulInventory.respectKeepInventory = false;
         try {
-            ServerPlayer oldPlayer = helper.makeMockServerPlayerInLevel();
-            ServerPlayer newPlayer = helper.makeMockServerPlayerInLevel();
+            ServerPlayer oldPlayer = MockPlayers.serverPlayerInLevel(helper);
+            ServerPlayer newPlayer = MockPlayers.serverPlayerInLevel(helper);
 
             Holder<Enchantment> soulbound = helper.getLevel().getServer().registryAccess()
                     .registryOrThrow(Registries.ENCHANTMENT)
@@ -95,10 +93,9 @@ public class AdvancementsGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void shatterShard_firesCriterion(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(TribulationItems.SHATTER_SHARD));
 
         TribulationItems.SHATTER_SHARD.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
@@ -107,14 +104,13 @@ public class AdvancementsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void heartFragment_firesCriterion(GameTestHelper helper) {
         TribulationConfig cfg = Tribulation.getConfig();
         boolean prevEnabled = cfg.hardcoreHearts.enabled;
         cfg.hardcoreHearts.enabled = true;
         try {
-            ServerPlayer player = helper.makeMockServerPlayerInLevel();
+            ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
             state.addHeartsLost(player.getUUID(), 2, cfg.hardcoreHearts.minimumHearts);
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(TribulationItems.HEART_FRAGMENT));
@@ -128,10 +124,9 @@ public class AdvancementsGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void tierFiveMobKill_firesCriterion(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = new BlockPos(1, 2, 1);
 
         Mob mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, pos);

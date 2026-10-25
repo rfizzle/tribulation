@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -43,7 +44,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
     }
 
     private ServerPlayer victim(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         player.setGameMode(GameType.SURVIVAL);
         BlockPos abs = helper.absolutePos(new BlockPos(1, 2, 2));
         player.teleportTo(abs.getX() + 0.5, abs.getY(), abs.getZ() + 0.5);
@@ -77,7 +78,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
             helper.fail("Slowness is off by default and must not be applied");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -91,7 +92,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("Below the tier threshold no effect may be applied");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -107,7 +108,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("The master toggle must disable debilitating strikes");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -123,7 +124,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("Ranged damage sources are out of scope and must not debilitate");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -141,7 +142,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("Explosions are not melee hits and must not debilitate");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -156,7 +157,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("Thorns reflections must not count as debilitating melee hits");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -173,7 +174,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("Only Tribulation-scaled hostiles may apply debilitating strikes");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -199,7 +200,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("applyWeakness=false must suppress Weakness");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -219,8 +220,8 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (novice.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("A low-tier player on the same server must be unaffected");
         }
-        veteran.discard();
-        novice.discard();
+        MockPlayers.retire(veteran);
+        MockPlayers.retire(novice);
         helper.succeed();
     }
 
@@ -260,7 +261,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (!player.hasEffect(MobEffects.WEAKNESS)) {
             helper.fail("AFTER_DAMAGE from a real hurt() should apply the strike effect");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -284,7 +285,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (EnvironmentalPressureHandler.syncNightPressure(player, cfg, 0)) {
             helper.fail("An unchanged zero must not be re-sent");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -300,8 +301,8 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (EnvironmentalPressureHandler.syncNightPressure(novice, cfg, 0)) {
             helper.fail("A fresh low-tier player must not receive an initial zero payload");
         }
-        veteran.discard();
-        novice.discard();
+        MockPlayers.retire(veteran);
+        MockPlayers.retire(novice);
         helper.succeed();
     }
 
@@ -314,7 +315,7 @@ public class EnvironmentalPressureGameTest implements FabricGameTest {
         if (EnvironmentalPressureHandler.syncNightPressure(player, cfg, cfg.tiers.tier5)) {
             helper.fail("A disabled feature must not send night pressure to anyone");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 

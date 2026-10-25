@@ -63,9 +63,19 @@ source set. `GametestRegistrationTest` guards both halves of this — that the
 shipped manifest stays clean, and that every suite on disk is registered.
 
 Datagen is wired end to end: `data/TribulationDataGenerator.java` is the
-`fabric-datagen` entrypoint, the Loom `datagen` run config writes to
-`src/main/generated/` (committed), and `verifyDatagenIdempotent` fails the build
-if that tree drifts from what the providers emit.
+`fabric-datagen` entrypoint and `src/main/generated/` is committed;
+`verifyDatagenIdempotent` fails the build if that tree drifts from what the
+providers emit.
+
+The build wiring — version, base repositories, the gametest and datagen runs,
+JaCoCo and `jacocoMergedReport`, the datagen tasks, packaging excludes — lives in
+the hub-owned `gradle/concord-common.gradle`, and the shared Make targets in
+`concord.mk`; both are synced verbatim, so change them in concord, never here.
+`build.gradle` keeps only the plugins, dependencies, member-only repositories,
+and the `test` inputs specific to this mod. The shared gametest `MockPlayers`
+(`com.rfizzle.concord.gametest`) and the shared guards under
+`com.rfizzle.concord.guard` (shipped-resource hygiene, deprecated mock players)
+are synced the same way.
 
 JUnit tests go in the standard `src/test/java` directory. The test classpath
 includes `fabric-loader-junit` but excludes `fabric-api` — tests that need

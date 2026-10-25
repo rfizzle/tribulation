@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.BloodMoonState;
@@ -38,7 +39,6 @@ public class BloodMoonGameTest implements FabricGameTest {
      * to this test's level-0 player, mirroring the full-moon test in
      * {@code MobScalingGameTest} — the only delta is the multiplier.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void bloodMoon_amplifiesMoonBonusOnSpawn(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
@@ -71,7 +71,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         cfg.bloodMoon.enabled = true;
         cfg.bloodMoon.moonBonusMultiplier = 3.0;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos playerAbs = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(playerAbs.getX() + 0.5, playerAbs.getY(), playerAbs.getZ() + 0.5);
         PlayerDifficultyState levels = PlayerDifficultyState.getOrCreate(server);
@@ -95,7 +95,7 @@ public class BloodMoonGameTest implements FabricGameTest {
             cfg.bloodMoon.moonBonusMultiplier = savedBmMult;
             helper.getLevel().setDayTime(savedTime);
             helper.getLevel().updateSkyBrightness();
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
@@ -113,7 +113,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         boolean savedBlockSleep = cfg.bloodMoon.blockSleep;
         cfg.bloodMoon.blockSleep = true;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos bedPos = helper.absolutePos(new BlockPos(1, 2, 1));
 
         BloodMoonHandler.start(server, state, cfg);
@@ -131,7 +131,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         } finally {
             BloodMoonHandler.end(server, state, cfg);
             cfg.bloodMoon.blockSleep = savedBlockSleep;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
@@ -156,7 +156,7 @@ public class BloodMoonGameTest implements FabricGameTest {
                 .setValue(BedBlock.FACING, Direction.SOUTH)
                 .setValue(BedBlock.PART, BedPart.HEAD));
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos headAbs = helper.absolutePos(BED_HEAD_REL);
         player.teleportTo(headAbs.getX() + 0.5, headAbs.getY(), headAbs.getZ() + 0.5);
         player.startSleepInBed(headAbs).ifLeft(problem ->
@@ -171,7 +171,7 @@ public class BloodMoonGameTest implements FabricGameTest {
         if (player.isSleeping()) {
             player.stopSleepInBed(true, true);
         }
-        player.discard();
+        MockPlayers.retire(player);
     }
 
     /**

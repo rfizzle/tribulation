@@ -1,5 +1,6 @@
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
 import com.rfizzle.tribulation.data.TribulationAttachments;
@@ -36,7 +37,7 @@ public class PackTacticsGameTest implements FabricGameTest {
     }
 
     private ServerPlayer attacker(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         player.setGameMode(GameType.SURVIVAL);
         BlockPos abs = helper.absolutePos(new BlockPos(1, 2, 2));
         player.teleportTo(abs.getX() + 0.5, abs.getY(), abs.getZ() + 0.5);
@@ -59,7 +60,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != player) {
             helper.fail("Same-type packmate should target the attacker at tier 3");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -75,7 +76,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != null) {
             helper.fail("Below the tier threshold no packmate may be alerted");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -93,7 +94,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != null) {
             helper.fail("Disabled master toggle must leave targeting vanilla");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -109,7 +110,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (bystander.getTarget() != null) {
             helper.fail("Cross-type mobs must not share aggro");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -125,7 +126,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != null) {
             helper.fail("Creepers are not in the default eligible-mob list");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -143,8 +144,8 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != other) {
             helper.fail("A packmate already fighting a living target must not be retargeted");
         }
-        player.discard();
-        other.discard();
+        MockPlayers.retire(player);
+        MockPlayers.retire(other);
         helper.succeed();
     }
 
@@ -170,7 +171,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         if (packmate.getTarget() != player) {
             helper.fail("AFTER_DAMAGE from a real hurt() should alert the pack");
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 
@@ -202,7 +203,7 @@ public class PackTacticsGameTest implements FabricGameTest {
         } finally {
             state.setLevel(player.getUUID(), savedLevel, cfg.general.maxLevel);
         }
-        player.discard();
+        MockPlayers.retire(player);
         helper.succeed();
     }
 }

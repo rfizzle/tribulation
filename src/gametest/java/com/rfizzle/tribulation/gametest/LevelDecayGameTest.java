@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
@@ -25,10 +26,9 @@ public class LevelDecayGameTest implements FabricGameTest {
 
     private static final long DAY_MS = LevelDecayHandler.DAY_MS;
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_reducesLevelAfterGraceAndFiresCallback(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -66,7 +66,7 @@ public class LevelDecayGameTest implements FabricGameTest {
             helper.assertValueEqual(callbackNew.get(), 14, "callback new level");
             helper.assertValueEqual(state.getLastSeen(player.getUUID()), now,
                     "anchor re-stamped to login time");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;
@@ -76,10 +76,9 @@ public class LevelDecayGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_withinGraceLeavesLevelUntouched(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -100,7 +99,7 @@ public class LevelDecayGameTest implements FabricGameTest {
 
             helper.assertValueEqual(state.getLevel(player.getUUID()), 20,
                     "level unchanged inside the grace window");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;
@@ -109,10 +108,9 @@ public class LevelDecayGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_flooredAtConfiguredMinimum(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -136,7 +134,7 @@ public class LevelDecayGameTest implements FabricGameTest {
 
             helper.assertValueEqual(state.getLevel(player.getUUID()), 15,
                     "level floored at levelDecay.floor");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;
@@ -146,10 +144,9 @@ public class LevelDecayGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_belowFloorIsNeverRaisedToIt(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -174,7 +171,7 @@ public class LevelDecayGameTest implements FabricGameTest {
 
             helper.assertValueEqual(state.getLevel(player.getUUID()), 5,
                     "level below the floor stays untouched");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;
@@ -184,10 +181,9 @@ public class LevelDecayGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_disabledLeavesLevelAndAnchorUntouched(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -207,17 +203,16 @@ public class LevelDecayGameTest implements FabricGameTest {
             helper.assertValueEqual(state.getLastSeen(player.getUUID()),
                     PlayerDifficultyState.NEVER_SEEN,
                     "no anchor stamped when level decay is disabled");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelDecay_firstLoginWithoutAnchorOnlyStamps(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -239,7 +234,7 @@ public class LevelDecayGameTest implements FabricGameTest {
                     "level unchanged on first login without an anchor");
             helper.assertValueEqual(state.getLastSeen(player.getUUID()), now,
                     "anchor stamped so the next absence is measured");
-            player.discard();
+            MockPlayers.retire(player);
             helper.succeed();
         } finally {
             cfg.levelDecay.enabled = savedEnabled;

@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -20,10 +21,9 @@ import net.minecraft.world.item.Items;
 
 public class DeathPenaltiesGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void hardcoreHearts_deathReducesMaxHealth(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -51,10 +51,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void hardcoreHearts_fragmentRestores(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -85,10 +84,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_nonSoulboundVoided(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -118,10 +116,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_disabledLeavesInventoryUntouched(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -149,10 +146,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_soulboundRetained(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -195,10 +191,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_respectsKeepInventory(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -234,10 +229,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_configuredEnchantCounts(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -255,7 +249,7 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
             helper.assertValueEqual(count, 1, "soulbound item count via configured enchant id");
         } finally {
             cfg.soulInventory.enabled = savedEnabled;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
@@ -265,10 +259,9 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
      * {@code #c:soulbound} convention tag alone must still qualify items —
      * this is the path Meridian's Tether enchant rides in on.
      */
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void soulInventory_conventionTagCounts(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
@@ -294,7 +287,7 @@ public class DeathPenaltiesGameTest implements FabricGameTest {
         } finally {
             cfg.soulInventory.enabled = savedEnabled;
             cfg.soulInventory.soulboundEnchantment = savedEnchant;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }

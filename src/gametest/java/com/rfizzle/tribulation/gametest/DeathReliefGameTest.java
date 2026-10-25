@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.config.TribulationConfig;
@@ -28,10 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DeathReliefGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_reducesLevelAndFiresCallback(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -73,10 +73,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_secondDeathWithinCooldownIsNoOp(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -109,10 +108,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_flooredAtMinimumLevel(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -143,10 +141,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_disabledLeavesLevelUntouched(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         TribulationConfig cfg = Tribulation.getConfig();
 
@@ -199,10 +196,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         }
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_appliesAfterRestartWhenCooldownElapsedInGameTime(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         withGameTime(server, () -> {
             int max = Tribulation.getConfig().general.maxLevel;
@@ -231,10 +227,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_secondDeathInsideWindowBlockedAtGameTime(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         withGameTime(server, () -> {
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
@@ -252,10 +247,9 @@ public class DeathReliefGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void deathRelief_legacyStampAboveGameTimeDoesNotBlock(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         MinecraftServer server = helper.getLevel().getServer();
         withGameTime(server, () -> {
             PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);

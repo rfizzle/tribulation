@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.api.TribulationLevelCallback;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -21,10 +22,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class StatisticsGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void highestLevelReached_isMonotonic(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
 
         // Trigger level change to 15
         TribulationLevelCallback.EVENT.invoker().onLevelChanged(player, 0, 15);
@@ -39,10 +39,9 @@ public class StatisticsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void levelsLostToDeathRelief_incrementsByDelta(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(helper.getLevel().getServer());
         state.setLevel(player.getUUID(), 20, Tribulation.getConfig().general.maxLevel);
         int before = state.getLevel(player.getUUID());
@@ -61,10 +60,9 @@ public class StatisticsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void shardsUsed_incrementsOnConsume(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(TribulationItems.SHATTER_SHARD));
 
         // Use the item
@@ -76,10 +74,9 @@ public class StatisticsGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void tier5MobsKilled_countsTierFiveOnly(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         BlockPos pos = new BlockPos(1, 2, 1);
 
         Mob tier4Mob = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, pos);

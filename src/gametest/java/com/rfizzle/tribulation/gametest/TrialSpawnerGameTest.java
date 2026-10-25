@@ -1,6 +1,7 @@
 // Tier: 3 (Fabric Gametest)
 package com.rfizzle.tribulation.gametest;
 
+import com.rfizzle.concord.gametest.MockPlayers;
 import com.rfizzle.tribulation.Tribulation;
 import com.rfizzle.tribulation.config.TribulationConfig;
 import com.rfizzle.tribulation.data.PlayerDifficultyState;
@@ -48,7 +49,6 @@ public class TrialSpawnerGameTest implements FabricGameTest {
     private static final BlockPos SPAWNER_POS = new BlockPos(1, 0, 1);
     private static final BlockPos SPAWN_POS = new BlockPos(0, 0, 1);
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void trialSpawner_scalesSpawnedMob(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -86,14 +86,14 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         // ENTITY_LOAD hook resolves by proximity, so if the mixin's pre-add scaling
         // ever regressed the mob would scale to tier 1 from the decoy. A tier-3
         // result can therefore only come from the spawner's detected-player list.
-        ServerPlayer detected = helper.makeMockServerPlayerInLevel();
+        ServerPlayer detected = MockPlayers.serverPlayerInLevel(helper);
         state.setLevel(detected.getUUID(), 150, cfg.general.maxLevel);
         detected.setPos(absSpawn.getX() + 1000.0, absSpawn.getY(), absSpawn.getZ());
         dataAccessor.getDetectedPlayers().add(detected.getUUID());
 
         // Decoy: in proximity, not detected. setLevel before spawn so a proximity
         // scan would deterministically yield tier 1.
-        ServerPlayer decoy = helper.makeMockServerPlayerInLevel();
+        ServerPlayer decoy = MockPlayers.serverPlayerInLevel(helper);
         state.setLevel(decoy.getUUID(), 50, cfg.general.maxLevel);
 
         try {
@@ -112,14 +112,13 @@ public class TrialSpawnerGameTest implements FabricGameTest {
                     "Trial-spawned mob must scale from the detected player (tier 3), not the proximity decoy (tier 1)");
             mob.discard();
         } finally {
-            detected.discard();
-            decoy.discard();
+            MockPlayers.retire(detected);
+            MockPlayers.retire(decoy);
             server.setDifficulty(originalDifficulty, true);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void trialSpawner_nearestMode_picksClosestDetectedPlayer(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -153,12 +152,12 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         // relative to the spawn. 'near' sits two blocks from the spawn point (close
         // but not blocking it); 'far' is teleported 1000 blocks out.
         BlockPos nearPos = helper.absolutePos(new BlockPos(2, 0, 1));
-        ServerPlayer near = helper.makeMockServerPlayerInLevel();
+        ServerPlayer near = MockPlayers.serverPlayerInLevel(helper);
         state.setLevel(near.getUUID(), 60, cfg.general.maxLevel); // tier 1
         near.setPos(nearPos.getX() + 0.5, nearPos.getY(), nearPos.getZ() + 0.5);
         dataAccessor.getDetectedPlayers().add(near.getUUID());
 
-        ServerPlayer far = helper.makeMockServerPlayerInLevel();
+        ServerPlayer far = MockPlayers.serverPlayerInLevel(helper);
         state.setLevel(far.getUUID(), 200, cfg.general.maxLevel); // tier 4
         far.setPos(absSpawn.getX() + 1000.0, absSpawn.getY(), absSpawn.getZ());
         dataAccessor.getDetectedPlayers().add(far.getUUID());
@@ -171,14 +170,13 @@ public class TrialSpawnerGameTest implements FabricGameTest {
                     "NEAREST mode must scale from the closest detected player (tier 1), not the farthest (tier 4)");
             mob.discard();
         } finally {
-            near.discard();
-            far.discard();
+            MockPlayers.retire(near);
+            MockPlayers.retire(far);
             server.setDifficulty(originalDifficulty, true);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void trialSpawner_ominousUpgrade_triggersAtHighTier(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -199,7 +197,7 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         cfg.trialSpawner.ominousUpgrade.chance = 1.0f; // guaranteed roll
         cfg.trialSpawner.ominousUpgrade.minimumTier = 3;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         // Level 150 -> tier 3, clearing the configured minimum.
         state.setLevel(player.getUUID(), 150, cfg.general.maxLevel);
@@ -217,12 +215,11 @@ public class TrialSpawnerGameTest implements FabricGameTest {
             cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;
             cfg.trialSpawner.ominousUpgrade.chance = savedChance;
             cfg.trialSpawner.ominousUpgrade.minimumTier = savedMinTier;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void trialSpawner_ominousUpgrade_skipsBelowMinimumTier(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -243,7 +240,7 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         cfg.trialSpawner.ominousUpgrade.chance = 1.0f; // would always roll if the gate passed
         cfg.trialSpawner.ominousUpgrade.minimumTier = 3;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         // Level 100 -> tier 2, below the configured minimum tier 3.
         state.setLevel(player.getUUID(), 100, cfg.general.maxLevel);
@@ -258,12 +255,11 @@ public class TrialSpawnerGameTest implements FabricGameTest {
             cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;
             cfg.trialSpawner.ominousUpgrade.chance = savedChance;
             cfg.trialSpawner.ominousUpgrade.minimumTier = savedMinTier;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void trialSpawner_ominousUpgrade_respectsMasterToggle(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -286,7 +282,7 @@ public class TrialSpawnerGameTest implements FabricGameTest {
         cfg.trialSpawner.ominousUpgrade.chance = 1.0f;
         cfg.trialSpawner.ominousUpgrade.minimumTier = 3;
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(helper);
         PlayerDifficultyState state = PlayerDifficultyState.getOrCreate(server);
         // Level 150 -> tier 3, clearing the minimum; only the master toggle blocks it.
         state.setLevel(player.getUUID(), 150, cfg.general.maxLevel);
@@ -301,7 +297,7 @@ public class TrialSpawnerGameTest implements FabricGameTest {
             cfg.trialSpawner.ominousUpgrade.enabled = savedOminousEnabled;
             cfg.trialSpawner.ominousUpgrade.chance = savedChance;
             cfg.trialSpawner.ominousUpgrade.minimumTier = savedMinTier;
-            player.discard();
+            MockPlayers.retire(player);
         }
         helper.succeed();
     }

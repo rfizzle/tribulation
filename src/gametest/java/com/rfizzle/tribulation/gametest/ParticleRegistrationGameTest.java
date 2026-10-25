@@ -19,7 +19,6 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class ParticleRegistrationGameTest implements FabricGameTest {
 
-    @SuppressWarnings("removal")
     @GameTest(template = "tribulation:empty_3x3")
     public void threatParticleTypesAreRegistered(GameTestHelper helper) {
         assertRegistered(helper, "threat_tier", TribulationParticles.THREAT_TIER);

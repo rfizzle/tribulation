@@ -67,7 +67,8 @@ public final class DeathReliefHandler {
                     cfg.deathRelief.amount,
                     cfg.deathRelief.cooldownTicks,
                     cfg.deathRelief.minimumLevel,
-                    server.getTickCount()
+                    // Persisted cooldown anchor: needs a clock that survives restarts.
+                    server.overworld().getGameTime()
             );
             if (!applied) {
                 Tribulation.LOGGER.debug(

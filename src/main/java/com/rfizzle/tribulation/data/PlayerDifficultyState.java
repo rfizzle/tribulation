@@ -133,6 +133,11 @@ public class PlayerDifficultyState extends SavedData {
      * {@code false} when the death fell inside the cooldown window and no
      * relief was granted. Callers are expected to have already checked the
      * {@code deathRelief.enabled} config flag.
+     *
+     * <p>{@code currentTick} must be a clock that survives restarts (the
+     * overworld game time), since the death stamp is persisted as
+     * {@code LastDeathTick}. A session-relative clock such as
+     * {@code MinecraftServer#getTickCount} restarts at 0 and breaks the cooldown.
      */
     public boolean reduceLevel(UUID uuid, int amount, int cooldownTicks, int minimumLevel, long currentTick) {
         PlayerData pd = getPlayerData(uuid);
@@ -156,7 +161,12 @@ public class PlayerDifficultyState extends SavedData {
         // every death qualifies, matching DESIGN.md's "rapid suicide" gate off.
         if (pd.lastDeathTick != NEVER_DIED && cooldownTicks > 0) {
             long elapsed = currentTick - pd.lastDeathTick;
-            if (elapsed < cooldownTicks) {
+            // A negative elapsed means the stamp is from the future of the
+            // current clock. That is only a legacy (<= 1.1.0) value written in
+            // per-session server-tick units, which can exceed the persistent
+            // game-time clock — treat it as expired (lenient) rather than
+            // blocking relief; the next qualifying death re-stamps in game time.
+            if (elapsed >= 0 && elapsed < cooldownTicks) {
                 return Reduction.ON_COOLDOWN;
             }
         }
@@ -204,6 +214,11 @@ public class PlayerDifficultyState extends SavedData {
             pd.tickCounter = 0;
             setDirty();
         }
+    }
+
+    /** Persisted death-relief cooldown anchor (overworld game time), or {@code Long.MIN_VALUE} if never died. */
+    public long getLastDeathTick(UUID uuid) {
+        return getPlayerData(uuid).lastDeathTick;
     }
 
     public int getTickCounter(UUID uuid) {

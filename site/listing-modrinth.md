@@ -23,7 +23,7 @@ vanilla mechanics, sharpened. Zero external dependencies beyond Fabric API.
 ## At a glance
 
 - Minecraft **1.21.1**, **Fabric** loader (0.16.10+), **Fabric API** required.
-- Required on the **server**; install client-side too for the level badge HUD.
+- Required on **both server and client**. It adds items, blocks, and network payloads.
 - Every system is **individually toggleable** through Mod Menu / Cloth Config
   or `config/tribulation.json` — hot-reload with `/tribulation reload`.
 - MIT licensed.
@@ -173,7 +173,7 @@ want:
 
 - **Death Relief** — lose 2 levels on death (rubber-band mechanic,
   cooldown-gated)
-- **Shatter Shards** — rare drops (0.5%) that lower your level by 5, at the
+- **Shatter Shard** — a rare drop (0.5%) that lowers your level by 5, at the
   cost of 10s of Slowness, Mining Fatigue, and Weakness
 - **Hardcore Hearts** *(opt-in)* — permanently lose max health per death;
   restore with craftable Heart Fragments
@@ -258,7 +258,7 @@ state, and a level-change event — see the
 - Fabric Loader **0.16.10+**
 - Fabric API
 - Java **21+**
-- Works on **dedicated servers and singleplayer**
+- Required on **both client and server** (install it on each); works on dedicated servers and singleplayer
 
 ## Installation
 
